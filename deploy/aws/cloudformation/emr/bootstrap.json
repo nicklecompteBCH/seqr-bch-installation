@@ -1,0 +1,11 @@
+{"BootstrapActions" : 
+    [ 
+        {
+            "Name" : "install-python-3-and-hail",
+            "ScriptBootstrapAction" : 
+            {
+                "Path" : "s3://bch-seqr-deployment/install_hail_and_python36.sh"
+            }
+        } 
+    ]
+}

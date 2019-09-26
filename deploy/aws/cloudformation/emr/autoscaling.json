@@ -1,0 +1,50 @@
+"AutoScalingPolicy" : {
+    "Constraints" : {
+        "MaxCapacity" : 4,
+        "MinCapacity" : 1
+    },
+    "Rules" : [
+        {
+            "Action" : {
+                "SimpleScalingPolicyConfiguration" : {
+                    "AdjustmentType" : "CHANGE_IN_CAPACITY",
+                    "CoolDown" : 300,
+                    "ScalingAdjustment" : 1}
+                    },
+            "Description" : "add an instance if CPU usage is too high",
+            "Name" : "hail-scaleup-rule",
+            "Trigger" : {
+                "CloudWatchAlarmDefinition" : {
+                    "ComparisonOperator" : "GREATER_THAN",
+                    "EvaluationPeriods" : 1,
+                    "MetricName" : "CPUUtilization",
+                    "Unit" : "PERCENT",
+                    "Period" : 300,
+                    "Statistic" : "AVERAGE",
+                    "Threshold" : 80.0
+                }
+            }
+        },
+        {
+            "Action" : {
+                "SimpleScalingPolicyConfiguration" : {
+                    "AdjustmentType" : "CHANGE_IN_CAPACITY",
+                    "CoolDown" : 300,
+                    "ScalingAdjustment" : -1}
+                    },
+            "Description" : "remove an instance if CPU usage is too low",
+            "Name" : "hail-scaledown-rule",
+            "Trigger" : {
+                "CloudWatchAlarmDefinition" : {
+                    "ComparisonOperator" : "LESS_THAN",
+                    "EvaluationPeriods" : 1,
+                    "MetricName" : "CPUUtilization",
+                    "Unit" : "PERCENT",
+                    "Period" : 600,
+                    "Statistic" : "AVERAGE",
+                    "Threshold" : 20.0
+                }
+            }
+        }
+    ]
+}

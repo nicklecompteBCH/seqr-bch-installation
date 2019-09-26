@@ -1,0 +1,84 @@
+{
+    "Resources": {
+    "hail" : {
+        "Type" : "AWS::EMR::Cluster",
+        "Properties" : {
+            "Applications" : [ {
+                "Name" : "Spark"
+                } ],
+            "AutoScalingRole" : "EMR_AutoScaling_DefaultRole",
+            "Configurations" : [
+                {
+                    "Classification": "spark-env", 
+                    "Configurations": [
+                        {
+                            "Classification": "export", 
+                            "Configurations": [], 
+                            "ConfigurationProperties": 
+                            {
+                                "JAVA_HOME": "/usr/lib/jvm/java-1.8.0"
+                            }
+                        }
+                    ], 
+                    "ConfigurationProperties": {}
+                },
+                {
+                    "Classification":"spark",
+                    "ConfigurationProperties":{"maximizeResourceAllocation":"true"}
+                },
+                {
+                    "Classification":"yarn-site",
+                    "ConfigurationProperties":{"yarn.nodemanager.vmem-check-enabled":"false"},
+                    "Configurations":[]
+                }
+            ],
+            "Instances" : {
+                "CoreInstanceGroup" : {
+                    "Configurations" : [],
+                    "EbsConfiguration" : {
+                        "EbsBlockDeviceConfigs" : [{
+                            "VolumeSpecification" : {
+                            "SizeInGB" : 150,
+                            "VolumeType" : "gp2"}
+                        }],
+                        "EbsOptimized" : false
+                    },
+                    "InstanceCount" : 2,
+                    "InstanceType" : "r4.4xlarge",
+                    "Market" : "ON_DEMAND",
+                    "Name" : "hail-workers"
+                },
+                "Ec2KeyName" : "nick",
+                "Ec2SubnetId" : "subnet-93408aad",
+                "EmrManagedMasterSecurityGroup" : "sg-0efefdf3b2fd4ef76",
+                "EmrManagedSlaveSecurityGroup" : "sg-0efefdf3b2fd4ef76",
+                "KeepJobFlowAliveWhenNoSteps" : true,
+                "MasterInstanceGroup" : {
+                    "Configurations" : [],
+                    "EbsConfiguration" : {
+                        "EbsBlockDeviceConfigs" : [{"VolumeSpecification" : {
+                            "SizeInGB" : 150,
+                            "VolumeType" : "gp2"
+                        }}],
+                        "EbsOptimized" : false
+                    },
+                    "InstanceCount" : 1,
+                    "InstanceType" : "m4.xlarge",
+                    "Market" : "ON_DEMAND",
+                    "Name" : "hail-master"
+                },
+                "TerminationProtected" : false
+            },
+            "JobFlowRole" : "EMR_EC2_DefaultRole",
+            "LogUri" : "s3n://hail-logging-bch/",
+            "Name" : "hail-bch",
+            "ReleaseLabel" : "emr-5.23.0",
+            "ServiceRole" : "EMR_DefaultRole",
+            "Steps" : [  ],
+            "Tags" : [ 
+                {"Key" : "Name", "Value" : "bch-hail-cluster"}, 
+                {"Key" : "Project", "Value" : "seqr-bch"}, 
+                {"Key" : "Owner", "Value" : "nicklecompte"}  ],
+            "VisibleToAllUsers" : false        }
+    }
+}}

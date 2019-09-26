@@ -1,0 +1,16 @@
+{
+    "Type" : "AWS::Elasticsearch::Domain",
+    "Properties" : {
+        "AccessPolicies" : {},
+        "AdvancedOptions" : {"Key" : "Value", "Key2" : "Value"},
+        "DomainName" : "",
+        "EBSOptions" : {},
+        "ElasticsearchClusterConfig" : {},
+        "ElasticsearchVersion" : "6.4.0",
+        "EncryptionAtRestOptions" : {},
+        "NodeToNodeEncryptionOptions" : {},
+        "SnapshotOptions" : {},
+        "Tags" : [  ],
+        "VPCOptions" : {}
+      }
+  }
