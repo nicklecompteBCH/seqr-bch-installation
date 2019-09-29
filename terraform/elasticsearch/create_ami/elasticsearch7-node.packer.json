@@ -1,0 +1,72 @@
+{
+  "description": "Elasticsearch Image",
+  "builders": [
+    {
+      "type": "amazon-ebs",
+      "ami_name": "elasticsearch6-{{isotime | clean_ami_name}}",
+      "availability_zone": "{{user `aws_az`}}",
+      "iam_instance_profile": "packer",
+      "instance_type": "t2.micro",
+      "region": "{{user `aws_region`}}",
+      "run_tags": {
+        "role": "packer"
+      },
+      "source_ami_filter": {
+        "filters": {
+          "virtualization-type": "hvm",
+          "name": "*ubuntu-bionic-18.04-amd64-server-*",
+          "root-device-type": "ebs"
+        },
+        "owners": ["099720109477"],
+        "most_recent": true
+      },
+      "ssh_timeout": "10m",
+      "ssh_username": "ubuntu",
+      "tags": {
+        "ImageType": "elasticsearch7-packer-image"
+      },
+      "spot_price_auto_product": "Linux/UNIX (Amazon VPC)",
+      "spot_price": "auto"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "script": "update-machine.sh",
+      "execute_command": "echo '' | {{ .Vars }} sudo -E -S sh '{{ .Path }}'"
+    },
+    {
+      "type": "file",
+      "source": "../templates/elasticsearch.yml",
+      "destination": "elasticsearch.yml"
+    },
+    {
+      "type": "shell",
+      "script": "install-openjdk11.sh",
+      "execute_command": "echo '' | {{ .Vars }} sudo -E -S sh '{{ .Path }}'"
+    },
+    {
+      "type": "shell",
+      "script": "install-elasticsearch7.sh",
+      "environment_vars": [ "ES_VERSION={{user `elasticsearch_version`}}" ],
+      "execute_command": "echo '' | {{ .Vars }} sudo -E -S sh '{{ .Path }}'"
+    },
+    {
+      "type": "shell",
+      "script": "install-cloud-plugin.sh"
+    },
+    {
+      "type": "shell",
+      "script": "install-beats.sh"
+    },
+    {
+      "type": "shell",
+      "script": "install-esrally.sh",
+      "execute_command": "echo '' | {{ .Vars }} sudo -E -S sh '{{ .Path }}'"
+    },
+    {
+      "type": "shell",
+      "script": "install-custom.sh"
+    }
+  ]
+}
