@@ -1,5 +1,6 @@
 from enum import Enum
 from typing import List
+from common.exceptions import InvalidTypeException
 
 from exceptions import (
     InvalidStorageConfiguration,
@@ -89,7 +90,7 @@ class VirtualMachine:
 
     def __eq__(self, other):
         if other is not VirtualMachine:
-            return False
+            raise InvalidTypeException(type(other))
         return (
             self.size == other.size and
             self.size_descriptiton == other.size_descriptiton and
