@@ -9,11 +9,11 @@ with open(path.join(here, 'README.md'),encoding='utf-8') as f:
 setup(
     name='seqr-bch-installation',
     version='0.0.1',
-    description='Scripts and source code for deploying Seqr on AWS'
+    description='Scripts and source code for deploying Seqr on AWS',
     long_description=long_description,
-    long_description_content_type='test/markdown'
+    long_description_content_type='test/markdown',
     url='https://github.com/nicklecompteBCH/bch-seqr-installation/',
-    author-'BCH Research Computing - Genomics, based on Seqr and hail-elasticsearch-pipelines by github.com/macacarthurlab',
+    author='BCH Research Computing - Genomics, based on Seqr and hail-elasticsearch-pipelines by github.com/macacarthurlab',
     author_email='nicholas.lecompte@childrens.harvard.edu',
     packages=find_packages(),
     python_requires=">=3.6,<3.8",

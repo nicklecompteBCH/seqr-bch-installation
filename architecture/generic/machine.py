@@ -97,3 +97,11 @@ class VirtualMachine:
             self.root_device == other.root_device and
             self.attached_devices == other.attached_devices
         )
+
+class VirtualMachineInstance:
+
+    def __init__(
+        self,
+        machine: VirtualMachine,
+        id: str
+    )
