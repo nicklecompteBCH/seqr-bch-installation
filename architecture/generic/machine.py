@@ -19,7 +19,7 @@ class MachineSize:
         self.cpu_count = cpu_count
         self.ram_GB = ram_GB
 
-    def __eq__(self, other) :
+    def __eq__(self, other: MachineSize) :
         if other is not MachineSize:
             return False
         return (self.cpu_count == other.cpu_count) and (self.ram_GB == other.ram_GB)
@@ -52,9 +52,7 @@ class StorageDevice:
         self.size_GB = size_GB
         self.storage_type = storage_type
 
-    def __eq__(self, other):
-        if other is not StorageDevice:
-            return False
+    def __eq__(self, other: StorageDevice):
         return (self.size_GB == other.size_GB) and (self.storage_type == other.storage_type)
 
 class RootDevice(StorageDevice):
@@ -88,9 +86,7 @@ class VirtualMachine:
         self.root_device = root_device
         self.attached_devices = attached_devices
 
-    def __eq__(self, other):
-        if other is not VirtualMachine:
-            raise InvalidTypeException(type(other))
+    def __eq__(self, other: VirtualMachine):
         return (
             self.size == other.size and
             self.size_descriptiton == other.size_descriptiton and
@@ -103,5 +99,7 @@ class VirtualMachineInstance:
     def __init__(
         self,
         machine: VirtualMachine,
-        id: str
-    )
+        guid: str
+    ):
+        self.machine = machine
+        self.guid = guid

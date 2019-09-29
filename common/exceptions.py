@@ -1,10 +1,10 @@
 from enum import Enum
-from typing import TypeVar
+from typing import TypeVar, Generic
 
 T = TypeVar("T")
 
 
-class InvalidTypeException[T](Exception):
+class InvalidTypeException(Generic[T],Exception):
 
     def __init__(
         self,
