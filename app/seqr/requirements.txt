@@ -39,7 +39,7 @@ requests==2.20.0                 # simpler way to make http requests
 requests_toolbelt		         # for troubleshooting requests
 redis==2.10.6                    # client lib for the redis in-memory database - used for caching server-side objects
 tqdm                             # convenient way to create progress bar for long-running command-line operations
-whitenoise==3.3.0                # simplified static file handling
+#whitenoise==3.3.0                # simplified static file handling
 xlrd==1.0.0                      # faster library for parsing Excel
 xlwt==1.0.0                      # library for writing Excel
 
@@ -58,4 +58,4 @@ PyVCF==0.6.8
 six==1.12.0                      # This is required by gsutil
 slacker==0.9.42                  # intend to move this to separate external modules
 slugify
- whitenoise==4.1.3
+whitenoise==4.1.3
