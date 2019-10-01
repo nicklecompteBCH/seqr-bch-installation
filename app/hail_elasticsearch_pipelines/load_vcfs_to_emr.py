@@ -111,7 +111,7 @@ def bch_connect_export_to_seqr_datasets(inputline: dict) -> SeqrProjectDataSet:
         vcf_s3_path, bam_s3_path, project_name
     )
 
-def compute_index_name(dataset: SeqrProjectDataSet):
+def compute_index_name(dataset: SeqrProjectDataSet,version="0.1"):
     """Returns elasticsearch index name computed based on a project dataset"""
     index_name = "%s%s%s__%s__grch%s__%s__%s" % (
         dataset.project_name,
@@ -120,7 +120,7 @@ def compute_index_name(dataset: SeqrProjectDataSet):
         dataset.sample_type,
         GENOME_VERSION,
         "WES",
-        time.strftime("%Y%m%d"),
+        version,
     )
 
     index_name = index_name.lower()  # elasticsearch requires index names to be all lower-case
