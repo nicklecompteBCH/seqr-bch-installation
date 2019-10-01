@@ -21,7 +21,7 @@ from xbrowse import utils as xbrowse_utils
 from xbrowse import vcf_stuff, genomeloc
 from xbrowse.core.variant_filters import VariantFilter, passes_variant_filter
 from xbrowse import Variant
-import xbrowse.datastore.datastore as datastore
+from . import datastore #as datastore #xbrowse.datastore.datastore as datastore
 logger = logging.getLogger()
 GENOTYPE_QUERY_MAP = {
 

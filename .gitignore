@@ -2,7 +2,15 @@
 *__pycache__*
 env/*
 .vscode/*
-*__GITIGNORE__*
 architecture/aws/iam/service_roles.py
 architecture/aws/iam/private_buckets.py
 buckpolicy*
+redis/*
+outfile.txt
+perl-*
+app/seqr/gene_reference_data_backup.gz
+*gunicorn.log*
+app/seqr/static/*
+kibana-*
+src/*
+*__GITIGNORE__*

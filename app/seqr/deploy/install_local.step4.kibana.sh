@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-KIBANA_VERSION=7.3.1
+KIBANA_VERSION=6.8.3
 if [ $PLATFORM == "macos" ]; then
     KIBANA_PLATFORM="darwin"
 else

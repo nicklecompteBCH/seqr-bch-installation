@@ -26,7 +26,7 @@ DATABASES = {
 ALLOWED_HOSTS = ['*']
 
 EMAIL_BACKEND = "anymail.backends.postmark.EmailBackend"
-DEFAULT_FROM_EMAIL = "seqr@broadinstitute.org"
+DEFAULT_FROM_EMAIL = "nicholas.lecompte@childrens.harvard.edu"
 
 ANYMAIL = {
     #"SENDGRID_API_KEY": os.environ.get('SENDGRID_API_KEY', 'sendgrid-api-key-placeholder'),
