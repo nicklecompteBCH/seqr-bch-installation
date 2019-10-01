@@ -2,3 +2,11 @@
 *__pycache__*
 env/*
 .vscode/*
+redis/*
+outfile.txt
+perl-*
+app/seqr/gene_reference_data_backup.gz
+*gunicorn.log*
+app/seqr/static/*
+kibana-*
+src/*

@@ -36,7 +36,7 @@ PHENOTYPE_DATATYPES = (
 
 class UserProfile(models.Model):
 
-    user = models.OneToOneField(User,on_delete=models.PROTECT)
+    user = models.OneToOneField(User,null=True,on_delete=models.PROTECT)
     display_name = models.CharField(default="", blank=True, max_length=100)
     set_password_token = models.CharField(max_length=40, blank=True, default="")
 
@@ -137,8 +137,8 @@ COLLABORATOR_TYPES = (
 
 
 class ProjectCollaborator(models.Model):
-    user = models.ForeignKey(User,on_delete=models.PROTECT)
-    project = models.ForeignKey('base.Project',on_delete=models.PROTECT)
+    user = models.ForeignKey(User,null=True,on_delete=models.PROTECT)
+    project = models.ForeignKey('base.Project',null=True,on_delete=models.PROTECT)
     collaborator_type = models.CharField(max_length=20, choices=COLLABORATOR_TYPES, default="collaborator")
 
 
@@ -173,7 +173,7 @@ class Project(models.Model):
     disease_area = models.CharField(max_length=20, null=True, blank=True, choices=DISEASE_AREA)
 
     private_reference_populations = models.ManyToManyField(ReferencePopulation, blank=True)
-    gene_lists = models.ManyToManyField('gene_lists.GeneList', through='ProjectGeneList')
+    gene_lists = models.ManyToManyField('gene_lists.GeneList', null=True,through='ProjectGeneList')
 
     default_control_cohort = models.CharField(max_length=100, default="", blank=True)
 
@@ -441,8 +441,8 @@ class Project(models.Model):
 
 
 class ProjectGeneList(models.Model):
-    gene_list = models.ForeignKey('gene_lists.GeneList',on_delete=models.PROTECT)
-    project = models.ForeignKey(Project,on_delete=models.PROTECT)
+    gene_list = models.ForeignKey('gene_lists.GeneList',null=True,on_delete=models.PROTECT)
+    project = models.ForeignKey(Project,null=True,on_delete=models.PROTECT)
 
 
 ANALYSIS_STATUS_CHOICES = [
@@ -709,7 +709,7 @@ class Family(models.Model):
 
 
 class FamilyImageSlide(models.Model):
-    family = models.ForeignKey(Family,on_delete=models.PROTECT)
+    family = models.ForeignKey(Family,null=True,on_delete=models.PROTECT)
     image = models.ImageField(upload_to='family_image_slides', null=True, blank=True)
     order = models.FloatField(default=0.0)
     caption = models.CharField(max_length=300, default="", blank=True)
@@ -1147,7 +1147,7 @@ class FamilySearchFlag(models.Model):
 
 class ProjectPhenotype(models.Model):
 
-    project = models.ForeignKey(Project,on_delete=models.PROTECT)
+    project = models.ForeignKey(Project,null=True,on_delete=models.PROTECT)
     slug = models.SlugField(max_length=140, default="pheno")
     name = models.CharField(max_length=140, default="")
     category = models.CharField(choices=PHENOTYPE_CATEGORIES, max_length=20)
@@ -1167,8 +1167,8 @@ class ProjectPhenotype(models.Model):
 
 class IndividualPhenotype(models.Model):
 
-    individual = models.ForeignKey(Individual,on_delete=models.PROTECT)
-    phenotype = models.ForeignKey(ProjectPhenotype,on_delete=models.PROTECT)
+    individual = models.ForeignKey(Individual,null=True,on_delete=models.PROTECT)
+    phenotype = models.ForeignKey(ProjectPhenotype,null=True,on_delete=models.PROTECT)
     boolean_val = models.NullBooleanField()
     float_val = models.FloatField(null=True, blank=True)
 
@@ -1186,7 +1186,7 @@ class FamilyGroup(models.Model):
     slug = models.SlugField(max_length=100)
     name = models.CharField(max_length=100)
     description = models.TextField()
-    project = models.ForeignKey(Project,on_delete=models.PROTECT)
+    project = models.ForeignKey(Project,null=True,on_delete=models.PROTECT)
     families = models.ManyToManyField(Family)
 
     seqr_analysis_group = models.ForeignKey('seqr.AnalysisGroup', null=True, blank=True, on_delete=models.SET_NULL)  # simplifies migration to new seqr.models schema
@@ -1215,7 +1215,7 @@ class FamilyGroup(models.Model):
 
 
 class ProjectTag(models.Model):
-    project = models.ForeignKey(Project,on_delete=models.PROTECT)
+    project = models.ForeignKey(Project,null=True,on_delete=models.PROTECT)
     tag = models.TextField()
     category = models.TextField(default="")
     title = models.TextField(default="")  # aka. description
@@ -1340,7 +1340,7 @@ class VariantFunctionalData(models.Model):
 
 
 class VariantNote(models.Model):
-    project = models.ForeignKey(Project,on_delete=models.PROTECT)
+    project = models.ForeignKey(Project,null=True,on_delete=models.PROTECT)
     note = models.TextField(default="", blank=True)
     submit_to_clinvar = models.BooleanField(default=False)
 
@@ -1410,14 +1410,14 @@ class GeneNote(models.Model):
 class AnalysisStatus(models.Model):
     user = models.ForeignKey(User, null=True, blank=True,on_delete=models.PROTECT)
     date_saved = models.DateTimeField(null=True)
-    family = models.ForeignKey(Family,on_delete=models.PROTECT)
+    family = models.ForeignKey(Family,null=True,on_delete=models.PROTECT)
     status = models.CharField(max_length=10, choices=ANALYSIS_STATUS_CHOICES, default="I")
 
 
 class AnalysedBy(models.Model):
-    user = models.ForeignKey(User,on_delete=models.PROTECT)
+    user = models.ForeignKey(User,null=True,on_delete=models.PROTECT)
     date_saved = models.DateTimeField()
-    family = models.ForeignKey(Family,on_delete=models.PROTECT)
+    family = models.ForeignKey(Family,null=True,on_delete=models.PROTECT)
 
     seqr_family_analysed_by = models.ForeignKey('seqr.FamilyAnalysedBy', null=True, blank=True, on_delete=models.SET_NULL)  # simplifies migration to new seqr.models schema
 
