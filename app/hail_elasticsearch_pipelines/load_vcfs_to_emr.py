@@ -63,7 +63,7 @@ def add_vcf_to_hail(s3path_to_vcf):
         GENOME_VERSION)
     vep_mt = run_vep(mt, GENOME_VERSION)
 
-    os.remove(parts['filename'])
+    #os.remove(parts['filename'])
     return vep_mt
 
 
@@ -132,7 +132,7 @@ def compute_index_name(dataset: SeqrProjectDataSet,version="0.1"):
 ELASTICSEARCH_HOST=os.environ['ELASTICSEARCH_HOST']
 
 def determine_if_already_uploaded(dataset: SeqrProjectDataSet):
-    resp = requests.get(ELASTICSEARCH_HOST + ":/9200/" + compute_index_name(dataset))
+    resp = requests.get(ELASTICSEARCH_HOST + ":9200/" + compute_index_name(dataset))
     if "index_not_found_exception" in resp.text:
         return False
     if "VARIANT" in resp.text:
@@ -170,18 +170,20 @@ def run_all_connect(
                 parsed_dataset = bch_connect_export_to_seqr_datasets(row)
                 if project_whitelist:
                     if parsed_dataset.project_name not in project_whitelist:
+                        print(parsed_dataset.project_name + " is not on the whitelist")
                         continue
                 if project_blacklist:
                     if parsed_dataset.project_name in project_blacklist:
                         continue
                 if determine_if_already_uploaded(parsed_dataset):
-                    retrst = f"Project {parsed_dataset.project_name} individual {parsed_dataset.indiv_id} already in Seqr under index {compute_index_name(parsed_dataset)}"
+                    retstr = f"Project {parsed_dataset.project_name} individual {parsed_dataset.indiv_id} already in Seqr under index {compute_index_name(parsed_dataset)}"
                     if dry_run:
                         print(retstr)
                     else:
                         log.write(retstr + "\n")
                 if dry_run:
-                    print(parsed_dataset.vcf_s3_path, compute_index_name(dataset))
+                    print(parsed_dataset.vcf_s3_path, compute_index_name(parsed_dataset))
                 else:
                     add_project_dataset_to_elastic_search(
                         parsed_dataset, ELASTICSEARCH_HOST, compute_index_name(parsed_dataset))
+                    log.write(parsed_datatset.project_name + "," + parsed_dataset.indiv_id + "," + compute_index_name(parsed_dataset))
