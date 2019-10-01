@@ -1,15 +1,8 @@
 #!/bin/bash
 
-# Install gcloud utils
-# TODO: Figure out how to load google key here.
-export CLOUDSDK_PYTHON=/usr/bin/python3
-curl https://sdk.cloud.google.com | bash
-
-gcloud init
-
 
 # PERL setup
-sudo wget https://raw.github.com/miyagawa/cpanminus/master/cpanm -O /usr/bin/cpanm 
+sudo wget https://raw.github.com/miyagawa/cpanminus/master/cpanm -O /usr/bin/cpanm
 sudo chmod o+x /usr/bin/cpanm
 # VEP dependencies
 sudo /usr/bin/cpanm --notest Set::IntervalTree
@@ -40,9 +33,9 @@ aws s3 cp s3://seqr-resources/GRCh37/loftee/GERP_scores.final.sorted.txt.gz .
 
 # install requirement
 
-sudo su
-python2.7 -m pip install --no-cache-dir -U crcmod
-exit
+# sudo su
+# python2.7 -m pip install --no-cache-dir -U crcmod
+# exit
 
 
 # Copy VEP
@@ -50,12 +43,17 @@ sudo mkdir -p /mnt/vep/homo_sapiens
 sudo chown hadoop -R /mnt/vep/
 sudo chmod 777 /mnt/vep/* -R
 sudo ln -s /mnt/vep /vep
-gsutil -m cp -r gs://hail-common/vep/vep/loftee /vep
-gsutil -m cp -r gs://hail-common/vep/vep/ensembl-tools-release-85 /vep
-gsutil -m cp -r gs://hail-common/vep/vep/loftee_data /vep
-gsutil -m cp -r gs://hail-common/vep/vep/Plugins /vep
-gsutil -m cp -r gs://hail-common/vep/vep/homo_sapiens/85_GRCh37 /vep/homo_sapiens
-gsutil cp gs://hail-common/vep/vep/vep85-gcloud.properties /vep/vep-gcloud.properties
+sudo mkdir /vep/loftee
+aws s3 cp s3://seqr-resources/vep/loftee /vep/loftee --recursive
+sudo mkdir /vep/ensembl_tools_release_85
+aws s3 cp s3://seqr-resources/vep/ensembl_tools_release_85 /vep/ensembl_tools_release_85 --recursive
+sudo mkdir /vep/loftee_data
+aws s3 cp s3://seqr-resources/GRCh37/loftee/ /vep/loftee_data --recursive
+sudo mkdir /vep/Plugins
+aws s3 cp s3://seqr-resources/vep/Plugins /vep/Plugins --recursive
+sudo mkdir /vep/homo_sapiens
+aws s3 cp s3://seqr-resources/GRCh37/vep/homo_sapiens/ /vep/homo_sapiens --recursive
+aws s3 cp s3://seqr-resources/vep/vep-gcloud.properties /vep/vep-gcloud.properties
 
 # Create VEP cache
 mkdir $HOME/.vep
@@ -65,19 +63,13 @@ sudo chmod 777 $HOME/.vep/homo_sapiens/
 #Give perms
 sudo chmod -R 777 /vep
 
-# Copy perl JSON module
-#gsutil -m cp -r gs://hail-common/vep/perl-JSON/* /usr/share/perl5/
-
-#Copy perl DBD::SQLite module
-#gsutil -m cp -r gs://hail-common/vep/perl-SQLITE/* /usr/share/perl5/
-
 
 # Copy htslib and samtools
 mkdir $HOME/htslib
-gsutil cp gs://hail-common/vep/htslib/* $HOME/htslib
+aws s3 cp s3://seqr-resources/vep/htslib/ $HOME/htslib --recursive
 sudo cp $HOME/htslib/* /usr/bin
 mkdir $HOME/samtools
-gsutil cp gs://hail-common/vep/samtools $HOME/samtools
+aws s3 cp s3://seqr-resources/vep/samtools $HOME/samtools --recursive
 sudo cp $HOME/samtools/* /usr/bin
 
 sudo chmod a+rx  /usr/bin/tabix
@@ -86,8 +78,8 @@ sudo chmod a+rx  /usr/bin/htsfile
 sudo chmod a+rx  /usr/bin/samtools
 
 #Run VEP on the 1-variant VCF to create fasta.index file -- caution do not make fasta.index file writeable afterwards!
-gsutil cp gs://hail-common/vep/vep/1var.vcf /vep
-gsutil cp gs://hail-common/vep/vep/run_hail_vep85_vcf.sh /vep
+aws s3 cp s3://seqr-resources/vep/1var.vcf /vep
+aws s3 cp s3://seqr-resources/vep/run_hail_vep85_vcf.sh /vep
 chmod a+rx /vep/run_hail_vep85_vcf.sh
 
 /vep/run_hail_vep85_vcf.sh /vep/1var.vcf

@@ -34,11 +34,10 @@ Options:
 }
 
 # Add hail to the master node
-sudo mkdir -p /opt
+sudo mkdir -p /opt/hail/src
 sudo chmod 777 /opt/
 sudo chown hadoop:hadoop /opt
 cd /opt
-git clone https://github.com/hms-dbmi/hail-on-AWS-spot-instances.git
 cd $HAIL_HOME/src
 
 # Compile Hail
@@ -99,7 +98,7 @@ if [ "$IS_MASTER" = true ]; then
 
     LATEST_JDK=`ls  /usr/lib/jvm/ | grep "java-1.8.0-openjdk-1.8"`
     sudo  ln -s /usr/lib/jvm/$LATEST_JDK/include /etc/alternatives/jre/include
-     
+
 
     if [ "$COMPILE" = true ]; then
         # Compile with Spark 2.4.0
@@ -114,18 +113,10 @@ if [ "$IS_MASTER" = true ]; then
             cp $PWD/build/distributions/hail-python.zip $HOME
             cp $PWD/build/libs/hail-all-spark.jar $HOME
         fi
-    fi 
+    fi
 fi
 
 sudo cp /usr/share/zoneinfo/America/New_York /etc/localtime
-
-# Get IPs and names of EC2 instances (workers) to monitor if a worker dropped  
-sudo grep -i privateip /mnt/var/lib/info/*.txt | sort -u | cut -d "\"" -f 2 > /tmp/t1.txt
-CLUSTERID="$(jq -r .jobFlowId /mnt/var/lib/info/job-flow.json)"
-aws emr list-instances --cluster-id ${CLUSTERID} | jq -r .Instances[].Ec2InstanceId > /tmp/ec2list1.txt
-
-# Setup crontab to check dropped instances every minute and install SW as needed in new instances 
-sudo echo "* * * * * /opt/hail-on-AWS-spot-instances/src/run_when_new_instance_added.sh >> /tmp/cloudcreation_log.out 2>&1 # min hr dom month dow" | crontab -
 
 # Install user-level python packages
 python3 -m pip install boto3 --user

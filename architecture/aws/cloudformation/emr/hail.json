@@ -9,17 +9,17 @@
             "AutoScalingRole" : "EMR_AutoScaling_DefaultRole",
             "Configurations" : [
                 {
-                    "Classification": "spark-env", 
+                    "Classification": "spark-env",
                     "Configurations": [
                         {
-                            "Classification": "export", 
-                            "Configurations": [], 
-                            "ConfigurationProperties": 
+                            "Classification": "export",
+                            "Configurations": [],
+                            "ConfigurationProperties":
                             {
                                 "JAVA_HOME": "/usr/lib/jvm/java-1.8.0"
                             }
                         }
-                    ], 
+                    ],
                     "ConfigurationProperties": {}
                 },
                 {
@@ -43,7 +43,7 @@
                         }],
                         "EbsOptimized" : false
                     },
-                    "InstanceCount" : 2,
+                    "InstanceCount" : 4,
                     "InstanceType" : "r4.4xlarge",
                     "Market" : "ON_DEMAND",
                     "Name" : "hail-workers"
@@ -73,12 +73,24 @@
             "LogUri" : "s3n://hail-logging-bch/",
             "Name" : "hail-bch",
             "ReleaseLabel" : "emr-5.23.0",
-            "ServiceRole" : "EMR_DefaultRole",
+            "ServiceRole" : "arn:aws:iam::907995668131:role/Hail_BCHConnect_EMR_Role",
             "Steps" : [  ],
-            "Tags" : [ 
-                {"Key" : "Name", "Value" : "bch-hail-cluster"}, 
-                {"Key" : "Project", "Value" : "seqr-bch"}, 
+            "Tags" : [
+                {"Key" : "Name", "Value" : "bch-hail-cluster"},
+                {"Key" : "Project", "Value" : "seqr-bch"},
                 {"Key" : "Owner", "Value" : "nicklecompte"}  ],
-            "VisibleToAllUsers" : false        }
+            "VisibleToAllUsers" : false,
+            "BootstrapActions" :
+                [
+                    {
+                        "Name" : "install-python-3-and-hail",
+                        "ScriptBootstrapAction" :
+                        {
+                            "Path" : "s3://bch-seqr-deployment/install_hail_and_python36.sh"
+                        }
+                    }
+                ]
+            }
+        }
     }
-}}
+}

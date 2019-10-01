@@ -2,3 +2,7 @@
 *__pycache__*
 env/*
 .vscode/*
+*__GITIGNORE__*
+architecture/aws/iam/service_roles.py
+architecture/aws/iam/private_buckets.py
+buckpolicy*

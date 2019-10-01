@@ -93,19 +93,19 @@ cp deploy/docker/seqr/config/*.py seqr_settings/
 psql -U postgres postgres -c "create database seqrdb"
 
 # init django
-python -u manage.py makemigrations
-python -u manage.py migrate
-python -u manage.py check
-python -u manage.py collectstatic --no-input
-python -u manage.py loaddata variant_tag_types
-python -u manage.py loaddata variant_searches
+python3 -u manage.py makemigrations
+python3 -u manage.py migrate
+python3 -u manage.py check
+python3 -u manage.py collectstatic --no-input
+python3 -u manage.py loaddata variant_tag_types
+python3 -u manage.py loaddata variant_searches
 
 # download and restore gene reference data
 REFERENCE_DATA_BACKUP_FILE=gene_reference_data_backup.gz
 wget -N https://storage.googleapis.com/seqr-reference-data/gene_reference_data_backup.gz -O ${REFERENCE_DATA_BACKUP_FILE}
 
 psql -U postgres seqrdb -c "DROP TABLE reference_data_geneinfo CASCADE"
-psql -U postgres seqrdb <  <(gunzip -c ${REFERENCE_DATA_BACKUP_FILE})
+
 rm ${REFERENCE_DATA_BACKUP_FILE}
 
 # start gunicorn server

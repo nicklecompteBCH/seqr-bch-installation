@@ -2,7 +2,7 @@ from enum import Enum
 from typing import List
 from common.exceptions import InvalidTypeException
 
-from exceptions import (
+from architecture.generic.exceptions import (
     InvalidStorageConfiguration,
     InvalidStorageConfigurationException,
 )
@@ -19,9 +19,9 @@ class MachineSize:
         self.cpu_count = cpu_count
         self.ram_GB = ram_GB
 
-    def __eq__(self, other: MachineSize) :
+    def __eq__(self, other) :
         if other is not MachineSize:
-            return False
+            raise InvalidTypeException(type(other))
         return (self.cpu_count == other.cpu_count) and (self.ram_GB == other.ram_GB)
 
     def __hash__(self) :
@@ -52,7 +52,9 @@ class StorageDevice:
         self.size_GB = size_GB
         self.storage_type = storage_type
 
-    def __eq__(self, other: StorageDevice):
+    def __eq__(self, other):
+        if not isinstance(other,StorageDevice):
+            raise InvalidTypeException(type(other))
         return (self.size_GB == other.size_GB) and (self.storage_type == other.storage_type)
 
 class RootDevice(StorageDevice):
@@ -86,7 +88,9 @@ class VirtualMachine:
         self.root_device = root_device
         self.attached_devices = attached_devices
 
-    def __eq__(self, other: VirtualMachine):
+    def __eq__(self, other):
+        if not isinstance(other, VirtualMachine):
+            raise InvalidTypeException(type(other))
         return (
             self.size == other.size and
             self.size_descriptiton == other.size_descriptiton and
