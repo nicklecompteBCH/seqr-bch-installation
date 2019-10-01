@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# install requirement
+sudo python2.7 -m pip install --no-cache-dir -U crcmod
 
 # PERL setup
 sudo wget https://raw.github.com/miyagawa/cpanminus/master/cpanm -O /usr/bin/cpanm
@@ -31,13 +33,6 @@ wget https://personal.broadinstitute.org/konradk/loftee_data/GRCh37/phylocsf_ger
 aws s3 cp s3://seqr-resources/GRCh37/loftee/human_ancestor.fa.gz .
 aws s3 cp s3://seqr-resources/GRCh37/loftee/GERP_scores.final.sorted.txt.gz .
 
-# install requirement
-
-# sudo su
-# python2.7 -m pip install --no-cache-dir -U crcmod
-# exit
-
-
 # Copy VEP
 sudo mkdir -p /mnt/vep/homo_sapiens
 sudo chown hadoop -R /mnt/vep/
@@ -46,13 +41,13 @@ sudo ln -s /mnt/vep /vep
 sudo mkdir /vep/loftee
 aws s3 cp s3://seqr-resources/vep/loftee /vep/loftee --recursive
 sudo mkdir /vep/ensembl_tools_release_85
-aws s3 cp s3://seqr-resources/vep/ensembl_tools_release_85 /vep/ensembl_tools_release_85 --recursive
+aws s3 cp s3://seqr-resources/vep/ensembl-tools-release-85/ /vep/ensembl-tools-release-85 --recursive
 sudo mkdir /vep/loftee_data
 aws s3 cp s3://seqr-resources/GRCh37/loftee/ /vep/loftee_data --recursive
 sudo mkdir /vep/Plugins
 aws s3 cp s3://seqr-resources/vep/Plugins /vep/Plugins --recursive
 sudo mkdir /vep/homo_sapiens
-aws s3 cp s3://seqr-resources/GRCh37/vep/homo_sapiens/ /vep/homo_sapiens --recursive
+aws s3 cp s3://seqr-resources/homo_sapiens/ /vep/homo_sapiens --recursive
 aws s3 cp s3://seqr-resources/vep/vep-gcloud.properties /vep/vep-gcloud.properties
 
 # Create VEP cache
@@ -66,16 +61,19 @@ sudo chmod -R 777 /vep
 
 # Copy htslib and samtools
 mkdir $HOME/htslib
-aws s3 cp s3://seqr-resources/vep/htslib/ $HOME/htslib --recursive
+aws s3 cp s3://seqr-resources/vep/htslib/ $HOME/htslib/ --recursive
 sudo cp $HOME/htslib/* /usr/bin
 mkdir $HOME/samtools
-aws s3 cp s3://seqr-resources/vep/samtools $HOME/samtools --recursive
+aws s3 cp s3://seqr-resources/vep/samtools $HOME/samtools/
 sudo cp $HOME/samtools/* /usr/bin
 
 sudo chmod a+rx  /usr/bin/tabix
 sudo chmod a+rx  /usr/bin/bgzip
 sudo chmod a+rx  /usr/bin/htsfile
 sudo chmod a+rx  /usr/bin/samtools
+
+# Make symlink hail uses everywhere :(
+ln -s /vep/ensembl-tools-release-85/scripts/variant_effect_predictor /vep/variant_effect_predictor
 
 #Run VEP on the 1-variant VCF to create fasta.index file -- caution do not make fasta.index file writeable afterwards!
 aws s3 cp s3://seqr-resources/vep/1var.vcf /vep

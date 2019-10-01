@@ -6,6 +6,8 @@ import botocore
 from urllib.parse import urlparse
 import os
 import time
+import requests
+from typing import Iterable
 
 from hail_scripts.v02.utils.hail_utils import import_vcf, run_vep
 from hail_scripts.v02.export_table_to_es import export_table_to_elasticsearch
@@ -60,7 +62,7 @@ def add_vcf_to_hail(s3path_to_vcf):
         parts['filename'],
         GENOME_VERSION)
     vep_mt = run_vep(mt, GENOME_VERSION)
-    
+
     os.remove(parts['filename'])
     return vep_mt
 
@@ -85,7 +87,7 @@ class SeqrProjectDataSet:
 def beggs_redcap_csv_line_to_seqr_dataset(inputline: dict) -> SeqrProjectDataSet:
 # record_id,investigator,de_identified_subject,initial_study_participant_kind,
 # base_pn,processed_vcf,processed_bam,family_name,initial_study_affected,
-# hpo_terms,description,gender    
+# hpo_terms,description,gender
     indiv_id = inputline['de_identified_subject']
     split_id = indiv_id.split('.')
     fam_id = split_id[0]
@@ -93,6 +95,21 @@ def beggs_redcap_csv_line_to_seqr_dataset(inputline: dict) -> SeqrProjectDataSet
     bam_s3_path = inputline['processed_bam']
     project_name = 'alan_beggs'
     return SeqrProjectDataSet(indiv_id, fam_id, vcf_s3_path, bam_s3_path, project_name)
+
+def bch_connect_export_to_seqr_datasets(inputline: dict) -> SeqrProjectDataSet:
+# record_id	de_identified_subject family_name processed_bam
+# processed_vcf investigator elasticsearch_import_yn elasticsearch_index
+# import_seqr_yn seqr_project_name seqr_id seqr_failure_log
+    indiv_id = inputline['de_identified_subject']
+    split_id = indiv_id.split('.')
+    fam_id = split_id[0]
+    vcf_s3_path = inputline['processed_vcf']
+    bam_s3_path = inputline['processed_bam']
+    project_name = inputline['investigator']
+    return SeqrProjectDataSet(
+        indiv_id, fam_id,
+        vcf_s3_path, bam_s3_path, project_name
+    )
 
 def compute_index_name(dataset: SeqrProjectDataSet):
     """Returns elasticsearch index name computed based on a project dataset"""
@@ -112,10 +129,19 @@ def compute_index_name(dataset: SeqrProjectDataSet):
 
     return index_name
 
+ELASTICSEARCH_HOST=os.environ['ELASTICSEARCH_HOST']
+
+def determine_if_already_uploaded(dataset: SeqrProjectDataSet):
+    resp = requests.get(ELASTICSEARCH_HOST + ":/9200/" + compute_index_name(dataset))
+    if "index_not_found_exception" in resp.text:
+        return False
+    if "VARIANT" in resp.text:
+        return True
+    raise Exception("Don't know what happened, inconclusive")
 
 def add_project_dataset_to_elastic_search(
     dataset: SeqrProjectDataSet,
-    host, index_name, index_type="VARIANT", 
+    host, index_name, index_type="VARIANT",
     port=9200, num_shards=12, block_size=200):
 
     vep_mt = add_vcf_to_hail(dataset.vcf_s3_path)
@@ -132,3 +158,30 @@ def run_all_beggs(host,dry_run = True):
                 print(dataset.vcf_s3_path, compute_index_name(dataset))
             else:
                 add_project_dataset_to_elastic_search(dataset, host, compute_index_name(dataset))
+
+def run_all_connect(
+    dry_run = True,
+    project_whitelist : Iterable = None, project_blacklist : Iterable = None
+):
+    import csv
+    with open('import_log.csv','w') as log:
+        with open('bchconnect.csv','r') as connect_results:
+            for row in csv.DictReader(connect_results):
+                parsed_dataset = bch_connect_export_to_seqr_datasets(row)
+                if project_whitelist:
+                    if parsed_dataset.project_name not in project_whitelist:
+                        continue
+                if project_blacklist:
+                    if parsed_dataset.project_name in project_blacklist:
+                        continue
+                if determine_if_already_uploaded(parsed_dataset):
+                    retrst = f"Project {parsed_dataset.project_name} individual {parsed_dataset.indiv_id} already in Seqr under index {compute_index_name(parsed_dataset)}"
+                    if dry_run:
+                        print(retstr)
+                    else:
+                        log.write(retstr + "\n")
+                if dry_run:
+                    print(parsed_dataset.vcf_s3_path, compute_index_name(dataset))
+                else:
+                    add_project_dataset_to_elastic_search(
+                        parsed_dataset, ELASTICSEARCH_HOST, compute_index_name(parsed_dataset))
