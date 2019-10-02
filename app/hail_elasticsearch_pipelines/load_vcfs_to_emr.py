@@ -132,12 +132,10 @@ def compute_index_name(dataset: SeqrProjectDataSet,version="0.1"):
 ELASTICSEARCH_HOST=os.environ['ELASTICSEARCH_HOST']
 
 def determine_if_already_uploaded(dataset: SeqrProjectDataSet):
-    resp = requests.get(ELASTICSEARCH_HOST + ":9200/" + compute_index_name(dataset))
+    resp = requests.get(ELASTICSEARCH_HOST + ":9200/" + compute_index_name(dataset) + "0.1vcf")
     if "index_not_found_exception" in resp.text:
         return False
-    if "VARIANT" in resp.text:
-        return True
-    raise Exception("Don't know what happened, inconclusive")
+    return True
 
 def add_project_dataset_to_elastic_search(
     dataset: SeqrProjectDataSet,
