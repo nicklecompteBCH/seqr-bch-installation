@@ -61,11 +61,16 @@ def add_vcf_to_hail(s3path_to_vcf):
     mt = import_vcf(
         parts['filename'],
         GENOME_VERSION)
-    vep_mt = run_vep(mt, GENOME_VERSION)
+
+    return mt
+    #vep_mt = run_vep(mt, GENOME_VERSION)
 
     #os.remove(parts['filename'])
-    return vep_mt
+    #return vep_mt
 
+def add_vep_to_vcf(mt):
+    mt = run_vep(mt, GENOME_VERSION)
+    return mt
 
 class SeqrProjectDataSet:
     def __init__(
@@ -142,9 +147,11 @@ def add_project_dataset_to_elastic_search(
     host, index_name, index_type="VARIANT",
     port=9200, num_shards=12, block_size=200):
 
-    vep_mt = add_vcf_to_hail(dataset.vcf_s3_path)
+    vcf_mt = add_vcf_to_hail(dataset.vcf_s3_path)
     index_name = compute_index_name(dataset)
-    export_table_to_elasticsearch(vep_mt.rows(), host, index_name, index_type, port=port, num_shards=num_shards, block_size=block_size)
+    export_table_to_elasticsearch(vcf_mt.rows(), host, index_name+"vcf", index_type, port=port, num_shards=num_shards, block_size=block_size)
+    vep_mt = add_vep_to_vcf(vcf_mt)
+    export_table_to_elasticsearch(vep_mt.rows(), host, index_name+"vep", index_type, port=port, num_shards=num_shards, block_size=block_size)
     print("ES index name : %s, family : %s, individual : %s ",(index_name,dataset.fam_id, dataset.indiv_id))
 
 def run_all_beggs(host,dry_run = True):
@@ -178,6 +185,7 @@ def run_all_connect(
                     if dry_run:
                         print(retstr)
                     else:
+                        print(retstr)
                         log.write(retstr + "\n")
                 if dry_run:
                     print(parsed_dataset.vcf_s3_path, compute_index_name(parsed_dataset))
@@ -185,3 +193,6 @@ def run_all_connect(
                     add_project_dataset_to_elastic_search(
                         parsed_dataset, ELASTICSEARCH_HOST, compute_index_name(parsed_dataset))
                     log.write(parsed_dataset.project_name + "," + parsed_dataset.indiv_id + "," + compute_index_name(parsed_dataset))
+
+if __name__ == "__main__":
+    run_all_connect(dry_run=False)
