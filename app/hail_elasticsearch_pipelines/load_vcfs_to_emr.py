@@ -184,4 +184,4 @@ def run_all_connect(
                 else:
                     add_project_dataset_to_elastic_search(
                         parsed_dataset, ELASTICSEARCH_HOST, compute_index_name(parsed_dataset))
-                    log.write(parsed_datatset.project_name + "," + parsed_dataset.indiv_id + "," + compute_index_name(parsed_dataset))
+                    log.write(parsed_dataset.project_name + "," + parsed_dataset.indiv_id + "," + compute_index_name(parsed_dataset))
