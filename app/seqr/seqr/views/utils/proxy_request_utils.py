@@ -111,7 +111,7 @@ def proxy_request(request, url, host=None, scheme=None, method=None, session=Non
         for key, value in list(sorted(response.headers.items(), key=lambda i: i[0])):
             logger.info("<--- %(key)s: %(value)s" % locals())
 
-    for key, value in response.headers.iteritems():
+    for key, value in response.headers.items():
         if key.lower() not in EXCLUDE_HTTP_RESPONSE_HEADERS:
             proxy_response[key.title()] = value
 
