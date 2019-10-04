@@ -14,3 +14,4 @@ app/seqr/static/*
 kibana-*
 src/*
 *__GITIGNORE__*
+*phenotips-standalone-1.2.6*
