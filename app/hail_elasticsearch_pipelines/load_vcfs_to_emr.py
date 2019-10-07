@@ -13,7 +13,7 @@ from hail_scripts.v02.utils.hail_utils import import_vcf, run_vep
 from hail_scripts.v02.export_table_to_es import export_table_to_elasticsearch
 from hail_scripts.v02.utils.computed_fields.variant_id import *
 from hail_scripts.v02.utils.computed_fields.vep import *
-from elasticsearch_utils import ElasticsearchClient
+from hail_scripts.v02.utils.elasticsearch_client import ElasticsearchClient
 
 BCH_CLUSTER_TAG = "bch-hail-cluster"
 BCH_CLUSTER_NAME = 'hail-bch'
@@ -79,7 +79,8 @@ def add_vcf_to_hail(s3path_to_vcf):
     mt = import_vcf(
         parts['filename'],
         GENOME_VERSION,
-        min_partitions=30)
+        force_bgz=True,
+        min_partitions=10000)
     mt = add_global_metadata(mt, s3path_to_vcf)
 
     return mt
@@ -191,17 +192,6 @@ class SeqrProjectDataSet:
         self.project_name = project_name
         self.sample_type = sample_type
 
-def beggs_redcap_csv_line_to_seqr_dataset(inputline: dict) -> SeqrProjectDataSet:
-# record_id,investigator,de_identified_subject,initial_study_participant_kind,
-# base_pn,processed_vcf,processed_bam,family_name,initial_study_affected,
-# hpo_terms,description,gender
-    indiv_id = inputline['de_identified_subject']
-    split_id = indiv_id.split('.')
-    fam_id = split_id[0]
-    vcf_s3_path = inputline['processed_vcf']
-    bam_s3_path = inputline['processed_bam']
-    project_name = 'alan_beggs'
-    return SeqrProjectDataSet(indiv_id, fam_id, vcf_s3_path, bam_s3_path, project_name)
 
 def bch_connect_export_to_seqr_datasets(inputline: dict) -> SeqrProjectDataSet:
 # record_id	de_identified_subject family_name processed_bam
@@ -241,7 +231,7 @@ def compute_index_name(dataset: SeqrProjectDataSet,version="0.5"):
 ELASTICSEARCH_HOST=os.environ['ELASTICSEARCH_HOST']
 
 def determine_if_already_uploaded(dataset: SeqrProjectDataSet):
-    resp = requests.get(ELASTICSEARCH_HOST + ":9200/" + compute_index_name(dataset) + "0.1vcf")
+    resp = requests.get(ELASTICSEARCH_HOST + ":9200/" + compute_index_name(dataset) + "0.5vep")
     if "index_not_found_exception" in resp.text:
         return False
     return True
@@ -255,10 +245,10 @@ def add_project_dataset_to_elastic_search(
     vcf_mt = add_vcf_to_hail(dataset.vcf_s3_path)
     vcf = add_global_metadata(vcf_mt.rows(),dataset.vcf_s3_path)
     index_name = compute_index_name(dataset)
-    client.export_vds_to_elasticsearch(vcf, index_name=index_name+"vcf")
+    export_table_to_elasticsearch(vcf.rows(),host, index_name+"vcf", index_type, port=port, num_shards=num_shards=, block_size=block_size=)
 #    export_table_to_elasticsearch(vcf_mt.rows(), host, index_name+"vcf", index_type, port=port, num_shards=num_shards, block_size=block_size)
     vep_mt = add_vep_to_vcf(vcf)
-    client.export_vds_to_elasticsearch(vep_mt.rows(), index_name=index_name+"vep")
+    export_table_to_elasticsearch(vep_mt.rows(), host, index_name=index_name+"vep", index_type, port=port,num_shards=num_shards, block_size=block_size)
 #    export_table_to_elasticsearch(vep_mt.rows(), host, index_name+"vep", index_type, port=port, num_shards=num_shards, block_size=block_size)
     print("ES index name : %s, family : %s, individual : %s ",(index_name,dataset.fam_id, dataset.indiv_id))
 
