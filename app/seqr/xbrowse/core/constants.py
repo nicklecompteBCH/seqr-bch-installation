@@ -2,11 +2,12 @@
 # most of this stuff belongs on the server
 
 import copy
+from typing import List, Dict, Union
 
 GENOME_VERSION_GRCh37 = '37'
 GENOME_VERSION_GRCh38 = '38'
 
-GENOTYPE_OPTIONS = [
+GENOTYPE_OPTIONS : List[Dict[str, Union[str,bool]]] = [
 
     {
         'name': 'Homozygous Reference',
@@ -75,7 +76,7 @@ GENOTYPE_OPTIONS = [
 
 ]
 
-BURDEN_FILTER_OPTIONS = [
+BURDEN_FILTER_OPTIONS : List[Dict[str,str]] = [
     {
         'slug': 'at_least_1',
         'name': '1 or more alt alleles',
@@ -95,7 +96,7 @@ BURDEN_FILTER_OPTIONS = [
 ]
 
 # TODO: get rid of these
-QUERY_DEFAULTS = {
+QUERY_DEFAULTS : Dict[str, Dict[str, Dict[str,Union[float,str,List[str]]]]] = {
 
     'high_impact': {
 
@@ -187,7 +188,7 @@ QUERY_DEFAULTS = {
 
 }
 
-ANNOTATIONS = [
+ANNOTATIONS : List[str] = [
 
     'nonsense',
     'splice',
@@ -199,7 +200,7 @@ ANNOTATIONS = [
 
 ]
 
-CLINVAR_ANNOTATION_DEFINITIONS = [
+CLINVAR_ANNOTATION_DEFINITIONS : List[Dict[str,str]] = [
     {'description': "Clinvar pathogenic variant",
      'name': 'Pathogenic (P)',
      'slug': 'pathogenic',
@@ -227,7 +228,7 @@ CLINVAR_ANNOTATION_DEFINITIONS = [
      },
 ]
 
-HGMD_ANNOTATION_DEFINITIONS = [
+HGMD_ANNOTATION_DEFINITIONS : List[Dict[str,str]] = [
     {'description': "HGMD: Pathological mutation reported to be disease causing in the corresponding report (i.e. all other HGMD data).",
      'name': 'Disease Causing (DM)',
      'slug': 'disease_causing',
@@ -245,7 +246,7 @@ HGMD_ANNOTATION_DEFINITIONS = [
      },
 ]
 
-VEP_ANNOTATION_DEFINITIONS = [
+VEP_ANNOTATION_DEFINITIONS : List[Dict[str,str]] = [
 
     {'description': "A splice variant that changes the 2 base region at the 5' end of an intron",
      'name': 'Splice donor variant',
@@ -422,12 +423,12 @@ VEP_ANNOTATION_DEFINITIONS = [
     'so': 'SO:0001628'},
 ]
 
-ANNOTATION_DEFINITIONS = CLINVAR_ANNOTATION_DEFINITIONS + VEP_ANNOTATION_DEFINITIONS
-ANNOTATION_DEFINITIONS_INTERNAL = CLINVAR_ANNOTATION_DEFINITIONS + HGMD_ANNOTATION_DEFINITIONS + VEP_ANNOTATION_DEFINITIONS
+ANNOTATION_DEFINITIONS : List[Dict[str,str]] = CLINVAR_ANNOTATION_DEFINITIONS + VEP_ANNOTATION_DEFINITIONS
+ANNOTATION_DEFINITIONS_INTERNAL : List[Dict[str,str]] = CLINVAR_ANNOTATION_DEFINITIONS + HGMD_ANNOTATION_DEFINITIONS + VEP_ANNOTATION_DEFINITIONS
 
 
-ANNOTATION_DEFINITIONS_MAP = { item['slug']: item for item in ANNOTATION_DEFINITIONS }
-ANNOTATION_DEFINITIONS_MAP_INTERNAL = { item['slug']: item for item in ANNOTATION_DEFINITIONS_INTERNAL }
+ANNOTATION_DEFINITIONS_MAP : Dict[str, dict] = { item['slug']: item for item in ANNOTATION_DEFINITIONS }
+ANNOTATION_DEFINITIONS_MAP_INTERNAL : Dict[str, dict] = { item['slug']: item for item in ANNOTATION_DEFINITIONS_INTERNAL }
 
 CLINVAR_ANNOTATION_GROUPS = [
     {

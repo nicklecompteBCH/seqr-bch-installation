@@ -1,6 +1,8 @@
 import datetime
 import os
 from django.conf import settings
+from typing import Union
+import argparse
 
 import pymongo
 import pysam
@@ -22,7 +24,7 @@ import vcf
 
 class VariantAnnotator():
 
-    def __init__(self,  custom_annotator=None):
+    def __init__(self,  custom_annotator : Union[CustomAnnotator, None]=None):
         self._population_frequency_store = PopulationFrequencyStore(
             get_db=self.get_annotator_datastore,
             reference_populations=settings.ANNOTATOR_SETTINGS.reference_populations,
@@ -363,7 +365,7 @@ if __name__ == '__main__':
             args.custom_annotator_settings
         )
         custom_annotator = CustomAnnotator(custom_annotator_settings)
-    annotator = VariantAnnotator(annotator_settings, custom_annotator=custom_annotator)
+    annotator = VariantAnnotator(custom_annotator=custom_annotator) #VariantAnnotator(annotator_settings, custom_annotator=custom_annotator)
     if args.command == 'load':
         annotator.load()
     if args.command == 'add_vcf_files':

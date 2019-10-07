@@ -10,7 +10,7 @@ import random
 import string
 import sys
 
-from django.conf import settings
+from django.conf import settings as djangosettings
 
 from xbrowse.core.constants import CHROMOSOME_SIZES
 from xbrowse.utils import compressed_file

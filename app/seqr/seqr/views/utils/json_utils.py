@@ -1,6 +1,7 @@
 import json
 import logging
 import re
+from typing import Dict
 
 from django.http import JsonResponse
 from django.core.serializers.json import DjangoJSONEncoder
@@ -68,7 +69,7 @@ def create_json_response(obj, **kwargs):
         obj, json_dumps_params=dumps_params, encoder=DjangoJSONEncoderWithSets, **kwargs)
 
 
-CAMEL_CASE_MAP = {}
+CAMEL_CASE_MAP : Dict[str,str] = {}
 
 
 def _to_camel_case(snake_case_str):

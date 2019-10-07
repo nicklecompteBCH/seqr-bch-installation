@@ -1,4 +1,5 @@
 from collections import defaultdict
+from typing import Dict, List
 from django.db.models import Max
 import elasticsearch
 from elasticsearch_dsl import Search, Q, Index, MultiSearch
@@ -1227,12 +1228,12 @@ def _get_sort(sort_key):
     return sorts
 
 
-CLINVAR_FIELDS = ['clinical_significance', 'variation_id', 'allele_id', 'gold_stars']
-HGMD_FIELDS = ['accession', 'class']
+CLINVAR_FIELDS : List[str] = ['clinical_significance', 'variation_id', 'allele_id', 'gold_stars']
+HGMD_FIELDS : List[str] = ['accession', 'class']
 GENOTYPES_FIELD_KEY = 'genotypes'
-HAS_ALT_FIELD_KEYS = ['samples_num_alt_1', 'samples_num_alt_2']
+HAS_ALT_FIELD_KEYS : List[str] = ['samples_num_alt_1', 'samples_num_alt_2']
 SORTED_TRANSCRIPTS_FIELD_KEY = 'sortedTranscriptConsequences'
-NESTED_FIELDS = {
+NESTED_FIELDS : Dict[str,Dict[str,dict]] = {
     field_name: {field: {} for field in fields} for field_name, fields in {
         'clinvar': CLINVAR_FIELDS,
         'hgmd': HGMD_FIELDS,
@@ -1280,7 +1281,9 @@ DEFAULT_POP_FIELD_CONFIG = {
     'format_value': int,
     'default_value': 0,
 }
-POPULATION_RESPONSE_FIELD_CONFIGS = {k: dict(DEFAULT_POP_FIELD_CONFIG, **v) for k, v in POPULATION_FIELD_CONFIGS.items()}
+POPULATION_RESPONSE_FIELD_CONFIGS = {
+    k: dict(DEFAULT_POP_FIELD_CONFIG, **v) for k, v in POPULATION_FIELD_CONFIGS.items()
+}
 
 
 QUERY_FIELD_NAMES = list(CORE_FIELDS_CONFIG.keys()) + list(PREDICTION_FIELDS_CONFIG.keys()) + \
@@ -1289,8 +1292,8 @@ for field_name, fields in NESTED_FIELDS.items():
     QUERY_FIELD_NAMES += ['{}_{}'.format(field_name, field) for field in fields.keys()]
 for population, pop_config in POPULATIONS.items():
     for field, field_config in POPULATION_RESPONSE_FIELD_CONFIGS.items():
-        if pop_config.get(field):
-            QUERY_FIELD_NAMES.append(pop_config.get(field))
+        if field in pop_config:
+            QUERY_FIELD_NAMES.append(pop_config[field])
         QUERY_FIELD_NAMES.append('{}_{}'.format(population, field))
         QUERY_FIELD_NAMES += ['{}_{}'.format(population, custom_field) for custom_field in field_config.get('fields', [])]
 

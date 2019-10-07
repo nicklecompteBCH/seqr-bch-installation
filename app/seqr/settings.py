@@ -3,6 +3,7 @@ import os
 import random
 import string
 import sys
+from typing import List
 
 logger = logging.getLogger(__name__)
 
@@ -344,7 +345,7 @@ PHENOTIPS_UPLOAD_EXTERNAL_PHENOTYPE_URL = "http://"+PHENOTIPS_SERVICE_HOSTNAME+"
 
 # when set to None, this *disables* the PhenoTips interface for all projects. If set to a list of project ids, it will
 # enable the PhenoTips interface for *all* projects except those in the list.
-PROJECTS_WITHOUT_PHENOTIPS = []
+PROJECTS_WITHOUT_PHENOTIPS : List[str] = []
 
 
 REDIS_SERVICE_HOSTNAME = os.environ.get('REDIS_SERVICE_HOSTNAME', 'localhost')

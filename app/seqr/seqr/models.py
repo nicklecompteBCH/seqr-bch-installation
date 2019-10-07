@@ -2,6 +2,7 @@ from abc import abstractmethod
 import uuid
 import json
 import random
+from typing import List
 
 from django.contrib.auth.models import User, Group
 from django.contrib.postgres.fields import JSONField, ArrayField
@@ -50,8 +51,8 @@ class ModelWithGUID(models.Model):
     class Meta:
         abstract = True
 
-        json_fields = []
-        internal_json_fields = []
+        json_fields : List[str] = []
+        internal_json_fields : List[str] = []
 
     @abstractmethod
     def _compute_guid(self):
@@ -868,5 +869,5 @@ class MatchmakerContactNotes(ModelWithGUID):
         return 'MCN%07d_%s' % (self.id, self.institution.replace(' ', '_'))
 
     class Meta:
-        json_fields = []
+        json_fields : List[str] = []
         internal_json_fields = ['institution', 'comments']

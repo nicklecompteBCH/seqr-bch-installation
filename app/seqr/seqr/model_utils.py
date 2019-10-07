@@ -144,7 +144,7 @@ def find_matching_xbrowse_model(seqr_model):
             return BaseProject.objects.get(
                 Q(seqr_project=seqr_model) |
                 (Q(seqr_project__isnull=True) &
-                 Q(project_id=seqr_model.deprecated_project_id)))
+                 (id=seqr_model.id | Q(project_id=seqr_model.deprecated_project_id))))
         elif seqr_class_name == "Family":
             return BaseFamily.objects.get(
                 Q(seqr_family=seqr_model) |
