@@ -43,7 +43,7 @@ class PedigreeImageTest(TestCase):
         placeholders = {individual_id: record for individual_id, record in list(parsed_data.items()) if
                         individual_id.startswith('placeholder_')}
         self.assertEqual(len(placeholders), 1)
-        placeholder_id = placeholders.keys()[0]
+        placeholder_id = list(placeholders.keys())[0]
         self.assertDictEqual(parsed_data, {
             'NA19675_1': {
                 'individualId': 'NA19675_1',

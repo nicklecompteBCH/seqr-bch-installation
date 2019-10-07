@@ -58,7 +58,7 @@ class Command(BaseCommand):
                 writer.writeheader()
                 for individual in individuals:
                     writer.writerow(individual)
-            es_indices = indices_for_project.keys()
+            es_indices = list(indices_for_project.keys())
 
         if not options["metadata_only"]:
             es_client = elasticsearch.Elasticsearch(host=settings.ELASTICSEARCH_SERVICE_HOSTNAME, timeout=10000)

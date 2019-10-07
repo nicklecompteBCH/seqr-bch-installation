@@ -222,7 +222,7 @@ def update_saved_variant_json(request, project_guid):
 def _saved_variant_genes(variants):
     gene_ids = set()
     for variant in variants:
-        gene_ids.update(variant['transcripts'].keys())
+        gene_ids.update(list(variant['transcripts'].keys()))
     genes = get_genes(gene_ids, add_dbnsfp=True, add_omim=True, add_constraints=True, add_primate_ai=True)
     for gene in genes.values():
         if gene:
@@ -247,7 +247,7 @@ def _add_locus_lists(projects, variants, genes):
                 if pos and interval.start <= int(pos) <= interval.end:
                     variant['locusListGuids'].append(interval.locus_list.guid)
 
-    for locus_list_gene in LocusListGene.objects.filter(locus_list__in=locus_lists, gene_id__in=genes.keys()).prefetch_related('locus_list'):
+    for locus_list_gene in LocusListGene.objects.filter(locus_list__in=locus_lists, gene_id__in=list(genes.keys())).prefetch_related('locus_list'):
         genes[locus_list_gene.gene_id]['locusListGuids'].append(locus_list_gene.locus_list.guid)
 
     return [locus_list.guid for locus_list in locus_lists]

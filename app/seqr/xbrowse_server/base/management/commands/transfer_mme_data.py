@@ -44,7 +44,7 @@ class Command(BaseCommand):
         logger.info("Done")
         logger.info("Stats: ")
         projects = set(results_stats.keys())
-        projects.update(submission_stats.keys())
+        projects.update(list(submission_stats.keys()))
         for project in sorted(projects):
             logger.info('{}: {} submissions, {} results'.format(
                 project, submission_stats.get(project, 0), results_stats.get(project, 0)))

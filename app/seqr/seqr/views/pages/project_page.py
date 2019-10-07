@@ -50,7 +50,7 @@ def project_page_data(request, project_guid):
     project_json = _get_json_for_project(project, request.user)
     project_json['collaborators'] = get_json_for_project_collaborator_list(project)
     project_json.update(_get_json_for_variant_tag_types(project, request.user, individuals_by_guid))
-    project_json['locusListGuids'] = locus_lists_by_guid.keys()
+    project_json['locusListGuids'] = list(locus_lists_by_guid.keys())
     project_json['detailsLoaded'] = True
 
     return create_json_response({

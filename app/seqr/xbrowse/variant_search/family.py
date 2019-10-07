@@ -54,7 +54,7 @@ def get_variants(
         else:
             if indivs_to_consider is None:
                 if genotype_filter:
-                    indivs_to_consider = genotype_filter.keys()
+                    indivs_to_consider = list(genotype_filter.keys())
                 else:
                     indivs_to_consider = []
 
@@ -234,7 +234,7 @@ def get_genes(db, reference, family, burden_filter=None, variant_filter=None, qu
     Food for thought: should "compound_het" be a burden_filter in the future? Or does that go somewhere else?
     TODO: this is really slow right now, we need to optimize
     """
-    indivs_to_consider = burden_filter.keys() if burden_filter else []
+    indivs_to_consider = list(burden_filter.keys()) if burden_filter else []
     variant_stream = get_variants(db, family, variant_filter=variant_filter, quality_filter=quality_filter, user=user)
     for gene_id, variant_list in stream_utils.variant_stream_to_gene_stream(variant_stream, reference):
         quality_filtered_variant_list = [v for v in variant_list if passes_quality_filter(v, quality_filter, indivs_to_consider)]

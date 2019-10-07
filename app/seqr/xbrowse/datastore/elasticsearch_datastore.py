@@ -168,7 +168,7 @@ class ElasticsearchDatastore(datastore.Datastore):
             logger.info("Searching in family elasticsearch index: " + str(elasticsearch_index))
 
         if indivs_to_consider is None and genotype_filter and not family_id:
-            indivs_to_consider = genotype_filter.keys()
+            indivs_to_consider = list(genotype_filter.keys())
 
         individuals = Individual.objects.filter(family__project__project_id=project_id).only("indiv_id", "seqr_individual")
         if indivs_to_consider:
@@ -299,7 +299,7 @@ class ElasticsearchDatastore(datastore.Datastore):
 
             if genotype_filters:
                 # Return inner hits for all requested samples, even those without a specified genotype
-                genotype_sample_ids = sample_ids or genotype_filters.keys()
+                genotype_sample_ids = list(sample_ids or genotype_filters.keys())
                 genotype_q = None
                 for sample_id in genotype_sample_ids:
                     sample_q = Q(Q('term', sample_id=sample_id) & quality_q)

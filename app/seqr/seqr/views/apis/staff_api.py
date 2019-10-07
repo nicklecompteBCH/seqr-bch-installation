@@ -83,7 +83,7 @@ def elasticsearch_status(request):
         projects_for_index = []
         for index_prefix in seqr_index_projects.keys():
             if index_name.startswith(index_prefix):
-                projects_for_index += seqr_index_projects.pop(index_prefix).keys()
+                projects_for_index += list(seqr_index_projects.pop(index_prefix).keys())
         index['projects'] = [{'projectGuid': project.guid, 'projectName': project.name} for project in projects_for_index]
 
     errors = ['{} does not exist and is used by project(s) {}'.format(

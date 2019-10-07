@@ -55,7 +55,7 @@ class Family():
         }
 
     def indiv_id_list(self):
-        return self.individuals.keys()
+        return list(self.individuals.keys())
 
     def contains_indiv_id(self, indiv_id):
         return indiv_id in self.individuals
@@ -95,7 +95,7 @@ class Cohort():
         }
 
     def indiv_id_list(self):
-        return self.individuals.keys()
+        return list(self.individuals.keys())
 
     def contains_indiv_id(self, indiv_id):
         return indiv_id in self.individuals

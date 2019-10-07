@@ -119,7 +119,7 @@ def edit_individuals_handler(request, project_guid):
             {}, status=400, reason="'individuals' not specified")
 
     update_individuals = {ind['individualGuid']: ind for ind in modified_individuals_list}
-    update_individual_models = {ind.guid: ind for ind in Individual.objects.filter(guid__in=update_individuals.keys())}
+    update_individual_models = {ind.guid: ind for ind in Individual.objects.filter(guid__in=list(update_individuals.keys()))}
     for modified_ind in modified_individuals_list:
         model = update_individual_models[modified_ind['individualGuid']]
         if modified_ind[JsonConstants.INDIVIDUAL_ID_COLUMN] != model.individual_id:
@@ -128,7 +128,7 @@ def edit_individuals_handler(request, project_guid):
     modified_family_ids = {ind.get('familyId') or ind['family']['familyId'] for ind in modified_individuals_list}
     modified_family_ids.update({ind.family.family_id for ind in update_individual_models.values()})
     related_individuals = Individual.objects.filter(
-        family__family_id__in=modified_family_ids, family__project=project).exclude(guid__in=update_individuals.keys())
+        family__family_id__in=modified_family_ids, family__project=project).exclude(guid__in=list(update_individuals.keys()))
     related_individuals_json = _get_json_for_individuals(related_individuals, project_guid=project_guid, family_fields=['family_id'])
     individuals_list = modified_individuals_list + related_individuals_json
 

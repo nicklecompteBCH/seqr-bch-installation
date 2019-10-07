@@ -81,7 +81,7 @@ def get_indiv_ids_for_family_set(family_set):
     """
     all_indivs = []
     for family in family_set:
-        all_indivs.extend(family['individuals'].keys())
+        all_indivs.extend(list(family['individuals'].keys()))
     return all_indivs
 
 

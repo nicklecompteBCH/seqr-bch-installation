@@ -48,7 +48,7 @@ def get_individual_mme_matches(request, individual_guid):
 
     gene_ids = set()
     for variant in saved_variants:
-        gene_ids.update(variant['transcripts'].keys())
+        gene_ids.update(list(variant['transcripts'].keys()))
 
     return _parse_mme_results(
         individual, results, request.user, additional_genes=gene_ids, response_json={
@@ -381,7 +381,7 @@ def _parse_mme_results(individual, saved_results, user, additional_genes=None, r
         'mmeResultsByGuid': parsed_results_gy_guid,
         'mmeContactNotes': contact_notes,
         'individualsByGuid': {individual.guid: {
-            'mmeResultGuids': parsed_results_gy_guid.keys(),
+            'mmeResultGuids': list(parsed_results_gy_guid.keys()),
             'mmeSubmittedData': submitted_data,
             'mmeSubmittedDate': individual.mme_submitted_date,
             'mmeDeletedDate': individual.mme_deleted_date,
@@ -469,9 +469,9 @@ def _generate_slack_notification_for_seqr_match(individual, results):
 
     message = u"""
     A search from a seqr user from project {project} individual {individual_id} had the following new match(es):
-    
+
     {matches}
-    
+
     {host}/{project_guid}/family_page/{family_guid}/matchmaker_exchange
     """.format(
         project=individual.family.project.name, individual_id=individual.individual_id, matches='\n\n'.join(matches),

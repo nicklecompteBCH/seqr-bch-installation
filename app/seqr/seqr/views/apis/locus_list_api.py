@@ -156,7 +156,7 @@ def add_locus_list_user_permissions(locus_list):
 
 def _update_locus_list_items(locus_list, genes_by_id, intervals, request_json, user):
     # Update genes
-    for locus_list_gene in locus_list.locuslistgene_set.exclude(gene_id__in=genes_by_id.keys()):
+    for locus_list_gene in locus_list.locuslistgene_set.exclude(gene_id__in=list(genes_by_id.keys())):
         delete_seqr_model(locus_list_gene)
 
     for gene_id in genes_by_id.keys():

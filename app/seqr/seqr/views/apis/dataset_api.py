@@ -179,7 +179,7 @@ def add_alignment_dataset_handler(request, project_guid):
 
         matched_sample_id_to_sample_record = match_sample_ids_to_sample_records(
             project=project,
-            sample_ids=sample_id_to_individual_id_mapping.keys(),
+            sample_ids=list(sample_id_to_individual_id_mapping.keys()),
             sample_type=sample_type,
             dataset_type=Sample.DATASET_TYPE_READ_ALIGNMENTS,
             sample_id_to_individual_id_mapping=sample_id_to_individual_id_mapping,

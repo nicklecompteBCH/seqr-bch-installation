@@ -18,7 +18,7 @@ def update_project_saved_variant_json(project, family_id=None):
         saved_variants = saved_variants.filter(family__family_id=family_id)
 
     saved_variants_map = {(v.xpos_start, v.ref, v.alt, v.family): v for v in saved_variants}
-    variant_tuples = saved_variants_map.keys()
+    variant_tuples = list(saved_variants_map.keys())
     saved_variants_map = {
         (xpos, ref, alt, family.guid): v for (xpos, ref, alt, family), v in list(saved_variants_map.items())
     }

@@ -21,7 +21,7 @@ def export_table(filename_prefix, header, rows, file_format, titlecase_header=Tr
     """
     if isinstance(header, dict):
         # it's a mapping of row keys to values
-        column_keys = header.keys()
+        column_keys = list(header.keys())
         header = list(header.values())
     else:
         column_keys = header

@@ -14,7 +14,7 @@ from xbrowse_server import sample_management
 def update(mongo_collection, match_json, set_json):
     print("-----")
     print("updating %s to %s" % (match_json, set_json))
-    #return 
+    #return
     update_result = mongo_collection.update_many(match_json, {'$set': set_json})
     print("updated %s out of %s records" % (update_result.modified_count, update_result.matched_count))
     return update_result
@@ -27,12 +27,12 @@ def update_family_analysis_status(project_id):
             family.save()
 
 def check_that_exists(mongo_collection, match_json, not_more_than_one=False):
-    #return 
+    #return
     records = list(mongo_collection.find(match_json))
     if len(records) == 0:
         print("%s query %s matched 0 records" % (mongo_collection, match_json))
         return False
-    if not_more_than_one and len(records) > 1:      
+    if not_more_than_one and len(records) > 1:
         print("%s query %s matched more than one record: %s" % (mongo_collection, match_json, records))
         return False
     print("-----")
@@ -53,18 +53,18 @@ class Command(BaseCommand):
 
         from_project = Project.objects.get(project_id=from_project_id)
         destination_project = Project.objects.get(project_id=destination_project_id)
-        
+
         # Make sure individuals are the same
         indivs_missing_from_dest_project = (set(
             [i.indiv_id for i in Individual.objects.filter(project=from_project)]) - set(
             [i.indiv_id for i in Individual.objects.filter(project=destination_project)]))
         if indivs_missing_from_dest_project:
             raise Exception("Individuals missing from dest project: " + str(indivs_missing_from_dest_project))
-        
+
 
         # update VCFs
-        vcfs = from_project.families_by_vcf().keys()
-        for vcf_file_path in vcfs:            
+        vcfs = list(from_project.families_by_vcf().keys())
+        for vcf_file_path in vcfs:
             vcf_file = VCFFile.objects.get_or_create(file_path=os.path.abspath(vcf_file_path))[0]
             sample_management.add_vcf_file_to_project(destination_project, vcf_file)
             print("Added %s to project %s" % (vcf_file, destination_project.project_id))
@@ -98,7 +98,7 @@ class Command(BaseCommand):
             raise ValueError("After: There needs to be atleast 1 family db in %(destination_project_id)s" % locals())
 
         update_family_analysis_status(destination_project_id)
-        
+
         print("Data transfer finished.")
         i = raw_input("Delete the 'from' project: %s? [Y/n] " % from_project_id)
         if i.strip() == 'Y':

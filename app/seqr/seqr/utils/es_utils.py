@@ -43,7 +43,7 @@ def get_index_metadata(index_name, client):
         if not variant_mapping['properties'].get('samples_num_alt_1'):
             raise InvalidIndexException('Index "{}" does not have a valid schema'.format(index_name))
         index_metadata[index_name] = variant_mapping.get('_meta', {})
-        index_metadata[index_name]['fields'] = variant_mapping['properties'].keys()
+        index_metadata[index_name]['fields'] = list(variant_mapping['properties'].keys())
     return index_metadata
 
 
@@ -110,7 +110,7 @@ def get_es_variant_gene_counts(search_model):
                 if loaded == total_results:
                     for group in previous_search_results['grouped_results']:
                         variants = group.values()[0]
-                        gene_id = group.keys()[0]
+                        gene_id = list(group.keys())[0]
                         if not gene_id or gene_id == 'null':
                             gene_id = variants[0]['mainTranscript']['geneId']
                         if gene_id:
@@ -244,7 +244,7 @@ class BaseEsSearch(object):
         self._no_sample_filters = False
 
     def _set_index_metadata(self):
-        self.index_metadata = get_index_metadata(','.join(self.samples_by_family_index.keys()), self._client)
+        self.index_metadata = get_index_metadata(','.join(list(self.samples_by_family_index.keys())), self._client)
 
     def filter(self, new_filter):
         self._search = self._search.filter(new_filter)
@@ -369,7 +369,7 @@ class EsSearch(BaseEsSearch):
         self._search = self._search.sort(*self._sort)
 
     def search(self, page=1, num_results=100):
-        indices = self.samples_by_family_index.keys()
+        indices = list(self.samples_by_family_index.keys())
 
         logger.info('Searching in elasticsearch indices: {}'.format(', '.join(indices)))
 
@@ -396,7 +396,7 @@ class EsSearch(BaseEsSearch):
             return self._execute_multi_search(page, num_results)
 
     def _execute_single_search(self, page, num_results, deduplicate=False, start_index=None):
-        index_name = ','.join(self.samples_by_family_index.keys())
+        index_name = ','.join(list(self.samples_by_family_index.keys()))
         search = self._get_paginated_searches(
             index_name, page, num_results*len(self.samples_by_family_index), start_index=start_index
         )[0]
@@ -424,7 +424,7 @@ class EsSearch(BaseEsSearch):
         return variant_results[:num_results]
 
     def _execute_multi_search(self, page, num_results):
-        indices = self.samples_by_family_index.keys()
+        indices = list(self.samples_by_family_index.keys())
 
         if not self.previous_search_results.get('loaded_variant_counts'):
             self.previous_search_results['loaded_variant_counts'] = {}
@@ -677,7 +677,7 @@ class EsSearch(BaseEsSearch):
         duplicates = 0
         results = {}
         for variant_group in compound_het_results:
-            gene = variant_group.keys()[0]
+            gene = list(variant_group.keys())[0]
             variants = variant_group[gene]
             if gene in results:
                 for variant in variants:
@@ -761,7 +761,7 @@ class EsGeneAggSearch(BaseEsSearch):
                 )
 
     def search(self, **kwargs):
-        indices = self.samples_by_family_index.keys()
+        indices = list(self.samples_by_family_index.keys())
 
         logger.info('Searching in elasticsearch indices: {}'.format(', '.join(indices)))
 
@@ -805,8 +805,8 @@ class EsGeneAggSearch(BaseEsSearch):
         loaded_compound_hets = self.previous_search_results.get('grouped_results', []) + \
                                self.previous_search_results.get('compound_het_results', [])
         for group in loaded_compound_hets:
-            variants = group.values()[0]
-            gene_id = group.keys()[0]
+            variants = list(group.values())[0]
+            gene_id = list(group.keys())[0]
             if gene_id and gene_id != 'null':
                 gene_counts[gene_id]['total'] += len(variants)
                 for family_guid in variants[0]['familyGuids']:
@@ -904,7 +904,7 @@ def _genotype_inheritance_filter(inheritance_mode, inheritance_filter, family_sa
                 family_samples_q |= x_linked_q
         else:
             # If no inheritance specified only return variants where at least one of the requested samples has an alt allele
-            sample_ids = samples_by_id.keys()
+            sample_ids = list(samples_by_id.keys())
             family_samples_q = Q('terms', samples_num_alt_1=sample_ids) | Q('terms', samples_num_alt_2=sample_ids)
 
         sample_queries = [family_samples_q]
@@ -969,7 +969,7 @@ def _location_filter(genes, intervals, rs_ids, variant_ids, location_filter):
         } for interval in intervals])
 
     if genes:
-        gene_q = Q('terms', geneIds=genes.keys())
+        gene_q = Q('terms', geneIds=list(genes.keys()))
         if q:
             q |= gene_q
         else:
@@ -1286,7 +1286,7 @@ POPULATION_RESPONSE_FIELD_CONFIGS = {
 }
 
 
-QUERY_FIELD_NAMES = list(CORE_FIELDS_CONFIG.keys()) + list(PREDICTION_FIELDS_CONFIG.keys()) + \
+QUERY_FIELD_NAMES = list(list(CORE_FIELDS_CONFIG.keys())) + list(PREDICTION_FIELDS_CONFIG.keys()) + \
                     [SORTED_TRANSCRIPTS_FIELD_KEY, GENOTYPES_FIELD_KEY] + HAS_ALT_FIELD_KEYS
 for field_name, fields in NESTED_FIELDS.items():
     QUERY_FIELD_NAMES += ['{}_{}'.format(field_name, field) for field in fields.keys()]

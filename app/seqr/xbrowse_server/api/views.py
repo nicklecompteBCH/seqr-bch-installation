@@ -1629,7 +1629,7 @@ def get_matchbox_metrics(request):
                           headers=mme_headers)
     if r.status_code==200:
         matchbox_metrics = r.json()['metrics']
-        genes_in_matchbox=matchbox_metrics['geneCounts'].keys()
+        genes_in_matchbox=list(matchbox_metrics['geneCounts'].keys())
         seqr__gene_info = gather_all_annotated_genes_in_seqr()
         seqr_metrics={"genes_in_seqr":len(seqr__gene_info),
                       "genes_found_in_matchbox":0}

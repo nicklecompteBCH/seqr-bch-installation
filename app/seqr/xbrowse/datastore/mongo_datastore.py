@@ -422,7 +422,7 @@ class MongoDatastore(datastore.Datastore):
 
             while len(buff) > 0:
                 # choose a random family for which to insert a variant from among families that still have variants to insert
-                family_id = random.choice(buff.keys())
+                family_id = random.choice(list(buff.keys()))
 
                 # pop a variant off the list for this family, and insert it
                 family_variant_dict_to_insert = buff[family_id].pop()

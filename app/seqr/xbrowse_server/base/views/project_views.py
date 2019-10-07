@@ -1007,7 +1007,7 @@ def gene_quicklook(request, project_id, gene_id):
 
         individ_ids = {i['indiv_id'] for i in individ_ids_and_variants}
         for var in rare_variants:
-            individ_ids.update(var.genotypes.keys())
+            individ_ids.update(list(var.genotypes.keys()))
         individuals = Individual.objects.filter(
             indiv_id__in=individ_ids, project__project_id__in=project_ids
         ).select_related('project').select_related('family').only('project__project_id', 'family__family_id', *Individual.INDIVIDUAL_JSON_FIELDS_NO_IDS)
