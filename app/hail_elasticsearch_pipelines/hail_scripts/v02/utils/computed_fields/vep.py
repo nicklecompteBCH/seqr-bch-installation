@@ -1,6 +1,16 @@
 import hail as hl
 
 
+def get_expr_for_variant_type():
+    """Returns "I" (insertion), "D" (deletion), "S" (snp) or "M" (MNP)"""
+
+    return """
+        if(v.ref.length > v.alt.length) "D"
+        else if (v.ref.length < v.alt.length) "I"
+        else if (v.ref.length > 1) "M"
+        else "S"
+    """
+
 # Consequence terms in order of severity (more severe to less severe) as estimated by Ensembl.
 # See https://ensembl.org/info/genome/variation/prediction/predicted_data.html
 CONSEQUENCE_TERMS = [
@@ -341,3 +351,62 @@ def get_expr_for_worst_transcript_consequence_annotations_struct(
             vep_sorted_transcript_consequences_root[0],
         ),
     )
+
+def get_expr_for_filtering_allele_frequency(ac_field="va.AC[va.aIndex - 1]", an_field="va.AN", confidence_interval=0.95):
+    """Compute the filtering allele frequency for the given AC, AN and confidence interval."""
+    if not (0 < confidence_interval < 1):
+        raise ValueError("Invalid confidence interval: %s. Confidence interval must be between 0 and 1." % confidence_interval)
+    return "filtering_allele_frequency(%(ac_field)s, %(an_field)s, %(confidence_interval)s)"
+
+def convert_vds_schema_string_to_annotate_variants_expr(
+        top_level_fields="",
+        info_fields="",
+        other_source_fields="",
+        other_source_root="",
+        root="",
+        split_multi=True):
+    """Takes a string representation of the VDS variant_schema and generates a string expression
+    that can be passed to hail's annotate_variants_expr function to clean up the data shape to:
+    1. flatten the data so that VCF "top_level" fields and "INFO" fields now appear at the same level
+    2. discard unused fields
+    3. convert all Array-type values to a single value in the underlying primitive type by
+        applying [va.aIndex - 1]. This assumes that split_multi() has already been run to
+        split multi-allelic variants.
+    Args:
+        top_level_fields (str): VDS fields that are direct children of the 'va' struct. For example:
+            '''
+                rsid: String,
+                qual: Double,
+                filters: Set[String],
+                pass: Boolean,
+            '''
+        info_fields (str): For example:
+            '''
+                AC: Array[Int],
+                AF: Array[Double],
+                AN: Int,
+            '''
+        root (str): Where to attach the new data shape in the 'va' data struct.
+    Returns:
+        string:
+    """
+    fields = []
+    if top_level_fields:
+        fields += [("va", top_level_fields)]
+    if info_fields:
+        fields += [("va.info", info_fields)]
+    if other_source_root and other_source_fields:
+        fields += [(other_source_root, other_source_fields)]
+
+    expr_lines = []
+    for source_root, fields_string in fields:
+        # in some cases aIndex is @ vds.aIndex instead of va.aIndex
+        aIndex_root = "va" if source_root in ("v", "va") else source_root.split(".")[0]
+
+        for field_name, field_type in parse_field_names_and_types(fields_string):
+            field_expr = "%(root)s.%(field_name)s = %(source_root)s.%(field_name)s" % locals()
+
+            if split_multi and field_type.startswith("Array"):
+                field_expr += "[%(aIndex_root)s.aIndex-1]" % locals()
+
+            expr_lines.append(field_expr)

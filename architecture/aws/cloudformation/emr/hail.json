@@ -43,13 +43,13 @@
                         }],
                         "EbsOptimized" : false
                     },
-                    "InstanceCount" : 4,
+                    "InstanceCount" : 1,
                     "InstanceType" : "r4.4xlarge",
                     "Market" : "ON_DEMAND",
                     "Name" : "hail-workers"
                 },
                 "Ec2KeyName" : "nick",
-                "Ec2SubnetId" : "subnet-93408aad",
+                "Ec2SubnetId" : "subnet-32b9ef78",
                 "EmrManagedMasterSecurityGroup" : "sg-0efefdf3b2fd4ef76",
                 "EmrManagedSlaveSecurityGroup" : "sg-0efefdf3b2fd4ef76",
                 "KeepJobFlowAliveWhenNoSteps" : true,
@@ -63,7 +63,7 @@
                         "EbsOptimized" : false
                     },
                     "InstanceCount" : 1,
-                    "InstanceType" : "m4.xlarge",
+                    "InstanceType" : "c5n.18xlarge",
                     "Market" : "ON_DEMAND",
                     "Name" : "hail-master"
                 },
@@ -87,6 +87,13 @@
                         "ScriptBootstrapAction" :
                         {
                             "Path" : "s3://bch-seqr-deployment/install_hail_and_python36.sh"
+                        }
+                    },
+                    {
+                        "Name" : "install-vep",
+                        "ScriptBootstrapAction" :
+                        {
+                            "Path" : "s3://bch-seqr-deployment/install_vep.sh"
                         }
                     }
                 ]
