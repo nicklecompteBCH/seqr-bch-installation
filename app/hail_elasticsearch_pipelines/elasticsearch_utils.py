@@ -1,3 +1,5 @@
+import logging
+
 from elasticsearch_base import ElasticsearchClient as BaseElasticsearchClient
 from hail_scripts.shared.elasticsearch_utils import (
     ELASTICSEARCH_CREATE,
@@ -102,7 +104,7 @@ class ElasticsearchClient(BaseElasticsearchClient):
             ])
 
             genotypes_root = "gs" if not discard_missing_genotypes else "gs.filter(g => g.isCalled())"
-            vds = vds.annotate_variants_expr("va.genotypes = %(genotypes_root)s.map(g => { %(genotype_struct_expr)s }).collect()" % locals())
+            vds = vds.annotate(genotypes = genotype_struct_expr)
 
             genotype_fields_list = []  # don't add flat genotype columns to the table. The new 'genotypes' field replaces these
 

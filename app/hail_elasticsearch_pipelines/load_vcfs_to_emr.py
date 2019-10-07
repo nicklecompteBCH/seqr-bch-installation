@@ -63,10 +63,10 @@ def add_global_metadata(vds, s3bucket, genomeVersion="37", sampleType="WES", dat
     # 1) vep is the most time-consuming step (other than exporting to elasticsearch), so it makes sense to cache results
     # 2) at this stage, all subsetting and remapping has already been applied, so the samples in the dataset are only the ones exported to elasticsearch
     # 3) annotations may be updated / added more often than vep versions.
-    vds = vds.annotate_global_expr('global.sourceFilePath = "{}"'.format(s3bucket))
-    vds = vds.annotate_global_expr('global.genomeVersion = "{}"'.format(genomeVersion))
-    vds = vds.annotate_global_expr('global.sampleType = "{}"'.format(sampleType))
-    vds = vds.annotate_global_expr('global.datasetType = "{}"'.format(datasetType))
+    vds = vds.annotate_globals(sourceFilePath = s3bucket)
+    vds = vds.annotate_globals(genomeVersion =genomeVersion)
+    vds = vds.annotate_globals(sampleType = sampleType)
+    vds = vds.annotate_globals(datasetType = datasetType)
 
     return vds
 
@@ -104,12 +104,12 @@ def compute_derived_fields(mt):
     mt = mt.annotate_variants_expr(retl)
 
     serial_computed_annotation_exprs = [
-        f"va.xstop ={get_expr_for_end_pos(mt)",
-        f"va.transcriptIds ={get_expr_for_vep_transcript_ids_set('va.sortedTranscriptConsequences')",
-        f"va.domains = {get_expr_for_vep_protein_domains_set(vep_transcript_consequences_root='va.sortedTranscriptConsequences')",
-        f"va.transcriptConsequenceTerms = {get_expr_for_vep_consequence_terms_set('va.sortedTranscriptConsequences')",
+        f"va.xstop ={get_expr_for_end_pos(mt)}",
+        f"va.transcriptIds ={get_expr_for_vep_transcript_ids_set('va.sortedTranscriptConsequences')}",
+        f"va.domains = {get_expr_for_vep_protein_domains_set(vep_transcript_consequences_root='va.sortedTranscriptConsequences')}",
+        f"va.transcriptConsequenceTerms = {get_expr_for_vep_consequence_terms_set('va.sortedTranscriptConsequences')}",
         f"va.mainTranscript ={get_expr_for_worst_transcript_consequence_annotations_struct('va.sortedTranscriptConsequences')}",
-        f"va.geneIds = {get_expr_for_vep_gene_ids_set('va.sortedTranscriptConsequences')}"",
+        f"va.geneIds = {get_expr_for_vep_gene_ids_set('va.sortedTranscriptConsequences')}",
         f"va.codingGeneIds = {get_expr_for_vep_gene_ids_set(vep_transcript_consequences_root='va.sortedTranscriptConsequences', only_coding_genes=True)}",
     ]
 
