@@ -15,7 +15,7 @@ def log_request(viewname):
                 'page': viewname,
                 'ip_addr': request.META['REMOTE_ADDR'],
             }
-            if request.user.is_authenticated():
+            if request.user.is_authenticated:
                 d['username'] = request.user.username
                 d['email'] = request.user.email
 
