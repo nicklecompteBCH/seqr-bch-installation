@@ -2,6 +2,7 @@ import json
 import logging
 import re
 from typing import Dict
+from collections.abc import Iterable
 
 from django.http import JsonResponse
 from django.core.serializers.json import DjangoJSONEncoder
@@ -64,6 +65,9 @@ def create_json_response(obj, **kwargs):
         'indent': 4,
         'default': DjangoJSONEncoderWithSets().default
     }
+
+    if isinstance(obj, Iterable):
+        obj = list(obj)
 
     return JsonResponse(
         obj, json_dumps_params=dumps_params, encoder=DjangoJSONEncoderWithSets, **kwargs)
