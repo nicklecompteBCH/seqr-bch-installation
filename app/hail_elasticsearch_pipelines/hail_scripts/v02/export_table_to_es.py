@@ -4,8 +4,13 @@ import hail as hl
 
 from hail_scripts.v02.utils.elasticsearch_client import ElasticsearchClient
 
+def add_sample_field_to_vds(vds : hl.Table, field_name, field_filter):
+    vds.annotate(field_name = set(map(lambda x: x.sample_id, filter(field_filter, vds.genotypes))))
+
 
 def export_table_to_elasticsearch(ds: hl.Table, host, index_name, index_type, port=9200, num_shards=1, block_size=200):
+    for i in range(1,3):
+        ds = add_sample_field_to_vds(ds, f"num_alt_{i}",(lambda x: x.num_alt = i))
     es = ElasticsearchClient(host, port)
     es.export_table_to_elasticsearch(
         ds,
