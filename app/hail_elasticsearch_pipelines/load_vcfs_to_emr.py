@@ -97,7 +97,7 @@ def compute_derived_fields(mt):
         f"va.ref={mt.alleles[0]}",
         f"va.xpos={get_expr_for_xpos(mt.locus)}",
         f"va.xstart={{get_expr_for_xpos(mt.locus)}}",
-        f"va.sortedTranscriptConsequences = {get_expr_for_vep_sorted_transcript_consequences_array(vep_root="va.vep", include_coding_annotations=True)}",
+        f"va.sortedTranscriptConsequences = {get_expr_for_vep_sorted_transcript_consequences_array(vep_root='va.vep', include_coding_annotations=True)}",
         f"va.FAF = {get_expr_for_filtering_allele_frequency('va.info.AC[va.aIndex - 1]', 'va.info.AN', 0.95)}",
     ]
 
