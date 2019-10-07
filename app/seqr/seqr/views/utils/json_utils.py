@@ -2,7 +2,7 @@ import json
 import logging
 import re
 from typing import Dict
-from collections.abc import Iterable
+from collections.abc import Iterable, KeysView
 
 from django.http import JsonResponse
 from django.core.serializers.json import DjangoJSONEncoder
@@ -66,7 +66,7 @@ def create_json_response(obj, **kwargs):
         'default': DjangoJSONEncoderWithSets().default
     }
 
-    if isinstance(obj, Iterable):
+    if isinstance(obj, KeysView):
         obj = list(obj)
 
     return JsonResponse(
