@@ -44,9 +44,9 @@ def add_sample_metadata_to_table(tb: hl.Table) -> hl.Table:
     # otherwise we want to add the sample_num_alt fields to the VEP struct
     else:
         tb = tb.annotate(samples_num_alt_1 = tb.alleles[1])
-        if hl.len(tb.alleles) > 2:
+        if hl.eval(hl.len(tb.alleles)) > 2:
             tb = tb.annotate(samples_num_alt_2 = tb.alleles[2])
-        if hl.len(tb.alleles) > 3:
+        if hl.eval(hl.len(tb.alleles)) > 3:
             tb = tb.annotate(samples_num_alt_3 = tb.alleles[3])
         return tb
 
