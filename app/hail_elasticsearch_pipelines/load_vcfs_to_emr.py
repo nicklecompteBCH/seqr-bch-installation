@@ -251,41 +251,43 @@ def load_clinvar(export_to_es=False):
 
     review_status_str = hl.delimit(hl.sorted(hl.array(hl.set(mt.info.CLNREVSTAT)), key=lambda s: s.replace("^_", "z")))
 
-    mt = mt.select_rows(
-        allele_id=mt.info.ALLELEID,
-        alt=get_expr_for_alt_allele(mt),
-        chrom=get_expr_for_contig(mt.locus),
-        clinical_significance=hl.delimit(hl.sorted(hl.array(hl.set(mt.info.CLNSIG)), key=lambda s: s.replace("^_", "z"))),
-        domains=get_expr_for_vep_protein_domains_set(vep_transcript_consequences_root=mt.vep.transcript_consequences),
-        gene_ids=mt.gene_ids,
-        gene_id_to_consequence_json=get_expr_for_vep_gene_id_to_consequence_map(
-            vep_sorted_transcript_consequences_root=mt.sortedTranscriptConsequences,
-            gene_ids=mt.gene_ids
-        ),
-        gold_stars=CLINVAR_GOLD_STARS_LOOKUP[review_status_str],
-        **{f"main_transcript_{field}": mt.main_transcript[field] for field in mt.main_transcript.dtype.fields},
-        pos=get_expr_for_start_pos(mt),
-        ref=get_expr_for_ref_allele(mt),
-        review_status=review_status_str,
-        transcript_consequence_terms=get_expr_for_vep_consequence_terms_set(
-            vep_transcript_consequences_root=mt.sortedTranscriptConsequences
-        ),
-        transcript_ids=get_expr_for_vep_transcript_ids_set(
-            vep_transcript_consequences_root=mt.sortedTranscriptConsequences
-        ),
-        transcript_id_to_consequence_json=get_expr_for_vep_transcript_id_to_consequence_map(
-            vep_transcript_consequences_root=mt.sortedTranscriptConsequences
-        ),
-        variant_id=get_expr_for_variant_id(mt),
-        xpos=get_expr_for_xpos(mt.locus),
-    )
 
-    hl.summarize_variants(mt)
-
-    # Drop key columns for export
-    rows = mt.rows()
-    rows = rows.order_by(rows.variant_id).drop("locus", "alleles")
     if export_to_es:
+        mt = mt.select_rows(
+            allele_id=mt.info.ALLELEID,
+            alt=get_expr_for_alt_allele(mt),
+            chrom=get_expr_for_contig(mt.locus),
+            clinical_significance=hl.delimit(hl.sorted(hl.array(hl.set(mt.info.CLNSIG)), key=lambda s: s.replace("^_", "z"))),
+            domains=get_expr_for_vep_protein_domains_set(vep_transcript_consequences_root=mt.vep.transcript_consequences),
+            gene_ids=mt.gene_ids,
+            gene_id_to_consequence_json=get_expr_for_vep_gene_id_to_consequence_map(
+                vep_sorted_transcript_consequences_root=mt.sortedTranscriptConsequences,
+                gene_ids=mt.gene_ids
+            ),
+            gold_stars=CLINVAR_GOLD_STARS_LOOKUP[review_status_str],
+            **{f"main_transcript_{field}": mt.main_transcript[field] for field in mt.main_transcript.dtype.fields},
+            pos=get_expr_for_start_pos(mt),
+            ref=get_expr_for_ref_allele(mt),
+            review_status=review_status_str,
+            transcript_consequence_terms=get_expr_for_vep_consequence_terms_set(
+                vep_transcript_consequences_root=mt.sortedTranscriptConsequences
+            ),
+            transcript_ids=get_expr_for_vep_transcript_ids_set(
+                vep_transcript_consequences_root=mt.sortedTranscriptConsequences
+            ),
+            transcript_id_to_consequence_json=get_expr_for_vep_transcript_id_to_consequence_map(
+                vep_transcript_consequences_root=mt.sortedTranscriptConsequences
+            ),
+            variant_id=get_expr_for_variant_id(mt),
+            xpos=get_expr_for_xpos(mt.locus),
+        )
+
+        hl.summarize_variants(mt)
+
+        # Drop key columns for export
+        rows = mt.rows()
+        rows = rows.order_by(rows.variant_id).drop("locus", "alleles")
+
         print("\n=== Exporting ClinVar to Elasticsearch ===")
         es = ElasticsearchClient(ELASTICSEARCH_HOST, "9200")
         es.export_table_to_elasticsearch(
@@ -298,7 +300,8 @@ def load_clinvar(export_to_es=False):
             export_globals_to_index_meta=True,
             verbose=True,
         )
-    return mt
+    else:
+        return mt
 
 clinvar_mt = load_clinvar()
 
