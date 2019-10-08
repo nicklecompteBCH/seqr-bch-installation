@@ -218,18 +218,17 @@ def compute_index_name(dataset: SeqrProjectDataSet, sample_type='wes',dataset_ty
     """Returns elasticsearch index name computed based on command-line args"""
 
     # generate the index name as:  <project>_<WGS_WES>_<family?>_<VARIANTS or SVs>_<YYYYMMDD>_<batch>
-    else:
-        index_name = "%s%s%s__%s__grch%s__%s__%s" % (
-            dataset.project_name,
-            "__"+dataset.fam_id,  # optional family id
-            "__"+dataset.indiv_id,  # optional individual id
-            sample_type,
-            'GRCh37',
-            dataset_type,
-            time.strftime("%Y%m%d"),
-        )
+    index_name = "%s%s%s__%s__grch%s__%s__%s" % (
+        dataset.project_name,
+        "__"+dataset.fam_id,  # optional family id
+        "__"+dataset.indiv_id,  # optional individual id
+        sample_type,
+        'GRCh37',
+        dataset_type,
+        time.strftime("%Y%m%d"),
+    )
 
-        index_name = index_name.lower()  # elasticsearch requires index names to be all lower-case
+    index_name = index_name.lower()  # elasticsearch requires index names to be all lower-case
 
     return index_name
 
