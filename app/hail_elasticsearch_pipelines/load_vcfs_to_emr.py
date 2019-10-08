@@ -324,7 +324,7 @@ def add_project_dataset_to_elastic_search(
     vep_mt = add_vep_to_vcf(vcf)
     # add clinvar
     #vep_mt = vep_mt.union_cols(clinvar_mt)
-    export_table_to_elasticsearch(vep_mt, host, index_name+"vep", index_type, is_vds=True, port=port,num_shards=num_shards, block_size=block_size)
+    export_table_to_elasticsearch(vep_mt.rows(), host, index_name+"vep", index_type, is_vds=True, port=port,num_shards=num_shards, block_size=block_size)
 #    export_table_to_elasticsearch(vep_mt.rows(), host, index_name+"vep", index_type, port=port, num_shards=num_shards, block_size=block_size)
     print("ES index name : %s, family : %s, individual : %s ",(index_name,dataset.fam_id, dataset.indiv_id))
 
