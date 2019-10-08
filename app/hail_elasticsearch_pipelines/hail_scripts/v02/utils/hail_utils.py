@@ -77,7 +77,7 @@ def import_vcf(
     )
 
     mt = mt.annotate_rows(
-        samples_num_alt_1= get_expr_for_variant_id(mt.alleles[1],mt.locus, mt.alleles[0])#hl.or_missing(hl.len(mt.alleles) > 2, get_expr_for_variant_ids(mt.locus, mt.alleles))
+        samples_num_alt_1= get_expr_for_variant_id_ind(mt.alleles[1],mt.locus, mt.alleles[0])#hl.or_missing(hl.len(mt.alleles) > 2, get_expr_for_variant_ids(mt.locus, mt.alleles))
 
     )
 
