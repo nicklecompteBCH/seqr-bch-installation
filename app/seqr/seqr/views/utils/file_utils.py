@@ -86,7 +86,7 @@ def save_uploaded_file(request, process_records=None):
     # save json to temporary file
     uploaded_file_id = hashlib.md5(str(json_records).encode('utf-8')).hexdigest()
     serialized_file_path = _compute_serialized_file_path(uploaded_file_id)
-    with gzip.open(serialized_file_path, "w") as f:
+    with gzip.open(serialized_file_path, "wt") as f:
         json.dump(json_records, f)
 
     return uploaded_file_id, filename, json_records
