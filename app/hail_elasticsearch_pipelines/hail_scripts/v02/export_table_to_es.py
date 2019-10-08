@@ -5,7 +5,7 @@ import hail as hl
 from hail_scripts.v02.utils.elasticsearch_client import ElasticsearchClient
 
 def add_sample_field_to_vds(vds : hl.Table, field_name, field_filter):
-    vds.annotate(field_name = set(map(lambda x: x.sample_id, filter(field_filter, vds)))
+    vds.annotate(field_name = set(map(lambda x: x.sample_id, filter(field_filter, vds))))
 
 
 def export_table_to_elasticsearch(ds: hl.Table, host, index_name, index_type, is_vds  = False, port=9200, num_shards=1, block_size=200):
