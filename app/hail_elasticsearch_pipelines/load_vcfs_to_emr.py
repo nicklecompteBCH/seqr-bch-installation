@@ -337,7 +337,7 @@ def add_project_dataset_to_elastic_search(
         ),
     )
 
-    review_status_str = hl.delimit(hl.sorted(hl.array(hl.set(clinvar_mt.info.CLNREVSTAT)), key=lambda s: s.replace("^_", "z")))
+    #review_status_str = hl.delimit(hl.sorted(hl.array(hl.set(clinvar_mt.info.CLNREVSTAT)), key=lambda s: s.replace("^_", "z")))
 
     vep_mt = vep_mt.annotate_rows(
             allele_id=clinvar_mt.info.ALLELEID,
@@ -349,8 +349,8 @@ def add_project_dataset_to_elastic_search(
                 vep_sorted_transcript_consequences_root=vep_mt.sortedTranscriptConsequences,
                 gene_ids=vep_mt.gene_ids
             ),
-            gold_stars=CLINVAR_GOLD_STARS_LOOKUP[review_status_str],
-            **{f"main_transcript_{field}": vep_mt.main_transcript[field] for field in vep_mt.main_transcript.dtype.fields},
+            #gold_stars=CLINVAR_GOLD_STARS_LOOKUP[review_status_str],
+            #**{f"main_transcript_{field}": vep_mt.main_transcript[field] for field in vep_mt.main_transcript.dtype.fields},
             pos=get_expr_for_start_pos(vep_mt),
             ref=get_expr_for_ref_allele(vep_mt),
             review_status=review_status_str,
@@ -362,7 +362,7 @@ def add_project_dataset_to_elastic_search(
             ),
             transcript_id_to_consequence_json=get_expr_for_vep_transcript_id_to_consequence_map(
                 vep_transcript_consequences_root=vep_mt.sortedTranscriptConsequences
-            ),
+            )
             #variant_id=get_expr_for_variant_id(vep_mt),
         )
     # add clinvar
