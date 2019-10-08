@@ -315,8 +315,6 @@ def add_project_dataset_to_elastic_search(
     vcf_mt = add_vcf_to_hail(dataset.vcf_s3_path)
     vcf = add_global_metadata(vcf_mt,dataset.vcf_s3_path)
     index_name = compute_index_name(dataset)
-    export_table_to_elasticsearch(vcf,host, index_name+"vcf", index_type, port=port, num_shards=num_shards, block_size=block_size)
-#    export_table_to_elasticsearch(vcf_mt.rows(), host, index_name+"vcf", index_type, port=port, num_shards=num_shards, block_size=block_size)
     vep_mt = add_vep_to_vcf(vcf)
     export_table_to_elasticsearch(vep_mt, host, index_name+"vep", index_type, is_vds=True, port=port,num_shards=num_shards, block_size=block_size)
 #    export_table_to_elasticsearch(vep_mt.rows(), host, index_name+"vep", index_type, port=port, num_shards=num_shards, block_size=block_size)
