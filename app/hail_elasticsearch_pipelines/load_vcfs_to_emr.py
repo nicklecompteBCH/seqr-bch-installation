@@ -331,7 +331,7 @@ def add_project_dataset_to_elastic_search(
             chrom=get_expr_for_contig(vep_mt.locus),
             clinical_significance=hl.delimit(hl.sorted(hl.array(hl.set(clinvar_mt.info.CLNSIG)), key=lambda s: s.replace("^_", "z"))),
             domains=get_expr_for_vep_protein_domains_set(vep_transcript_consequences_root=vep_mt.vep.transcript_consequences),
-            gene_ids=vep_mt.gene_ids,
+            gene_ids=clinvar_mt.gene_ids,
             gene_id_to_consequence_json=get_expr_for_vep_gene_id_to_consequence_map(
                 vep_sorted_transcript_consequences_root=vep_mt.sortedTranscriptConsequences,
                 gene_ids=vep_mt.gene_ids
