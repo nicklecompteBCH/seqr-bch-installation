@@ -93,10 +93,10 @@ def import_vcf(
         samples_num_alt_3= hl.literal(sample_name)#get_expr_for_variant_id_ind(mt.alleles[3],mt.locus, mt.alleles[0]))#hl.or_missing(hl.len(mt.alleles) > 2, get_expr_for_variant_ids(mt.locus, mt.alleles))
 
     )
-    # xpos
-    # mt = mt.annotate_rows(
-    #     xpos=get_expr_for_xpos(mt.locus)
-    # )
+    #xpos
+    mt = mt.annotate_rows(
+        xpos=get_expr_for_xpos(mt.locus)
+    )
 
     if split_multi_alleles:
         mt = hl.split_multi_hts(mt)
