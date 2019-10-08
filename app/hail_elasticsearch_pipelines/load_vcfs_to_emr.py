@@ -308,7 +308,7 @@ def determine_if_already_uploaded(dataset: SeqrProjectDataSet):
 
 def add_project_dataset_to_elastic_search(
     dataset: SeqrProjectDataSet,
-    host, index_name, index_type="VARIANT",
+    host, index_name, index_type="variant",
     port=9200, num_shards=12, block_size=200):
     client = ElasticsearchClient(host=host,port=port)
 
