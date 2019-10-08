@@ -218,8 +218,6 @@ def compute_index_name(dataset: SeqrProjectDataSet, sample_type='wes',dataset_ty
     """Returns elasticsearch index name computed based on command-line args"""
 
     # generate the index name as:  <project>_<WGS_WES>_<family?>_<VARIANTS or SVs>_<YYYYMMDD>_<batch>
-    if args.index:
-        index_name = args.index.lower()
     else:
         index_name = "%s%s%s__%s__grch%s__%s__%s" % (
             dataset.project_name,
