@@ -231,7 +231,7 @@ def compute_index_name(dataset: SeqrProjectDataSet,version="0.8.3"):
 
     return index_name
 
-def load_clinvar():
+def load_clinvar(export_to_es=False):
     index_name = "cliivar_grch37" #"clinvar_grch{}".format(args.genome_version)
     mt = download_and_import_latest_clinvar_vcf("37")
     mt = hl.vep(mt, "vep85-loftee-gcloud.json", name="vep", block_size=1000)
@@ -285,20 +285,22 @@ def load_clinvar():
     # Drop key columns for export
     rows = mt.rows()
     rows = rows.order_by(rows.variant_id).drop("locus", "alleles")
+    if export_to_es:
+        print("\n=== Exporting ClinVar to Elasticsearch ===")
+        es = ElasticsearchClient(ELASTICSEARCH_HOST, "9200")
+        es.export_table_to_elasticsearch(
+            rows,
+            index_name=index_name,
+            index_type_name='variant',
+            block_size=200,
+            num_shards=2,
+            delete_index_before_exporting=True,
+            export_globals_to_index_meta=True,
+            verbose=True,
+        )
+    return mt
 
-    print("\n=== Exporting ClinVar to Elasticsearch ===")
-    es = ElasticsearchClient(ELASTICSEARCH_HOST, "9200")
-    es.export_table_to_elasticsearch(
-        rows,
-        index_name=index_name,
-        index_type_name='variant',
-        block_size=200,
-        num_shards=2,
-        delete_index_before_exporting=True,
-        export_globals_to_index_meta=True,
-        verbose=True,
-    )
-
+clinvar_mt = load_clinvar()
 
 def determine_if_already_uploaded(dataset: SeqrProjectDataSet):
     resp = requests.get(ELASTICSEARCH_HOST + ":9200/" + compute_index_name(dataset) + "0.5vep")
@@ -316,6 +318,8 @@ def add_project_dataset_to_elastic_search(
     vcf = add_global_metadata(vcf_mt,dataset.vcf_s3_path)
     index_name = compute_index_name(dataset)
     vep_mt = add_vep_to_vcf(vcf)
+    # add clinvar
+    vep_mt = vep_mt.union_cols(clinvar_mt)
     export_table_to_elasticsearch(vep_mt, host, index_name+"vep", index_type, is_vds=True, port=port,num_shards=num_shards, block_size=block_size)
 #    export_table_to_elasticsearch(vep_mt.rows(), host, index_name+"vep", index_type, port=port, num_shards=num_shards, block_size=block_size)
     print("ES index name : %s, family : %s, individual : %s ",(index_name,dataset.fam_id, dataset.indiv_id))
@@ -370,5 +374,5 @@ if __name__ == "__main__":
     if not args.clinvar:
         run_all_connect(dry_run=False)
     else:
-        load_clinvar()
+        load_clinvar(export_to_es=True)
 
