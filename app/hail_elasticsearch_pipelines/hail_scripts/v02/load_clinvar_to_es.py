@@ -2,8 +2,8 @@ import argparse
 
 import hail as hl
 
-from utils.clinvar import CLINVAR_GOLD_STARS_LOOKUP, download_and_import_latest_clinvar_vcf
-from utils.computed_fields import (
+from hail_scripts.v02.utils.clinvar import CLINVAR_GOLD_STARS_LOOKUP, download_and_import_latest_clinvar_vcf
+from hail_scripts.v02.utils.computed_fields import (
     get_expr_for_alt_allele,
     get_expr_for_contig,
     get_expr_for_ref_allele,
@@ -19,7 +19,7 @@ from utils.computed_fields import (
     get_expr_for_vep_transcript_ids_set,
     get_expr_for_worst_transcript_consequence_annotations_struct,
 )
-from utils.elasticsearch_client import ElasticsearchClient
+from hail_scripts.v02.utils.elasticsearch_client import ElasticsearchClient
 
 
 p = argparse.ArgumentParser()
