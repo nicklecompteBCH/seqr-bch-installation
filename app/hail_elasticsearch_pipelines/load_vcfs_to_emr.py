@@ -364,7 +364,6 @@ def add_project_dataset_to_elastic_search(
                 vep_transcript_consequences_root=vep_mt.sortedTranscriptConsequences
             ),
             variant_id=get_expr_for_variant_id(vep_mt),
-            xpos=get_expr_for_xpos(vep_mt.locus)
         )
     # add clinvar
     #vep_mt = vep_mt.union_cols(clinvar_mt)
