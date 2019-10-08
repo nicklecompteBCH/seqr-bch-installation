@@ -21,6 +21,8 @@ from hail_scripts.v02.utils.clinvar import CLINVAR_GOLD_STARS_LOOKUP, download_a
 BCH_CLUSTER_TAG = "bch-hail-cluster"
 BCH_CLUSTER_NAME = 'hail-bch'
 GENOME_VERSION = '37'
+ELASTICSEARCH_HOST=os.environ['ELASTICSEARCH_HOST']
+
 
 
 client = boto3.client('emr')
@@ -285,7 +287,7 @@ def load_clinvar():
     rows = rows.order_by(rows.variant_id).drop("locus", "alleles")
 
     print("\n=== Exporting ClinVar to Elasticsearch ===")
-    es = ElasticsearchClient(args.host, args.port)
+    es = ElasticsearchClient(ELASTICSEARCH_HOST, "9200")
     es.export_table_to_elasticsearch(
         rows,
         index_name=index_name,
@@ -297,8 +299,6 @@ def load_clinvar():
         verbose=True,
     )
 
-
-ELASTICSEARCH_HOST=os.environ['ELASTICSEARCH_HOST']
 
 def determine_if_already_uploaded(dataset: SeqrProjectDataSet):
     resp = requests.get(ELASTICSEARCH_HOST + ":9200/" + compute_index_name(dataset) + "0.5vep")
@@ -363,4 +363,14 @@ def run_all_connect(
                     log.write(parsed_dataset.project_name + "," + parsed_dataset.indiv_id + "," + compute_index_name(parsed_dataset))
 
 if __name__ == "__main__":
-    run_all_connect(dry_run=False)
+    import argparse
+
+    p = argparse.ArgumentParser()
+    p.add_argument("-clinvar", "--clinvar", help="Run clinvar instead of loading samples",  action="store_true")
+    args = p.parse_args()
+
+    if not args.clinvar:
+        run_all_connect(dry_run=False)
+    else:
+        load_clinvar()
+
