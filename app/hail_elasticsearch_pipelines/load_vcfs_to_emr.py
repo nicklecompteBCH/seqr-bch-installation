@@ -354,8 +354,9 @@ def add_project_dataset_to_elastic_search(
             'num_alt' : vep_mt.info.NS,
             'ab':vep_mt.info.AO,
             'dp': vep_mt.info.DP,
-            'sample_id': hl.literal(parse_vcf_s3_path(s3path_to_vcf)['filename']})
-    ))
+            'sample_id': hl.literal(parse_vcf_s3_path(s3path_to_vcf)['filename'])
+        })
+    )
 
     #review_status_str = hl.delimit(hl.sorted(hl.array(hl.set(clinvar_mt.info.CLNREVSTAT)), key=lambda s: s.replace("^_", "z")))
 
