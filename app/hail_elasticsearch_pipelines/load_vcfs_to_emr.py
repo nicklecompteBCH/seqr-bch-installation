@@ -84,6 +84,7 @@ def add_vcf_to_hail(s3path_to_vcf):
     mt = import_vcf(
         parts['filename'],
         GENOME_VERSION,
+        parts['filename'],
         force_bgz=True,
         min_partitions=1000)
     mt = add_global_metadata(mt, s3path_to_vcf)
@@ -213,7 +214,7 @@ def bch_connect_export_to_seqr_datasets(inputline: dict) -> SeqrProjectDataSet:
         vcf_s3_path, bam_s3_path, project_name
     )
 
-def compute_index_name(dataset: SeqrProjectDataSet,version="0.8.5"):
+def compute_index_name(dataset: SeqrProjectDataSet,version="0.9"):
     """Returns elasticsearch index name computed based on a project dataset"""
     index_name = "%s%s%s__%s__grch%s__%s__%s" % (
         dataset.project_name,
@@ -303,7 +304,7 @@ def load_clinvar(export_to_es=False):
     else:
         return mt
 
-clinvar_mt = load_clinvar()
+#clinvar_mt = load_clinvar()
 
 def determine_if_already_uploaded(dataset: SeqrProjectDataSet):
     resp = requests.get(ELASTICSEARCH_HOST + ":9200/" + compute_index_name(dataset) + "0.5vep")
@@ -322,7 +323,7 @@ def add_project_dataset_to_elastic_search(
     index_name = compute_index_name(dataset)
     vep_mt = add_vep_to_vcf(vcf)
     # add clinvar
-    vep_mt = vep_mt.union_cols(clinvar_mt)
+    #vep_mt = vep_mt.union_cols(clinvar_mt)
     export_table_to_elasticsearch(vep_mt, host, index_name+"vep", index_type, is_vds=True, port=port,num_shards=num_shards, block_size=block_size)
 #    export_table_to_elasticsearch(vep_mt.rows(), host, index_name+"vep", index_type, port=port, num_shards=num_shards, block_size=block_size)
     print("ES index name : %s, family : %s, individual : %s ",(index_name,dataset.fam_id, dataset.indiv_id))
