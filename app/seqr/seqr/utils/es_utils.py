@@ -710,7 +710,7 @@ class EsSearch(BaseEsSearch):
         grouped_variants = compound_het_results + grouped_variants
         grouped_variants = _sort_compound_hets(grouped_variants)
 
-        loaded_result_count = sum(len(list(variants.values()[0])) for variants in grouped_variants + self.previous_search_results['grouped_results'])
+        loaded_result_count = sum(len(list(variants.values())[0]) for variants in grouped_variants + self.previous_search_results['grouped_results'])
 
         # Get requested page of variants
         flattened_variant_results = []
@@ -744,9 +744,9 @@ class EsGeneAggSearch(BaseEsSearch):
     AGGREGATION_NAME = 'gene aggregation'
 
     def aggregate_by_gene(self):
-        searches = {self._search}
-        for index_searches in self._index_searches.values():
-            searches.update(index_searches)
+        searches = self._search
+
+        searches.update_from_dict(index_searches)
 
         for search in searches:
             agg = search.aggs.bucket(
