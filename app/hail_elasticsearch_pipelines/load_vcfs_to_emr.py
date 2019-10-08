@@ -353,7 +353,7 @@ def add_project_dataset_to_elastic_search(
             #**{f"main_transcript_{field}": vep_mt.main_transcript[field] for field in vep_mt.main_transcript.dtype.fields},
             pos=get_expr_for_start_pos(vep_mt),
             ref=get_expr_for_ref_allele(vep_mt),
-            review_status=review_status_str,
+            #review_status=review_status_str,
             # transcript_consequence_terms=get_expr_for_vep_consequence_terms_set(
             #     vep_transcript_consequences_root=vep_mt.sortedTranscriptConsequences
             # ),
