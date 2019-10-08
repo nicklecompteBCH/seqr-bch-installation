@@ -39,8 +39,8 @@ def validate_index_metadata(index_metadata, project, elasticsearch_index, genome
         ))
 
     dataset_path = index_metadata['sourceFilePath']
-    if not dataset_path.endswith('.vds') and not dataset_path.endswith('.vcf.gz'):
-        raise Exception("Variant call dataset path must end with .vcf.gz or .vds")
+    if not dataset_path.endswith('.vds') and not dataset_path.endswith('.vcf.gz') and not dataset_path.endswith('.vcf'):
+        raise Exception("Variant call dataset path must end with .vcf, vcf.gz or .vds")
 
 
 def validate_alignment_dataset_path(dataset_path):
