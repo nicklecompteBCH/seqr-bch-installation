@@ -284,7 +284,7 @@ def load_clinvar(export_to_es=False):
                 vep_transcript_consequences_root=mt.sortedTranscriptConsequences
             ),
             variant_id=get_expr_for_variant_id(mt),
-            xpos=get_expr_for_xpos(mt.locus))
+            xpos=get_expr_for_xpos(mt.locus)
         )
 
         hl.summarize_variants(mt)
