@@ -349,7 +349,7 @@ def add_project_dataset_to_elastic_search(
         #     },
         # """
 
-    vep_mt = vep_mt.annotate_rows(
+    vep_mt = vep_mt.annotate_entries(
         genotypes = hl.Struct(**{
             'num_alt' : vep_mt.info.NS,
             'ab':vep_mt.info.AO,
