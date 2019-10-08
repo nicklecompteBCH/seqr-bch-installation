@@ -341,16 +341,16 @@ def add_project_dataset_to_elastic_search(
         ),
     )
 
-        """
-        'genotypes': [
-            {
-              'num_alt': 2,
-              'ab': 1,
-              'dp': 74,
-              'gq': 99,
-              'sample_id': 'NA20870',
-            },
-        """
+        # """
+        # 'genotypes': [
+        #     {
+        #       'num_alt': 2,
+        #       'ab': 1,
+        #       'dp': 74,
+        #       'gq': 99,
+        #       'sample_id': 'NA20870',
+        #     },
+        # """
 
     vep_mt = vep_mt.annotate_rows(
         genotypes = hl.Struct(**{
