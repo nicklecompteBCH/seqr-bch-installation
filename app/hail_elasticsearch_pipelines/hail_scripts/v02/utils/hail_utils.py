@@ -2,6 +2,7 @@ import hail as hl
 import logging
 
 from hail_scripts.v02.utils.computed_fields.variant_id import get_expr_for_variant_ids,get_expr_for_variant_id_ind
+from hail_scripts.v02.utils.computed_fields.variant_id import get_expr_for_xpos, get_expr_for_end_pos
 
 logger = logging.getLogger()
 
@@ -91,6 +92,10 @@ def import_vcf(
     mt = mt.annotate_rows(
         samples_num_alt_3= hl.or_missing(hl.len(mt.alleles) > 3, hl.literal(sample_name))#get_expr_for_variant_id_ind(mt.alleles[3],mt.locus, mt.alleles[0]))#hl.or_missing(hl.len(mt.alleles) > 2, get_expr_for_variant_ids(mt.locus, mt.alleles))
 
+    )
+    # xpos
+    mt.annotate_rows(
+        xpos=get_expr_for_xpos(mt.locus)
     )
 
     if split_multi_alleles:
