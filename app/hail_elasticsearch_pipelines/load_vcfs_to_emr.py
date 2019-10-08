@@ -213,7 +213,7 @@ def bch_connect_export_to_seqr_datasets(inputline: dict) -> SeqrProjectDataSet:
         vcf_s3_path, bam_s3_path, project_name
     )
 
-def compute_index_name(dataset: SeqrProjectDataSet,version="0.8.2"):
+def compute_index_name(dataset: SeqrProjectDataSet,version="0.8.3"):
     """Returns elasticsearch index name computed based on a project dataset"""
     index_name = "%s%s%s__%s__grch%s__%s__%s" % (
         dataset.project_name,
@@ -232,7 +232,7 @@ def compute_index_name(dataset: SeqrProjectDataSet,version="0.8.2"):
     return index_name
 
 def load_clinvar():
-    index_name = "cliinvar_grch37" #"clinvar_grch{}".format(args.genome_version)
+    index_name = "cliivar_grch37" #"clinvar_grch{}".format(args.genome_version)
     mt = download_and_import_latest_clinvar_vcf("37")
     mt = hl.vep(mt, "vep85-loftee-gcloud.json", name="vep", block_size=1000)
     mt = mt.annotate_rows(
@@ -313,7 +313,7 @@ def add_project_dataset_to_elastic_search(
     client = ElasticsearchClient(host=host,port=port)
 
     vcf_mt = add_vcf_to_hail(dataset.vcf_s3_path)
-    vcf = add_global_metadata(vcf_mt.rows(),dataset.vcf_s3_path)
+    vcf = add_global_metadata(vcf_mt,dataset.vcf_s3_path)
     index_name = compute_index_name(dataset)
     export_table_to_elasticsearch(vcf,host, index_name+"vcf", index_type, port=port, num_shards=num_shards, block_size=block_size)
 #    export_table_to_elasticsearch(vcf_mt.rows(), host, index_name+"vcf", index_type, port=port, num_shards=num_shards, block_size=block_size)
