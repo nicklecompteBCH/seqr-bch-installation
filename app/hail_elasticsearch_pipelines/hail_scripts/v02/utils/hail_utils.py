@@ -76,6 +76,21 @@ def import_vcf(
         original_alt_alleles=hl.or_missing(hl.len(mt.alleles) > 2, get_expr_for_variant_ids(mt.locus, mt.alleles))
     )
 
+    mt = mt.annotate_rows(
+        samples_num_alt_1= get_expr_for_variant_id(mt.alleles[1],mt.locus, mt.alleles[0])#hl.or_missing(hl.len(mt.alleles) > 2, get_expr_for_variant_ids(mt.locus, mt.alleles))
+
+    )
+
+    mt = mt.annotate_rows(
+        samples_num_alt_2= hl.or_missing(hl.len(mt.alleles) > 2, get_expr_for_variant_id(mt.alleles[2],mt.locus, mt.alleles[0])#hl.or_missing(hl.len(mt.alleles) > 2, get_expr_for_variant_ids(mt.locus, mt.alleles))
+
+    )
+
+    mt = mt.annotate_rows(
+        samples_num_alt_3= hl.or_missing(hl.len(mt.alleles) > 3, get_expr_for_variant_id(mt.alleles[3],mt.locus, mt.alleles[0])#hl.or_missing(hl.len(mt.alleles) > 2, get_expr_for_variant_ids(mt.locus, mt.alleles))
+
+    )
+
     if split_multi_alleles:
         mt = hl.split_multi_hts(mt)
         mt = mt.key_rows_by(**hl.min_rep(mt.locus, mt.alleles))

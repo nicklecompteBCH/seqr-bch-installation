@@ -25,6 +25,12 @@ def get_expr_for_contig_number(
         get_expr_for_contig(locus),
     )
 
+def get_expr_for_variant_id(
+    alt,
+    locus: hl.expr.LocusExpression,
+    refal
+):
+    return locus.contig + "-" + hl.str(locus.position) + "-" + refal + "-" + alt
 
 def get_expr_for_variant_ids(
     locus: hl.expr.LocusExpression, alleles: hl.expr.ArrayExpression, max_length: int = None
