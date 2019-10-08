@@ -363,7 +363,7 @@ def add_project_dataset_to_elastic_search(
             transcript_id_to_consequence_json=get_expr_for_vep_transcript_id_to_consequence_map(
                 vep_transcript_consequences_root=vep_mt.sortedTranscriptConsequences
             ),
-            variant_id=get_expr_for_variant_id(vep_mt),
+            #variant_id=get_expr_for_variant_id(vep_mt),
         )
     # add clinvar
     #vep_mt = vep_mt.union_cols(clinvar_mt)
