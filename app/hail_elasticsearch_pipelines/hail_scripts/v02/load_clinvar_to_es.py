@@ -19,7 +19,7 @@ from utils.computed_fields import (
     get_expr_for_vep_transcript_ids_set,
     get_expr_for_worst_transcript_consequence_annotations_struct,
 )
-from hail_scripts.v02.utils.elasticsearch_client import ElasticsearchClient
+from utils.elasticsearch_client import ElasticsearchClient
 
 
 p = argparse.ArgumentParser()
