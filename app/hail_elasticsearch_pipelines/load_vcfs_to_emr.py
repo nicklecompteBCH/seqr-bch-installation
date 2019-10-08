@@ -232,7 +232,7 @@ def compute_index_name(dataset: SeqrProjectDataSet,version="0.5"):
     return index_name
 
 def load_clinvar():
-    index_name = "clinvar_grch{}".format(args.genome_version)
+    index_name = "cliinvar_grch37" #"clinvar_grch{}".format(args.genome_version)
     mt = download_and_import_latest_clinvar_vcf("37")
     mt = hl.vep(mt, "file:///vep85-gcloud.json", name="vep", block_size=1000)
     mt = mt.annotate_rows(
