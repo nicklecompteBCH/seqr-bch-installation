@@ -323,7 +323,21 @@ def add_project_dataset_to_elastic_search(
     index_name = compute_index_name(dataset)
     vep_mt = add_vep_to_vcf(vcf)
 
-    review_status_str = hl.delimit(hl.sorted(hl.array(hl.set(clinvar_mt.info.CLNREVSTAT)), key=lambda s: s.replace("^_", "z")))
+    vep_mt = vep_mt.annotate_rows(
+        sortedTranscriptConsequences=get_expr_for_vep_sorted_transcript_consequences_array(vep_root=vep_mt.vep)
+    )
+    vep_mt = vep_mt.annotate_rows(
+        main_transcript=get_expr_for_worst_transcript_consequence_annotations_struct(
+            vep_sorted_transcript_consequences_root=vep_mt.sortedTranscriptConsequences
+        )
+    )
+    vep_mt = vep_mt.annotate_rows(
+        gene_ids=get_expr_for_vep_gene_ids_set(
+            vep_transcript_consequences_root=vep_mt.sortedTranscriptConsequences
+        ),
+    )
+
+    review_status_str = hl.delimit(hl.sorted(hl.array(hl.set(vep_mt.info.CLNREVSTAT)), key=lambda s: s.replace("^_", "z")))
 
     vep_mt = vep_mt.annotate_rows(
             allele_id=clinvar_mt.info.ALLELEID,
@@ -331,7 +345,6 @@ def add_project_dataset_to_elastic_search(
             chrom=get_expr_for_contig(vep_mt.locus),
             clinical_significance=hl.delimit(hl.sorted(hl.array(hl.set(clinvar_mt.info.CLNSIG)), key=lambda s: s.replace("^_", "z"))),
             domains=get_expr_for_vep_protein_domains_set(vep_transcript_consequences_root=vep_mt.vep.transcript_consequences),
-            gene_ids=clinvar_mt.gene_ids,
             gene_id_to_consequence_json=get_expr_for_vep_gene_id_to_consequence_map(
                 vep_sorted_transcript_consequences_root=vep_mt.sortedTranscriptConsequences,
                 gene_ids=vep_mt.gene_ids
