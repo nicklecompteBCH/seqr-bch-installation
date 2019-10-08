@@ -304,7 +304,7 @@ def load_clinvar(export_to_es=False):
     else:
         return mt
 
-#clinvar_mt = load_clinvar()
+clinvar_mt = load_clinvar()
 
 def determine_if_already_uploaded(dataset: SeqrProjectDataSet):
     resp = requests.get(ELASTICSEARCH_HOST + ":9200/" + compute_index_name(dataset) + "0.5vep")
@@ -322,6 +322,37 @@ def add_project_dataset_to_elastic_search(
     vcf = add_global_metadata(vcf_mt,dataset.vcf_s3_path)
     index_name = compute_index_name(dataset)
     vep_mt = add_vep_to_vcf(vcf)
+
+    review_status_str = hl.delimit(hl.sorted(hl.array(hl.set(clinvar_mt.info.CLNREVSTAT)), key=lambda s: s.replace("^_", "z")))
+
+    vep_mt = vep_mt.annotate_rows(
+            allele_id=mt.info.ALLELEID,
+            alt=get_expr_for_alt_allele(mt),
+            chrom=get_expr_for_contig(mt.locus),
+            clinical_significance=hl.delimit(hl.sorted(hl.array(hl.set(mt.info.CLNSIG)), key=lambda s: s.replace("^_", "z"))),
+            domains=get_expr_for_vep_protein_domains_set(vep_transcript_consequences_root=mt.vep.transcript_consequences),
+            gene_ids=mt.gene_ids,
+            gene_id_to_consequence_json=get_expr_for_vep_gene_id_to_consequence_map(
+                vep_sorted_transcript_consequences_root=mt.sortedTranscriptConsequences,
+                gene_ids=mt.gene_ids
+            ),
+            gold_stars=CLINVAR_GOLD_STARS_LOOKUP[review_status_str],
+            **{f"main_transcript_{field}": mt.main_transcript[field] for field in mt.main_transcript.dtype.fields},
+            pos=get_expr_for_start_pos(mt),
+            ref=get_expr_for_ref_allele(mt),
+            review_status=review_status_str,
+            transcript_consequence_terms=get_expr_for_vep_consequence_terms_set(
+                vep_transcript_consequences_root=mt.sortedTranscriptConsequences
+            ),
+            transcript_ids=get_expr_for_vep_transcript_ids_set(
+                vep_transcript_consequences_root=mt.sortedTranscriptConsequences
+            ),
+            transcript_id_to_consequence_json=get_expr_for_vep_transcript_id_to_consequence_map(
+                vep_transcript_consequences_root=mt.sortedTranscriptConsequences
+            ),
+            variant_id=get_expr_for_variant_id(mt),
+            xpos=get_expr_for_xpos(mt.locus),
+        )
     # add clinvar
     #vep_mt = vep_mt.union_cols(clinvar_mt)
     export_table_to_elasticsearch(vep_mt.rows(), host, index_name+"vep", index_type, is_vds=True, port=port,num_shards=num_shards, block_size=block_size)

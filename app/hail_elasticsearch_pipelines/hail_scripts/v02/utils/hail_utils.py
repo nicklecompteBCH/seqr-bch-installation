@@ -94,9 +94,9 @@ def import_vcf(
 
     )
     # xpos
-    mt = mt.annotate_rows(
-        xpos=get_expr_for_xpos(mt.locus)
-    )
+    # mt = mt.annotate_rows(
+    #     xpos=get_expr_for_xpos(mt.locus)
+    # )
 
     if split_multi_alleles:
         mt = hl.split_multi_hts(mt)
