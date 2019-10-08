@@ -94,7 +94,7 @@ def import_vcf(
 
     )
     # xpos
-    mt.annotate_rows(
+    mt = mt.annotate_rows(
         xpos=get_expr_for_xpos(mt.locus)
     )
 
