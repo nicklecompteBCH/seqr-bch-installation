@@ -360,8 +360,8 @@ def add_project_dataset_to_elastic_search(
             transcript_ids=get_expr_for_vep_transcript_ids_set(
                 vep_transcript_consequences_root=vep_mt.sortedTranscriptConsequences
             ),
-            transcript_id_to_consequence_json=get_expr_for_vep_transcript_id_to_consequence_map(
-                vep_transcript_consequences_root=vep_mt.sortedTranscriptConsequences
+            #transcript_id_to_consequence_json=get_expr_for_vep_transcript_id_to_consequence_map(
+            #    vep_transcript_consequences_root=vep_mt.sortedTranscriptConsequences
             )
             #variant_id=get_expr_for_variant_id(vep_mt),
         )
