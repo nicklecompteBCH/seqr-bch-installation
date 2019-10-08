@@ -253,7 +253,7 @@ def export_variants_handler(request, search_hash):
             family_tags = saved_variants_by_family[family_guid].get('{}-{}-{}'.format(variant['xpos'], variant['ref'], variant['alt'])) or {}
             family_tags['family_id'] = family_ids_by_guid.get(family_guid)
             row += [_get_field_value(family_tags, config) for config in VARIANT_FAMILY_EXPORT_DATA]
-        genotypes = variant['genotypes'].values()
+        genotypes = list(variant['genotypes'].values())
         for i in range(max_samples_per_variant):
             genotype = genotypes[i] if i < len(genotypes) else {}
             row += [_get_field_value(genotype, config) for config in VARIANT_GENOTYPE_EXPORT_DATA]

@@ -203,7 +203,7 @@ def update_family_pedigree_image(request, family_guid):
     elif len(request.FILES) > 1:
         return create_json_response({}, status=400, reason='Received {} files'.format(len(request.FILES)))
     else:
-        pedigree_image = request.FILES.values()[0]
+        pedigree_image = list(request.FILES.values())[0]
 
     update_seqr_model(family, pedigree_image=pedigree_image)
 

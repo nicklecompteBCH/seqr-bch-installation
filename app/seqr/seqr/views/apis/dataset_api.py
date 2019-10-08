@@ -223,7 +223,7 @@ def _update_samples(matched_sample_id_to_sample_record, elasticsearch_index=None
 
 
 def _get_samples_json(matched_sample_id_to_sample_record, project_guid):
-    updated_sample_json = get_json_for_samples(matched_sample_id_to_sample_record.values(), project_guid=project_guid)
+    updated_sample_json = get_json_for_samples(list(matched_sample_id_to_sample_record.values()), project_guid=project_guid)
     response = {
         'samplesByGuid': {s['sampleGuid']: s for s in updated_sample_json}
     }

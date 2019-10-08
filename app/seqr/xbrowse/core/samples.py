@@ -64,7 +64,7 @@ class Family():
         return len(self.individuals)
 
     def get_individuals(self):
-        return self.individuals.values()
+        return list(self.individuals.values())
 
     def get_individual(self, indiv_id):
         return self.individuals.get(indiv_id)
@@ -114,4 +114,4 @@ class FamilyGroup():
         return [family.toJSON() for family in self.get_families()]
 
     def get_families(self):
-        return self.families.values()
+        return list(self.families.values())

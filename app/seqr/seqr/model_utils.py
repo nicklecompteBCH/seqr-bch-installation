@@ -382,7 +382,7 @@ def update_xbrowse_vcfffiles(project, sample_type, elasticsearch_index, dataset_
         logging.info("Created vcf file: " + str(vcf_file.__dict__))
 
     vcf_file.file_path = dataset_path
-    vcf_file.loaded_date = matched_sample_id_to_sample_record.values()[0].loaded_date
+    vcf_file.loaded_date = list(matched_sample_id_to_sample_record.values())[0].loaded_date
     vcf_file.save()
 
     for indiv in [s.individual for s in matched_sample_id_to_sample_record.values()]:

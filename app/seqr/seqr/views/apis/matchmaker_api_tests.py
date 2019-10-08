@@ -391,7 +391,7 @@ class VariantSearchAPITest(TestCase):
         self.assertSetEqual(set(response_json.keys()), {'mmeResultsByGuid', 'individualsByGuid', 'genesById', 'mmeContactNotes'})
 
         self.assertEqual(len(response_json['mmeResultsByGuid']), 1)
-        self.assertDictEqual(response_json['mmeResultsByGuid'].values()[0], PARSED_NEW_MATCH_NEW_SUBMISSION_JSON)
+        self.assertDictEqual(list(response_json['mmeResultsByGuid'].values())[0], PARSED_NEW_MATCH_NEW_SUBMISSION_JSON)
         self.assertDictEqual(response_json['individualsByGuid'], {NO_SUBMISSION_INDIVIDUAL_GUID: {
             'mmeResultGuids': response_json['mmeResultsByGuid'].keys(),
             'mmeSubmittedData': {

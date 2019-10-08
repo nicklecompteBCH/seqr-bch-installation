@@ -109,7 +109,7 @@ def get_es_variant_gene_counts(search_model):
                 loaded = sum(counts.get('loaded', 0) for counts in previous_search_results.get('loaded_variant_counts', {}).values())
                 if loaded == total_results:
                     for group in previous_search_results['grouped_results']:
-                        variants = group.values()[0]
+                        variants = list(group.values())[0]
                         gene_id = list(group.keys())[0]
                         if not gene_id or gene_id == 'null':
                             gene_id = variants[0]['mainTranscript']['geneId']
@@ -710,14 +710,14 @@ class EsSearch(BaseEsSearch):
         grouped_variants = compound_het_results + grouped_variants
         grouped_variants = _sort_compound_hets(grouped_variants)
 
-        loaded_result_count = sum(len(variants.values()[0]) for variants in grouped_variants + self.previous_search_results['grouped_results'])
+        loaded_result_count = sum(len(list(variants.values()[0])) for variants in grouped_variants + self.previous_search_results['grouped_results'])
 
         # Get requested page of variants
         flattened_variant_results = []
         num_compound_hets = 0
         num_single_variants = 0
         for variants_group in grouped_variants:
-            variants = variants_group.values()[0]
+            variants = list(variants_group.values())[0]
             flattened_variant_results += variants
             if loaded_result_count != self.previous_search_results['total_results']:
                 self.previous_search_results['grouped_results'].append(variants_group)
@@ -1299,7 +1299,7 @@ for population, pop_config in POPULATIONS.items():
 
 
 def _sort_compound_hets(grouped_variants):
-    return sorted(grouped_variants, key=lambda variants: variants.values()[0][0]['_sort'])
+    return sorted(grouped_variants, key=lambda variants: list(variants.values())[0][0]['_sort'])
 
 
 def _get_compound_het_page(grouped_variants, start_index, end_index):
@@ -1307,9 +1307,9 @@ def _get_compound_het_page(grouped_variants, start_index, end_index):
     variant_results = []
     for i, variants in enumerate(grouped_variants):
         if skipped < start_index:
-            skipped += len(variants.values()[0])
+            skipped += len(list(variants.values())[0])
         else:
-            variant_results += variants.values()[0]
+            variant_results += list(variants.values())[0]
         if len(variant_results) + skipped >= end_index:
             return variant_results
     return None

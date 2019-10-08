@@ -217,7 +217,7 @@ def delete_project_collaborator(request, project_guid, username):
 
 def get_json_for_project_collaborator_list(project):
     """Returns a JSON representation of the collaborators in the given project"""
-    collaborator_list = _get_project_collaborators(project).values()
+    collaborator_list = list(_get_project_collaborators(project).values())
 
     return sorted(collaborator_list, key=lambda collaborator: (collaborator['lastName'], collaborator['displayName']))
 

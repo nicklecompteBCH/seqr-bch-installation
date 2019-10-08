@@ -179,9 +179,9 @@ def anvil_export(request, project_guid):
     else:
         projects_by_guid = {p.guid: p for p in Project.objects.filter(projectcategory__name__iexact='anvil')}
 
-    individuals = _get_loaded_before_date_project_individuals(projects_by_guid.values(), loaded_before=request.GET.get('loadedBefore'))
+    individuals = _get_loaded_before_date_project_individuals(list(projects_by_guid.values()), loaded_before=request.GET.get('loadedBefore'))
 
-    saved_variants_by_family = _get_saved_variants_by_family(projects_by_guid.values(), request.user)
+    saved_variants_by_family = _get_saved_variants_by_family(list(projects_by_guid.values()), request.user)
 
     # Handle compound het genes
     compound_het_gene_id_by_family = {}
@@ -457,7 +457,7 @@ def _generate_rows(project, loaded_samples_by_project_family, saved_variants_by_
     if "external" in project.name or "reprocessed" in project.name:
         sequencing_approach = "REAN"
     else:
-        sequencing_approach = loaded_samples_by_family.values()[0][-1].sample_type
+        sequencing_approach = list(loaded_samples_by_family.values())[0][-1].sample_type
 
     now = timezone.now()
     for family in project.families:
@@ -779,9 +779,9 @@ def saved_variants(request, tag):
     individuals = Individual.objects.filter(family__in=families)
 
     genes = _saved_variant_genes(saved_variants)
-    locus_list_guids = _add_locus_lists(project_models_by_guid.values(), saved_variants, genes)
+    locus_list_guids = _add_locus_lists(list(project_models_by_guid.values()), saved_variants, genes)
 
-    projects_json = get_json_for_projects(project_models_by_guid.values(), user=request.user, add_project_category_guids_field=False)
+    projects_json = get_json_for_projects(list(project_models_by_guid.values()), user=request.user, add_project_category_guids_field=False)
     functional_tag_types = get_json_for_variant_functional_data_tag_types()
 
     for project_json in projects_json:

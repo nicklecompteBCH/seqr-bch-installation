@@ -176,7 +176,7 @@ def get_compound_het_genes(datastore, reference, family, variant_filter=None, qu
                 variants_to_return[combo[1].unique_tuple()] = combo[1]
 
         if len(variants_to_return) > 0:
-            yield (gene_name, variants_to_return.values())
+            yield (gene_name, list(variants_to_return.values()))
 
 
 def get_recessive_genes(datastore, reference, family, variant_filter=None, quality_filter=None, user=None):

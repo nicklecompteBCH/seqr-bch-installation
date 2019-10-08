@@ -136,7 +136,7 @@ def _search_individual_matches(individual, user):
     if removed_count:
         logger.info('Removed {} old matches for {}'.format(removed_count, individual.individual_id))
 
-    return _parse_mme_results(individual, saved_results.values(), user)
+    return _parse_mme_results(individual, list(saved_results.values()), user)
 
 
 @login_required(login_url=API_LOGIN_REQUIRED_URL)

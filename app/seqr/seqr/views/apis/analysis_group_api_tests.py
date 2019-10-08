@@ -36,7 +36,7 @@ class AnalysisGroupAPITest(TransactionTestCase):
         self.assertEqual(response.status_code, 200)
         new_analysis_group_response = response.json()
         self.assertEqual(len(new_analysis_group_response['analysisGroupsByGuid']), 1)
-        new_analysis_group = new_analysis_group_response['analysisGroupsByGuid'].values()[0]
+        new_analysis_group = list(new_analysis_group_response['analysisGroupsByGuid'].values())[0]
         self.assertEqual(new_analysis_group['name'], 'new_analysis_group')
         self.assertSetEqual({'F000001_1', 'F000002_2'}, set(new_analysis_group['familyGuids']))
 
@@ -56,7 +56,7 @@ class AnalysisGroupAPITest(TransactionTestCase):
         self.assertEqual(response.status_code, 200)
         updated_analysis_group_response = response.json()
         self.assertEqual(len(updated_analysis_group_response['analysisGroupsByGuid']), 1)
-        updated_analysis_group = updated_analysis_group_response['analysisGroupsByGuid'].values()[0]
+        updated_analysis_group = updated_analysis_group_response['analysisGroupsByGuid'].list(values())[0]
         self.assertEqual(updated_analysis_group['name'], 'updated_analysis_group')
         self.assertEqual(updated_analysis_group['description'], 'a description')
         self.assertSetEqual({'F000001_1', 'F000003_3'}, set(updated_analysis_group['familyGuids']))

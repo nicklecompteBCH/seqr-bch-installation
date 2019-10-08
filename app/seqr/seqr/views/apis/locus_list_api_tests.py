@@ -81,7 +81,7 @@ class LocusListAPITest(TransactionTestCase):
         self.assertEqual(response.status_code, 200)
         new_locus_list_response = response.json()
         self.assertEqual(len(new_locus_list_response['locusListsByGuid']), 1)
-        new_locus_list = new_locus_list_response['locusListsByGuid'].values()[0]
+        new_locus_list = list(new_locus_list_response['locusListsByGuid'].values())[0]
         self.assertEqual(new_locus_list['name'], 'new_locus_list')
         self.assertEqual(new_locus_list['isPublic'], True)
 
@@ -119,7 +119,7 @@ class LocusListAPITest(TransactionTestCase):
         self.assertEqual(response.status_code, 200)
         updated_locus_list_response = response.json()
         self.assertEqual(len(updated_locus_list_response['locusListsByGuid']), 1)
-        updated_locus_list = updated_locus_list_response['locusListsByGuid'].values()[0]
+        updated_locus_list = list(updated_locus_list_response['locusListsByGuid'].values())[0]
         self.assertEqual(updated_locus_list['name'], 'updated_locus_list')
         self.assertEqual(updated_locus_list['isPublic'], False)
 

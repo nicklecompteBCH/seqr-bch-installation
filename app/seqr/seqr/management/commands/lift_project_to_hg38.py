@@ -110,7 +110,7 @@ class Command(BaseCommand):
 
         # Lift-over saved variants
         saved_variants = get_json_for_saved_variants(
-            saved_variant_models_by_guid.values(), add_details=True, project=project,
+            list(saved_variant_models_by_guid.values()), add_details=True, project=project,
             individual_guids_by_id=individual_guids_by_id)
         saved_variants_to_lift = [v for v in saved_variants if v['genomeVersion'] != GENOME_VERSION_GRCh38]
 

@@ -62,7 +62,7 @@ def _retrieve_saved_variants_json(project, variant_tuples, create_if_missing=Fal
         family_id_to_guid[family.family_id] = family.guid
 
     try:
-        families = project.family_set.filter(guid__in=family_id_to_guid.values())
+        families = project.family_set.filter(guid__in=list(family_id_to_guid.values()))
         return get_es_variants_for_variant_tuples(families, xpos_ref_alt_tuples)
     except InvalidIndexException:
         variants = _deprecated_retrieve_saved_variants_json(project, xpos_ref_alt_family_tuples, create_if_missing)
@@ -160,7 +160,7 @@ def variant_details(variant_json, project, user, individual_guids_by_id=None):
             'class': extras.get('hgmd_class') if (user and user.is_staff) else None,
         },
         'genotypes': genotypes,
-        'genotypeFilters': next((genotype.get('filter') for genotype in variant_json.get('genotypes', {}).values()), None),
+        'genotypeFilters': next(list(genotype.get('filter') for genotype in variant_json.get('genotypes', {}).values()), None),
         'genomeVersion': genome_version,
         'liftedOverGenomeVersion': lifted_over_genome_version,
         'liftedOverChrom': lifted_over_chrom,

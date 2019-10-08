@@ -451,7 +451,7 @@ def delete_individuals(project, individual_guids):
         delete_seqr_model(individual)
 
 
-    update_pedigree_images(families.values())
+    update_pedigree_images(list(families.values()))
 
     families_with_deleted_individuals = list(families.values())
 
