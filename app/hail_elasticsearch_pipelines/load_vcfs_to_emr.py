@@ -234,7 +234,7 @@ def compute_index_name(dataset: SeqrProjectDataSet,version="0.5"):
 def load_clinvar():
     index_name = "cliinvar_grch37" #"clinvar_grch{}".format(args.genome_version)
     mt = download_and_import_latest_clinvar_vcf("37")
-    mt = hl.vep(mt, "file:///vep85-gcloud.json", name="vep", block_size=1000)
+    mt = hl.vep(mt, "vep85-loftee-gcloud.json", name="vep", block_size=1000)
     mt = mt.annotate_rows(
         sortedTranscriptConsequences=get_expr_for_vep_sorted_transcript_consequences_array(vep_root=mt.vep)
     )
@@ -291,9 +291,9 @@ def load_clinvar():
     es.export_table_to_elasticsearch(
         rows,
         index_name=index_name,
-        index_type_name=args.index_type,
-        block_size=args.es_block_size,
-        num_shards=args.num_shards,
+        index_type_name='variant',
+        block_size=200,
+        num_shards=2,
         delete_index_before_exporting=True,
         export_globals_to_index_meta=True,
         verbose=True,
