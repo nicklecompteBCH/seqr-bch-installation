@@ -76,7 +76,7 @@ def save_uploaded_file(request, process_records=None):
         raise ValueError("Received %s files instead of 1" % len(request.FILES))
 
     # parse file
-    stream = request.FILES.values()[0]
+    stream = list(request.FILES.values())[0]
     filename = stream._name
 
     json_records = parse_file(filename, stream)
