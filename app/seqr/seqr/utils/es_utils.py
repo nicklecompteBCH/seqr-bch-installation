@@ -746,7 +746,7 @@ class EsGeneAggSearch(BaseEsSearch):
     def aggregate_by_gene(self):
         searches = self._search
 
-        searches.update_from_dict(index_searches)
+        searches.update_from_dict(self._index_searches)
 
         for search in searches:
             agg = search.aggs.bucket(
