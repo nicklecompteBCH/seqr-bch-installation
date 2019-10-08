@@ -354,12 +354,12 @@ def add_project_dataset_to_elastic_search(
             pos=get_expr_for_start_pos(vep_mt),
             ref=get_expr_for_ref_allele(vep_mt),
             review_status=review_status_str,
-            transcript_consequence_terms=get_expr_for_vep_consequence_terms_set(
-                vep_transcript_consequences_root=vep_mt.sortedTranscriptConsequences
-            ),
-            transcript_ids=get_expr_for_vep_transcript_ids_set(
-                vep_transcript_consequences_root=vep_mt.sortedTranscriptConsequences
-            ),
+            # transcript_consequence_terms=get_expr_for_vep_consequence_terms_set(
+            #     vep_transcript_consequences_root=vep_mt.sortedTranscriptConsequences
+            # ),
+            # transcript_ids=get_expr_for_vep_transcript_ids_set(
+            #     vep_transcript_consequences_root=vep_mt.sortedTranscriptConsequences
+            # ),
             #transcript_id_to_consequence_json=get_expr_for_vep_transcript_id_to_consequence_map(
             #    vep_transcript_consequences_root=vep_mt.sortedTranscriptConsequences
             #)
