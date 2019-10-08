@@ -52,8 +52,7 @@ def add_sample_metadata_to_table(tb: hl.Table) -> hl.Table:
 
 def export_table_to_elasticsearch(ds: hl.Table, host, index_name, index_type, is_vds  = False, port=9200, num_shards=1, block_size=200):
     if is_vds:
-        for i in range(1,3):
-            continue #ds = add_sample_field_to_vds(ds, f"sample_num_alt_{i}",ds.filter(ds.))
+        ds = add_sample_metadata_to_table(ds) #continue #ds = add_sample_field_to_vds(ds, f"sample_num_alt_{i}",ds.filter(ds.))
     es = ElasticsearchClient(host, port)
     es.export_table_to_elasticsearch(
         ds,
