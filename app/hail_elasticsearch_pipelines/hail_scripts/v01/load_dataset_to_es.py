@@ -149,7 +149,7 @@ def init_command_line_args():
     return args
 
 
-def compute_index_name(args):
+def compute_index_name(project_guid, family_id, individual_id, sample_type='wes',dataset_type='VARIANTS'):
     """Returns elasticsearch index name computed based on command-line args"""
 
     # generate the index name as:  <project>_<WGS_WES>_<family?>_<VARIANTS or SVs>_<YYYYMMDD>_<batch>
@@ -157,7 +157,7 @@ def compute_index_name(args):
         index_name = args.index.lower()
     else:
         index_name = "%s%s%s__%s__grch%s__%s__%s" % (
-            args.project_guid,
+            project_guid,
             "__"+args.family_id if args.family_id else "",  # optional family id
             "__"+args.individual_id if args.individual_id else "",  # optional individual id
             args.sample_type,
@@ -217,7 +217,7 @@ def subset_samples(hc, vds, args):
     samples_in_vds = set(vds.sample_ids)
     matched = samples_in_table.intersection(samples_in_vds)
     if len(matched) < len(samples_in_table):
-        message = ("Only {0} out of {1} subsetting-table IDs matched IDs in the variant callset.\n" 
+        message = ("Only {0} out of {1} subsetting-table IDs matched IDs in the variant callset.\n"
             "Dropping {2} IDs that aren't in the VDS: {3}\n All VDS IDs: {4}").format(
                 len(matched),
                 len(samples_in_table),
@@ -558,7 +558,7 @@ def step1_compute_derived_fields(hc, vds, args):
             --- qual: Double,
             filters: Set[String],
             aIndex: Int,
-            
+
             geneIds: Set[String],
             transcriptIds: Set[String],
             codingGeneIds: Set[String],
@@ -826,7 +826,7 @@ def run_pipeline():
     hc, vds = step2_export_to_elasticsearch(hc, vds, args)
     hc, vds = step3_add_reference_datasets(hc, vds, args)
     hc, vds = step4_export_to_elasticsearch(hc, vds, args)
-    
+
     if args.stop_after_step > 4:
         update_operations_log(args)
         if not args.dont_delete_intermediate_vds_files:

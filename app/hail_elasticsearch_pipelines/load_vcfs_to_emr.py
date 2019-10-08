@@ -214,23 +214,27 @@ def bch_connect_export_to_seqr_datasets(inputline: dict) -> SeqrProjectDataSet:
         vcf_s3_path, bam_s3_path, project_name
     )
 
-def compute_index_name(dataset: SeqrProjectDataSet,version="0.9.1.3"):
-    """Returns elasticsearch index name computed based on a project dataset"""
-    index_name = "%s%s%s__%s__grch%s__%s__%s" % (
-        dataset.project_name,
-        "__"+dataset.fam_id,
-        "__"+dataset.indiv_id,
-        dataset.sample_type,
-        GENOME_VERSION,
-        "WES",
-        version,
-    )
+def compute_index_name(dataset: SeqrProjectDataSet, sample_type='wes',dataset_type='VARIANTS'):
+    """Returns elasticsearch index name computed based on command-line args"""
 
-    index_name = index_name.lower()  # elasticsearch requires index names to be all lower-case
+    # generate the index name as:  <project>_<WGS_WES>_<family?>_<VARIANTS or SVs>_<YYYYMMDD>_<batch>
+    if args.index:
+        index_name = args.index.lower()
+    else:
+        index_name = "%s%s%s__%s__grch%s__%s__%s" % (
+            dataset.project_name,
+            "__"+dataset.fam_id,  # optional family id
+            "__"+dataset.indiv_id,  # optional individual id
+            sample_type,
+            'GRCh37',
+            dataset_type,
+            time.strftime("%Y%m%d"),
+        )
 
-   # logger.info("Index name: %s" % (index_name,))
+        index_name = index_name.lower()  # elasticsearch requires index names to be all lower-case
 
     return index_name
+
 
 def load_clinvar(export_to_es=False):
     index_name = "cliivar_grch37" #"clinvar_grch{}".format(args.genome_version)
@@ -280,7 +284,7 @@ def load_clinvar(export_to_es=False):
                 vep_transcript_consequences_root=mt.sortedTranscriptConsequences
             ),
             variant_id=get_expr_for_variant_id(mt),
-            xpos=get_expr_for_xpos(mt.locus),
+            xpos=get_expr_for_xpos(mt.locus))
         )
 
         hl.summarize_variants(mt)
@@ -335,6 +339,25 @@ def add_project_dataset_to_elastic_search(
         gene_ids=get_expr_for_vep_gene_ids_set(
             vep_transcript_consequences_root=vep_mt.sortedTranscriptConsequences
         ),
+    )
+
+        """
+        'genotypes': [
+            {
+              'num_alt': 2,
+              'ab': 1,
+              'dp': 74,
+              'gq': 99,
+              'sample_id': 'NA20870',
+            },
+        """
+
+    vep_mt = vep_mt.annotate_rows(
+        genotypes = hl.Struct(**{
+            'num_alt' : hl.info.NS,
+            'ab':hl.info.AO,
+            'dp': vep_mt.info.DP,
+            'sample_id': parse_vcf_s3_path(s3path_to_vcf)['filename']}
     )
 
     #review_status_str = hl.delimit(hl.sorted(hl.array(hl.set(clinvar_mt.info.CLNREVSTAT)), key=lambda s: s.replace("^_", "z")))
