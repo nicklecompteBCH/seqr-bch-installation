@@ -326,32 +326,32 @@ def add_project_dataset_to_elastic_search(
     review_status_str = hl.delimit(hl.sorted(hl.array(hl.set(clinvar_mt.info.CLNREVSTAT)), key=lambda s: s.replace("^_", "z")))
 
     vep_mt = vep_mt.annotate_rows(
-            allele_id=mt.info.ALLELEID,
-            alt=get_expr_for_alt_allele(mt),
-            chrom=get_expr_for_contig(mt.locus),
-            clinical_significance=hl.delimit(hl.sorted(hl.array(hl.set(mt.info.CLNSIG)), key=lambda s: s.replace("^_", "z"))),
-            domains=get_expr_for_vep_protein_domains_set(vep_transcript_consequences_root=mt.vep.transcript_consequences),
-            gene_ids=mt.gene_ids,
+            allele_id=vep_mt.info.ALLELEID,
+            alt=get_expr_for_alt_allele(vep_mt),
+            chrom=get_expr_for_contig(vep_mt.locus),
+            clinical_significance=hl.delimit(hl.sorted(hl.array(hl.set(vep_mt.info.CLNSIG)), key=lambda s: s.replace("^_", "z"))),
+            domains=get_expr_for_vep_protein_domains_set(vep_transcript_consequences_root=vep_mt.vep.transcript_consequences),
+            gene_ids=vep_mt.gene_ids,
             gene_id_to_consequence_json=get_expr_for_vep_gene_id_to_consequence_map(
-                vep_sorted_transcript_consequences_root=mt.sortedTranscriptConsequences,
-                gene_ids=mt.gene_ids
+                vep_sorted_transcript_consequences_root=vep_mt.sortedTranscriptConsequences,
+                gene_ids=vep_mt.gene_ids
             ),
             gold_stars=CLINVAR_GOLD_STARS_LOOKUP[review_status_str],
-            **{f"main_transcript_{field}": mt.main_transcript[field] for field in mt.main_transcript.dtype.fields},
-            pos=get_expr_for_start_pos(mt),
-            ref=get_expr_for_ref_allele(mt),
+            **{f"main_transcript_{field}": vep_mt.main_transcript[field] for field in vep_mt.main_transcript.dtype.fields},
+            pos=get_expr_for_start_pos(vep_mt),
+            ref=get_expr_for_ref_allele(vep_mt),
             review_status=review_status_str,
             transcript_consequence_terms=get_expr_for_vep_consequence_terms_set(
-                vep_transcript_consequences_root=mt.sortedTranscriptConsequences
+                vep_transcript_consequences_root=vep_mt.sortedTranscriptConsequences
             ),
             transcript_ids=get_expr_for_vep_transcript_ids_set(
-                vep_transcript_consequences_root=mt.sortedTranscriptConsequences
+                vep_transcript_consequences_root=vep_mt.sortedTranscriptConsequences
             ),
             transcript_id_to_consequence_json=get_expr_for_vep_transcript_id_to_consequence_map(
-                vep_transcript_consequences_root=mt.sortedTranscriptConsequences
+                vep_transcript_consequences_root=vep_mt.sortedTranscriptConsequences
             ),
-            variant_id=get_expr_for_variant_id(mt),
-            xpos=get_expr_for_xpos(mt.locus),
+            variant_id=get_expr_for_variant_id(vep_mt),
+            xpos=get_expr_for_xpos(vep_mt.locus)
         )
     # add clinvar
     #vep_mt = vep_mt.union_cols(clinvar_mt)
