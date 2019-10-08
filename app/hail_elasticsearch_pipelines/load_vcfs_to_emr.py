@@ -337,7 +337,7 @@ def add_project_dataset_to_elastic_search(
         ),
     )
 
-    review_status_str = hl.delimit(hl.sorted(hl.array(hl.set(vep_mt.info.CLNREVSTAT)), key=lambda s: s.replace("^_", "z")))
+    review_status_str = hl.delimit(hl.sorted(hl.array(hl.set(clinvar_mt.info.CLNREVSTAT)), key=lambda s: s.replace("^_", "z")))
 
     vep_mt = vep_mt.annotate_rows(
             allele_id=clinvar_mt.info.ALLELEID,
