@@ -214,7 +214,7 @@ def bch_connect_export_to_seqr_datasets(inputline: dict) -> SeqrProjectDataSet:
         vcf_s3_path, bam_s3_path, project_name
     )
 
-def compute_index_name(dataset: SeqrProjectDataSet,version="0.9.1.1"):
+def compute_index_name(dataset: SeqrProjectDataSet,version="0.9.1.2"):
     """Returns elasticsearch index name computed based on a project dataset"""
     index_name = "%s%s%s__%s__grch%s__%s__%s" % (
         dataset.project_name,
