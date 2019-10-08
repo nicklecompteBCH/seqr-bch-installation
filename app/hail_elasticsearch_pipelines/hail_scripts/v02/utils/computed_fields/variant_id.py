@@ -25,7 +25,7 @@ def get_expr_for_contig_number(
         get_expr_for_contig(locus),
     )
 
-def get_expr_for_variant_id(
+def get_expr_for_variant_id_ind(
     alt,
     locus: hl.expr.LocusExpression,
     refal

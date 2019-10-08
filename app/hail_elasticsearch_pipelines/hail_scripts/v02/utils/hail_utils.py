@@ -1,7 +1,7 @@
 import hail as hl
 import logging
 
-from hail_scripts.v02.utils.computed_fields.variant_id import get_expr_for_variant_ids,get_expr_for_variant_id
+from hail_scripts.v02.utils.computed_fields.variant_id import get_expr_for_variant_ids,get_expr_for_variant_id_ind
 
 logger = logging.getLogger()
 
@@ -82,12 +82,12 @@ def import_vcf(
     )
 
     mt = mt.annotate_rows(
-        samples_num_alt_2= hl.or_missing(hl.len(mt.alleles) > 2, get_expr_for_variant_id(mt.alleles[2],mt.locus, mt.alleles[0]))#hl.or_missing(hl.len(mt.alleles) > 2, get_expr_for_variant_ids(mt.locus, mt.alleles))
+        samples_num_alt_2= hl.or_missing(hl.len(mt.alleles) > 2, get_expr_for_variant_id_ind(mt.alleles[2],mt.locus, mt.alleles[0]))#hl.or_missing(hl.len(mt.alleles) > 2, get_expr_for_variant_ids(mt.locus, mt.alleles))
 
     )
 
     mt = mt.annotate_rows(
-        samples_num_alt_3= hl.or_missing(hl.len(mt.alleles) > 3, get_expr_for_variant_id(mt.alleles[3],mt.locus, mt.alleles[0]))#hl.or_missing(hl.len(mt.alleles) > 2, get_expr_for_variant_ids(mt.locus, mt.alleles))
+        samples_num_alt_3= hl.or_missing(hl.len(mt.alleles) > 3, get_expr_for_variant_id_ind(mt.alleles[3],mt.locus, mt.alleles[0]))#hl.or_missing(hl.len(mt.alleles) > 2, get_expr_for_variant_ids(mt.locus, mt.alleles))
 
     )
 
