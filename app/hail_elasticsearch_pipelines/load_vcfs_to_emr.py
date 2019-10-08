@@ -354,6 +354,7 @@ def add_project_dataset_to_elastic_search(
             'num_alt' : vep_mt.info.NS,
             'ab':vep_mt.info.AO,
             'dp': vep_mt.info.DP,
+            'gq': vep_mt.info.qual,
             'sample_id': hl.literal(parse_vcf_s3_path(dataset.vcf_s3_path)['filename'])
         })
     )

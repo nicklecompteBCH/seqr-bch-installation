@@ -593,8 +593,8 @@ class EsSearch(BaseEsSearch):
         for family_guid in family_guids:
             samples_by_id = index_family_samples[family_guid]
             genotypes.update({
-                samples_by_id[json.loads(genotype_hit)['sample_id']].individual.guid: _get_field_values(json.loads(genotype_hit), GENOTYPE_FIELDS_CONFIG)
-                for genotype_hit in hit[GENOTYPES_FIELD_KEY] if json.loads(genotype_hit)['sample_id'] in samples_by_id
+                samples_by_id[genotype_hit['sample_id']].individual.guid: _get_field_values(genotype_hit, GENOTYPE_FIELDS_CONFIG)
+                for genotype_hit in hit[GENOTYPES_FIELD_KEY] if genotype_hit['sample_id'] in samples_by_id
             })
 
         genome_version = self.index_metadata[index_name].get('genomeVersion')
