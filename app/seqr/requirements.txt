@@ -50,7 +50,7 @@ django-crispy-forms      # switching to client-side form creation/rendering
 # django-pretty-times      # date rendering should happen in javascript
 #fisher==0.1.5	      	    	 # compute Fisher exact test p-values
 Markdown==2.6.8
-Pillow==4.0.0                    # required dependency of Djagno ImageField-type database records
+Pillow==6.2.0                    # required dependency of Djagno ImageField-type database records
 progressbar                 # using tqdm instead
 pymongo==3.4.0                   # switching to other database
 pysam==0.15.2                    # bam and tabix library
