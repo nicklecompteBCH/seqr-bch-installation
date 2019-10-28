@@ -202,6 +202,7 @@ def load_clinvar(export_to_es=False):
 
     review_status_str = hl.delimit(hl.sorted(hl.array(hl.set(mt.info.CLNREVSTAT)), key=lambda s: s.replace("^_", "z")))
 
+    goldstar_dict = hl.literal(CLINVAR_GOLD_STARS_LOOKUP)
 
 
     mt = mt.select_rows(
@@ -215,7 +216,7 @@ def load_clinvar(export_to_es=False):
             vep_sorted_transcript_consequences_root=mt.sortedTranscriptConsequences,
             gene_ids=mt.gene_ids
         ),
-        gold_stars=hl.literal(CLINVAR_GOLD_STARS_LOOKUP[review_status_str]),
+        gold_stars=goldstar_dict.get(review_status_str)
         **{f"main_transcript_{field}": mt.main_transcript[field] for field in mt.main_transcript.dtype.fields},
         pos=get_expr_for_start_pos(mt),
         ref=get_expr_for_ref_allele(mt),
