@@ -43,7 +43,7 @@
                         }],
                         "EbsOptimized" : false
                     },
-                    "InstanceCount" : 1,
+                    "InstanceCount" :2,
                     "InstanceType" : "r4.4xlarge",
                     "Market" : "ON_DEMAND",
                     "Name" : "hail-workers"
@@ -63,7 +63,7 @@
                         "EbsOptimized" : false
                     },
                     "InstanceCount" : 1,
-                    "InstanceType" : "c5n.18xlarge",
+                    "InstanceType" : "c5n.9xlarge",
                     "Market" : "ON_DEMAND",
                     "Name" : "hail-master"
                 },

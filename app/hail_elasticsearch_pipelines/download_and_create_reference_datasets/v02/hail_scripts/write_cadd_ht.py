@@ -42,9 +42,13 @@ def import_cadd_table(path: str, genome_version: str) -> hl.Table:
     return cadd_union_ht
 
 for genome_version in ["37", "38"]:
-    snvs_ht = import_cadd_table(f"gs://seqr-reference-data/GRCh{genome_version}/CADD/whole_genome_SNVs.v1.4.tsv.bgz", genome_version)
-    indel_ht = import_cadd_table(f"gs://seqr-reference-data/GRCh{genome_version}/CADD/InDels.v1.4.tsv.bgz", genome_version)
+    snvs_ht = import_cadd_table(f"s3://seqr-resources/GRCh{genome_version}/CADD/whole_genome_SNVs.v1.4.tsv.bgz", genome_version)
+    indel_ht = import_cadd_table(f"s3://seqr-resources/GRCh{genome_version}/CADD/InDels.v1.4.tsv.bgz", genome_version)
 
     ht = snvs_ht.union(indel_ht)
 
     write_ht(ht, f"gs://seqr-reference-data/GRCh{genome_version}/CADD/CADD_snvs_and_indels_test.v1.4.ht")
+
+gsutil cp gs://seqr-reference-data/GRCh37/CADD/whole_genome_SNVs.v1.4.tsv.bgz
+gsutil cp gs://seqr-reference-data/GRCh37/CADD/InDels.v1.4.tsv.bgz
+gsutil cp gs://seqr-reference-data/GRCh37/CADD/CADD_snvs_and_indels_test.v1.4.ht

@@ -7,7 +7,7 @@ from hail_scripts.v02.utils.hail_utils import import_vcf
 logger = logging.getLogger('v02.hail_scripts.create_1kg_ht')
 
 CONFIG= {
-    "37": "gs://seqr-reference-data/GRCh37/1kg/1kg.wgs.phase3.20130502.GRCh37_sites.vcf.gz",
+    "37": "s3://seqr-resources/1kg/1kg.wgs.phase3.20130502.GRCh37_sites.vcf.gz",
     "38": "gs://seqr-reference-data/GRCh38/1kg/1kg.wgs.phase3.20170504.GRCh38_sites.vcf.gz"
 }
 

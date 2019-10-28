@@ -36,7 +36,7 @@ CLINVAR_FIELDS = """
      --- SSR: Int
 """
 
-CLINVAR_GOLD_STARS_LOOKUP = """Dict(
+CLINVAR_GOLD_STARS_LOOKUP_OLD = """Dict(
     [
         'no_interpretation_for_the_single_variant', 'no_assertion_provided', 'no_assertion_criteria_provided',
         'criteria_provided,_single_submitter', 'criteria_provided,_conflicting_interpretations',
@@ -49,6 +49,17 @@ CLINVAR_GOLD_STARS_LOOKUP = """Dict(
     ]
 )"""
 
+CLINVAR_GOLD_STARS_LOOKUP = hl.literal({
+    'no_interpretation_for_the_single_variant': 0,
+    'no_assertion_provided' : 0,
+    'no_assertion_criteria_provided' : 0,
+    'criteria_provided,_single_submitter' : 1,
+    'criteria_provided,_conflicting_interpretations' : 1,
+    'criteria_provided,_multiple_submitters,_no_conflicts' : 2,
+    'reviewed_by_expert_panel' : 3,
+    'practice_guideline' : 4
+
+})
 
 CLINVAR_VDS_CACHE = {}
 

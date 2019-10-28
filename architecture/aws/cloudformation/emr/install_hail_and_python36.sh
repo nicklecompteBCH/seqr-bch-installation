@@ -35,8 +35,8 @@ Options:
 
 # Add hail to the master node
 sudo mkdir -p /opt/hail/src
-sudo chmod 777 /opt/
-sudo chown hadoop:hadoop /opt
+sudo chmod -r 777 /opt/
+sudo chown -R hadoop:hadoop /opt
 cd /opt
 cd $HAIL_HOME/src
 
@@ -63,63 +63,32 @@ fi
 
 echo "Building Hail from $HASH"
 
-if [ "$IS_MASTER" = true ]; then
-    sudo yum install g++ cmake git -y
-    sudo yum -y install gcc72-c++ # Fixes issue with c++14 incompatibility in Amazon Linux
-    sudo yum install -y lz4 # Fixes issue of missing lz4
-    sudo yum install -y lz4-devel
-    git clone https://github.com/broadinstitute/hail.git
-    cd hail/hail/
-    git checkout $HAIL_VERSION
-    GIT_HASH="$(git log --pretty=format:"%H" | grep $HASH | cut -f 1 -d ' ')"
+sudo yum install g++ cmake git -y
+sudo yum -y install gcc72-c++ # Fixes issue with c++14 incompatibility in Amazon Linux
+sudo yum install -y lz4 # Fixes issue of missing lz4
+sudo yum install -y lz4-devel
+git clone https://github.com/broadinstitute/hail.git
+cd hail/hail/
+git checkout $HAIL_VERSION
+GIT_HASH="$(git log --pretty=format:"%H" | grep $HASH | cut -f 1 -d ' ')"
 
-    if [ ${#HASH} -lt 7 ]; then
-    	if [ $HASH = "current" ]; then
-    		echo "Hail will be compiled using the latest repository version available"
-    	else
-    		echo "The git hash provided has less than 7 characters. The latest version of Hail will be compiled!"
-    		# exit 1
-    	fi
-    else
-    	export TEST="$(aws s3 ls s3://hms-dbmi-docs/hail-versions/ | grep $HASH | sed -e 's/^[ \t]*//' | cut -d " " -f 2)"
-    	if [ -z "$TEST" ] || [-z "$GIT_HASH" ]; then
-    		echo "Hail pre-compiled version not found!"
-            echo "Compiling Hail with git hash: $GIT_HASH"
-            git reset --hard $GIT_HASH
-            SELECTED_VERSION=`git show -s --format=%ct $GIT_HASH`
-    	else
-    		echo "Hail pre-compiled version found: $TEST"
-            aws s3 cp s3://hms-dbmi-docs/hail-versions/$TEST $HOME/ --recursive
-            GIT_HASH="$(echo $TEST | cut -d "-" -f 1)"
-            git reset --hard $GIT_HASH
-            COMPILE=false
-    	fi
-    fi
+LATEST_JDK=`ls  /usr/lib/jvm/ | grep "java-1.8.0-openjdk-1.8"`
+sudo  ln -s /usr/lib/jvm/$LATEST_JDK/include /etc/alternatives/jre/include
 
-    LATEST_JDK=`ls  /usr/lib/jvm/ | grep "java-1.8.0-openjdk-1.8"`
-    sudo  ln -s /usr/lib/jvm/$LATEST_JDK/include /etc/alternatives/jre/include
+# Compile with Spark 2.4.0
+echo "Compiling with Wheel..."
+make clean
+make wheel
+HAIL_WHEEL=`ls /opt/hail/src/hail/hail/build/deploy/dist | grep "whl"`
+sudo python3 -m pip install --no-deps /opt/hail/src/hail/hail/build/deploy/dist/$HAIL_WHEEL
 
-
-    if [ "$COMPILE" = true ]; then
-        # Compile with Spark 2.4.0
-        if [ $SELECTED_VERSION -ge $GRADLE_DEPRECATION ];then
-          echo "Compiling with Wheel..."
-          make clean
-          make wheel
-          HAIL_WHEEL=`ls /opt/hail-on-AWS-spot-instances/src/hail/hail/build/deploy/dist | grep "whl"`
-          sudo python3 -m pip install --no-deps /opt/hail-on-AWS-spot-instances/src/hail/hail/build/deploy/dist/$HAIL_WHEEL
-
-      else  ./gradlew -Dspark.version=$SPARK_VERSION -Dbreeze.version=0.13.2 -Dpy4j.version=0.10.6 shadowJar archiveZip
-            cp $PWD/build/distributions/hail-python.zip $HOME
-            cp $PWD/build/libs/hail-all-spark.jar $HOME
-        fi
-    fi
-fi
+# else  ./gradlew -Dspark.version=$SPARK_VERSION -Dbreeze.version=0.13.2 -Dpy4j.version=0.10.6 shadowJar archiveZip
+#     cp $PWD/build/distributions/hail-python.zip $HOME
+#     cp $PWD/build/libs/hail-all-spark.jar $HOME
+# fi
 
 sudo cp /usr/share/zoneinfo/America/New_York /etc/localtime
 
 # Install user-level python packages
 python3 -m pip install boto3 --user
-python3 -m pip install hail --user
 python3 -m pip install elasticsearch --user
-

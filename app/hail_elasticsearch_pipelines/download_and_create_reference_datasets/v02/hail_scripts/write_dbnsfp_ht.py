@@ -4,8 +4,8 @@ from hail.expr import tint, tfloat, tstr
 DBNSFP_INFO = {
     '2.9.3': {
         'reference_genome': '37',
-        'source_path': 'gs://seqr-reference-data/GRCh37/dbNSFP/v2.9.3/dbNSFP2.9.3_variant.chr*.gz',
-        'output_path': 'gs://seqr-reference-data/GRCh37/dbNSFP/v2.9.3/dbNSFP2.9.3_variant.ht',
+        'source_path': 's3://seqr-resources/GRCh37/dbNSFP/v2.9.3/dbNSFP2.9.3_variant.chr*.gz',
+        'output_path': 's3://seqr-resources/GRCh37/dbNSFP/v2.9.3/dbNSFP2.9.3_variant.ht',
     },
     '3.5': {
         'reference_genome': '38',
