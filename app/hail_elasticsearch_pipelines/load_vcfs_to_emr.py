@@ -290,7 +290,7 @@ def load_hgmd_vcf():
     )
     return mt
 
-hgmd_mt = load_hgmd()
+hgmd_mt = load_hgmd_vcf()
 
 def annotate_with_hgmd(mt: hl.MatrixTable) -> hl.MatrixTable:
     mt = mt.annotate_rows(
