@@ -216,7 +216,7 @@ def load_clinvar(export_to_es=False):
             vep_sorted_transcript_consequences_root=mt.sortedTranscriptConsequences,
             gene_ids=mt.gene_ids
         ),
-        gold_stars=goldstar_dict.get(review_status_str)
+        gold_stars= hl.int(goldstar_dict.get(review_status_str))
         **{f"main_transcript_{field}": mt.main_transcript[field] for field in mt.main_transcript.dtype.fields},
         pos=get_expr_for_start_pos(mt),
         ref=get_expr_for_ref_allele(mt),
@@ -256,14 +256,14 @@ def load_clinvar(export_to_es=False):
         return mt
 
 CLINVAR_GOLD_STARS_LOOKUP = {
-    'no_interpretation_for_the_single_variant': 0,
-    'no_assertion_provided' : 0,
-    'no_assertion_criteria_provided' : 0,
-    'criteria_provided,_single_submitter' : 1,
-    'criteria_provided,_conflicting_interpretations' : 1,
-    'criteria_provided,_multiple_submitters,_no_conflicts' : 2,
-    'reviewed_by_expert_panel' : 3,
-    'practice_guideline' : 4
+    'no_interpretation_for_the_single_variant': "0",
+    'no_assertion_provided' : "0",
+    'no_assertion_criteria_provided' : "0",
+    'criteria_provided,_single_submitter' : "1",
+    'criteria_provided,_conflicting_interpretations' : "1",
+    'criteria_provided,_multiple_submitters,_no_conflicts' : "2",
+    'reviewed_by_expert_panel' : "3",
+    'practice_guideline' : "4"
 
 }
 
