@@ -586,7 +586,7 @@ def variants_with_tag(request, project_id, tag=None):
                 worst_annotation.get("hgvsc") or "",
                 (worst_annotation.get("hgvsp") or "").replace("%3D", "="),
             ] + genotype_values
-            writer.writerow(map(lambda s: unicode(s).encode('UTF-8'), row))
+            writer.writerow(map(lambda s: str(s).encode('UTF-8'), row))
 
         return response
     else:

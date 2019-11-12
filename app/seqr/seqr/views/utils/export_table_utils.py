@@ -45,14 +45,14 @@ def export_table(filename_prefix, header, rows, file_format, titlecase_header=Tr
         response = HttpResponse(content_type='text/tsv')
         response['Content-Disposition'] = 'attachment; filename="{}.tsv"'.format(filename_prefix)
         response.writelines(['\t'.join(header)+'\n'])
-        response.writelines(('\t'.join(map(unicode, row))+'\n' for row in rows))
+        response.writelines(('\t'.join(map(str, row))+'\n' for row in rows))
         return response
     elif file_format == "json":
         response = HttpResponse(content_type='application/json')
         response['Content-Disposition'] = 'attachment; filename="{}.json"'.format(filename_prefix)
         for row in rows:
             json_keys = map(lambda s: s.replace(" ", "_").lower(), header)
-            json_values = map(unicode, row)
+            json_values = map(str, row)
             response.write(json.dumps(OrderedDict(zip(json_keys, json_values)))+'\n')
         return response
     elif file_format == "xls":

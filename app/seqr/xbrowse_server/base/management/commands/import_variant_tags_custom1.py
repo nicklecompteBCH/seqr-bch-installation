@@ -35,13 +35,13 @@ def add_variant_tag(row, user):
     except ObjectDoesNotExist as e:
         print("project tag not found - %s %s: %s" % (project_id, new_tag_name, e))
         return
-        
+
     try:
         families = get_family(family_id, project_id=project_id)
     except Exception as e:
         print("Unable to get family: %s %s" % (family_id, e))
         return
-    
+
     assert len(families) == 1
     family = families[0]
 
@@ -59,7 +59,7 @@ def add_variant_tag(row, user):
             if vt.user == user:
                 print("Deleting extra tag: " + str(vt))
                 vt.delete()
-        
+
     vt, created = VariantTag.objects.get_or_create(project_tag=project_tag, family=family, xpos=xpos, ref=ref, alt=alt)
     if created:
         vt.user = user
@@ -71,7 +71,7 @@ AMBIGUOUS = []
 def get_family(family_id, project_id=None):
     unchanged_family_id = family_id
     attempts = ['as_is', 'without_suffix'] if '_' in family_id else ['as_is']
-    
+
     if project_id:
         for attempt in attempts:
             try:
@@ -88,7 +88,7 @@ def get_family(family_id, project_id=None):
         for attempt in attempts:
             families = Family.objects.filter(
                 Q(family_id=family_id)
-                & (Q(project__project_name__icontains='cmg') | Q(project__project_id__icontains='cmg')) 
+                & (Q(project__project_name__icontains='cmg') | Q(project__project_id__icontains='cmg'))
                 & ~Q(project__project_id__icontains='temp')).distinct()
 
             if not families:
@@ -128,7 +128,7 @@ def add_initial_omim(row):
             print("ERROR: No affected individuals found in family: " + str(family))
 
         #continue  # skip updating phenotips
-        
+
         for individual in individuals:
             try:
                 patient_data = get_patient_data(seqr_project, individual.phenotips_id, is_external_id=True)
@@ -146,7 +146,7 @@ def add_post_discovery_omim(row):
         families = get_family(family_id)
     except Exception as e:
         print("Unable to get family: %s %s" % (family_id, e))
-        return 
+        return
 
     omim_number = row['OMIM # (post-discovery)']
     for family in families:
@@ -160,7 +160,7 @@ def add_coded_phenotype(row):
         families = get_family(family_id)
     except Exception as e:
         print("Unable to get family: %s %s" % (family_id, e))
-        return 
+        return
 
     for family in families:
         family.coded_phenotype = row['Coded phenotype']
@@ -177,7 +177,7 @@ class Command(BaseCommand):
         xls_file = options.get("variant_tag_file")
 
         print("Reading " + xls_file)
-        
+
         user = User.objects.get(email = 'samantha@broadinstitute.org')
 
         print("==============")
@@ -195,7 +195,7 @@ class Command(BaseCommand):
                 #print("Skipping row %s: tags are the same" % i)
                 continue
             add_variant_tag(row, user)
-        
+
 
         print("==============")
         rows = parse_xls(xls_file, worksheet_index=2)  # OMIM #s - Initial
@@ -246,7 +246,7 @@ def parse_xls(path, worksheet_index=0):
             else:
                 if cell.ctype in (2,3) and int(cell_value) == cell_value:
                     cell_value = int(cell_value)
-                parsed_row.append(unicode(cell_value).encode('UTF-8'))
+                parsed_row.append(str(cell_value).encode('UTF-8'))
         else:
             # keep this row as part of the table
             if len(parsed_row) != len(header):

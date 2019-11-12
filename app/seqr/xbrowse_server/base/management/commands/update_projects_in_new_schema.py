@@ -365,14 +365,14 @@ def update_model_fields(model, xbrowse_model, xbrowse_fields):
     for field_name, new_value in list(seqr_fields.items()):
         if getattr(model, field_name) != new_value:
             if DEBUG and field_name != 'phenotips_data':
-                i = raw_input("Should %s.%s = %s\n instead of \n%s \n in %s ? [Y\n]" % (model.__class__.__name__.encode('utf-8'), field_name.encode('utf-8'), unicode(new_value).encode('utf-8'), getattr(model, field_name), str(model)))
+                i = raw_input("Should %s.%s = %s\n instead of \n%s \n in %s ? [Y\n]" % (model.__class__.__name__.encode('utf-8'), field_name.encode('utf-8'), str(new_value).encode('utf-8'), getattr(model, field_name), str(model)))
                 if i.lower() != "y":
                     print("ok, skipping.")
                     return
 
             setattr(model, field_name, new_value)
             if field_name != 'phenotips_data':
-                print("Setting %s.%s = %s" % (model.__class__.__name__.encode('utf-8'), field_name.encode('utf-8'), unicode(new_value).encode('utf-8')))
+                print("Setting %s.%s = %s" % (model.__class__.__name__.encode('utf-8'), field_name.encode('utf-8'), str(new_value).encode('utf-8')))
 
     if hasattr(xbrowse_model, 'date_saved'):
         model.save(last_modified_date=getattr(xbrowse_model, 'date_saved'))

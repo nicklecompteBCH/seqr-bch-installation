@@ -23,7 +23,7 @@ def choose_one(model, field_name, value_a, value_b, default_value=None, use_lowe
     """
     def print_out(value):
         if verbose:
-            print("Set %s.%s to %s" % (type(model).__name__, field_name, ('"%s"' % unicode(value).encode('UTF-8')) if isinstance(value, (str, unicode)) else value))
+            print("Set %s.%s to %s" % (type(model).__name__, field_name, ('"%s"' % str(value).encode('UTF-8')) if isinstance(value, str) else value))
 
     # generic cases
     if value_a == value_b:

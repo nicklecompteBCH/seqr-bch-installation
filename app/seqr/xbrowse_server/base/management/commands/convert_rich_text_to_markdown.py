@@ -12,7 +12,7 @@ def strip(s, start_string, end_string):
     If start_string or end_string not found, return the original input string s.
 
     This method is (surprisingly) necessary because re.sub('<!--.*-->', '', s, re.DOTALL) fails to match all cases (for example
-    where there's unusual white-space that isn't matched by . even with re.DOTALL). 
+    where there's unusual white-space that isn't matched by . even with re.DOTALL).
     re.sub('<!--(.*[\W]*)*-->', '', s, re.DOTALL)  matches all cases, but runs into catastrophic backtracking / inifite loops
     in some cases.
     """
@@ -29,7 +29,7 @@ def strip(s, start_string, end_string):
 def convert_to_markdown(s):
     """Converts an html string to markdown"""
 
-    s = unicode(s).encode('utf-8')
+    s = str(s).encode('utf-8')
     #s = ''.join([i if ord(i) < 128 else ' ' for i in s])
     #print("Original:\n" + s)
     #print("====")
@@ -83,7 +83,7 @@ class Command(BaseCommand):
                 s = convert_to_markdown(s)
                 setattr(f, attr, s)
                 f.save()
-                
+
                 if attr == "analysis_notes":
                     base_attr = "about_family_content"
                 elif attr == "description":
@@ -102,6 +102,6 @@ class Command(BaseCommand):
                     print(e)
                     print(f.project.deprecated_project_id, f.family_id)
                     continue
-                
+
                 setattr(base_f, base_attr, s)
                 base_f.save()

@@ -291,7 +291,7 @@ class VariantFunctionalDataForm(forms.Form):
             return value
 
         def valid_value(self, value):
-            return isinstance(value, dict) and {'tag', 'metadata'}.issuperset(value) and (isinstance(value.get('tag'), unicode) or isinstance(value.get('tag'), basestring))
+            return isinstance(value, dict) and {'tag', 'metadata'}.issuperset(value) and (isinstance(value.get('tag'), str))
 
     tags = TagsField(required=False)
     xpos = forms.IntegerField(max_value=10**20)

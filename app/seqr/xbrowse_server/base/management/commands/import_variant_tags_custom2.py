@@ -100,7 +100,7 @@ def parse_xls(path, worksheet_index=0):
             else:
                 if cell.ctype in (2,3) and int(cell_value) == cell_value:
                     cell_value = int(cell_value)
-                parsed_row.append(unicode(cell_value).encode('UTF-8'))
+                parsed_row.append(str(cell_value).encode('UTF-8'))
         else:
             # keep this row as part of the table
             if len(parsed_row) != len(header):

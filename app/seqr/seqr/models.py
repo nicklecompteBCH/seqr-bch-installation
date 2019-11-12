@@ -62,7 +62,7 @@ class ModelWithGUID(models.Model):
         in seconds.
         """
 
-    def __unicode__(self):
+    def __str__(self):
         return self.guid
 
     def json(self):
@@ -129,7 +129,7 @@ class Project(ModelWithGUID):
     deprecated_project_id = models.TextField(default="", blank=True, db_index=True)  # replace with model's 'id' field
     has_new_search = models.BooleanField(default=False)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name.strip()
 
     def _compute_guid(self):
@@ -190,7 +190,7 @@ class ProjectCategory(ModelWithGUID):
     name = models.TextField(db_index=True)  # human-readable category name
     # color = models.CharField(max_length=20, default="#1f78b4")
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name.strip()
 
     def _compute_guid(self):
@@ -263,7 +263,7 @@ class Family(ModelWithGUID):
     internal_case_review_notes = models.TextField(null=True, blank=True)
     internal_case_review_summary = models.TextField(null=True, blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.family_id.strip()
 
     def _compute_guid(self):
@@ -286,7 +286,7 @@ class Family(ModelWithGUID):
 class FamilyAnalysedBy(ModelWithGUID):
     family = models.ForeignKey(Family,on_delete=models.PROTECT)
 
-    def __unicode__(self):
+    def __str__(self):
         return '{}_{}'.format(self.family.guid, self.created_by)
 
     def _compute_guid(self):
@@ -364,7 +364,7 @@ class Individual(ModelWithGUID):
     pop_platform_filters = JSONField(null=True)
     population = models.CharField(max_length=5, null=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.individual_id.strip()
 
     def _compute_guid(self):
@@ -486,7 +486,7 @@ class Sample(ModelWithGUID):
     #funding_source = models.CharField(max_length=20, null=True)
     #is_external_data = models.BooleanField(default=False)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.sample_id.strip()
 
     def _compute_guid(self):
@@ -514,7 +514,7 @@ class AliasField(models.Field):
 #
 #    notes = models.TextField(null=True, blank=True)
 #
-#    def __unicode__(self):
+#    def __str__(self):
 #        return self.name.strip()
 #
 #    def _compute_guid(self):
@@ -539,7 +539,7 @@ class SavedVariant(ModelWithGUID):
     project = models.ForeignKey('Project',on_delete=models.PROTECT)
     family = models.ForeignKey('Family', null=True, blank=True, on_delete=models.SET_NULL)
 
-    def __unicode__(self):
+    def __str__(self):
         chrom, pos = get_chrom_pos(self.xpos_start)
         return "%s:%s-%s:%s" % (chrom, pos, self.project.guid, self.family.guid if self.family else '')
 
@@ -578,7 +578,7 @@ class VariantTagType(ModelWithGUID):
     order = models.FloatField(null=True)
     is_built_in = models.BooleanField(default=False)  # built-in tags (eg. "Pathogenic") can't be modified by users through the UI
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name.strip()
 
     def _compute_guid(self):
@@ -597,7 +597,7 @@ class VariantTag(ModelWithGUID):
     #  TODO deprecate and migrate to search_hash
     search_parameters = models.TextField(null=True, blank=True)  # aka. search url
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s:%s" % (str(self.saved_variant), self.variant_tag_type.name)
 
     def _compute_guid(self):
@@ -619,7 +619,7 @@ class VariantNote(ModelWithGUID):
     #  TODO deprecate and migrate to search_hash
     search_parameters = models.TextField(null=True, blank=True)  # aka. search url
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s:%s" % (str(self.saved_variant), (self.note or "")[:20])
 
     def _compute_guid(self):
@@ -699,7 +699,7 @@ class VariantFunctionalData(ModelWithGUID):
     #  TODO deprecate and migrate to search_hash
     search_parameters = models.TextField(null=True, blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s:%s" % (str(self.saved_variant), self.functional_data_tag)
 
     def _compute_guid(self):
@@ -715,7 +715,7 @@ class GeneNote(ModelWithGUID):
     note = models.TextField(default="", blank=True)
     gene_id = models.CharField(max_length=20)  # ensembl ID
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s:%s" % (self.gene_id, (self.note or "")[:20])
 
     def _compute_guid(self):
@@ -733,7 +733,7 @@ class LocusList(ModelWithGUID):
 
     is_public = models.BooleanField(default=False)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name.strip()
 
     def _compute_guid(self):
@@ -753,7 +753,7 @@ class LocusListGene(ModelWithGUID):
 
     description = models.TextField(null=True, blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s:%s" % (self.locus_list, self.gene_id)
 
     def _compute_guid(self):
@@ -773,7 +773,7 @@ class LocusListInterval(ModelWithGUID):
 
     description = models.TextField(null=True, blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s:%s:%s-%s" % (self.locus_list, self.chrom, self.start, self.end)
 
     def _compute_guid(self):
@@ -792,7 +792,7 @@ class AnalysisGroup(ModelWithGUID):
     project = models.ForeignKey('Project', on_delete=models.CASCADE)
     families = models.ManyToManyField(Family)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name.strip()
 
     def _compute_guid(self):
@@ -808,7 +808,7 @@ class VariantSearch(ModelWithGUID):
     name = models.CharField(max_length=200, null=True)
     search = JSONField()
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name or self.id
 
     def _compute_guid(self):
@@ -825,7 +825,7 @@ class VariantSearchResults(ModelWithGUID):
     families = models.ManyToManyField('Family')
     search_hash = models.CharField(max_length=50, db_index=True, unique=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.search_hash
 
     def _compute_guid(self):
@@ -845,7 +845,7 @@ class MatchmakerResult(ModelWithGUID):
 
     match_removed = models.BooleanField(default=False)
 
-    def __unicode__(self):
+    def __str__(self):
         return '{}_{}_result'.format(self.id, str(self.individual))
 
     def _compute_guid(self):
@@ -862,7 +862,7 @@ class MatchmakerContactNotes(ModelWithGUID):
     institution = models.CharField(max_length=200, db_index=True, unique=True)
     comments = models.TextField(blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return '{}_{}_result'.format(self.id, self.institution)
 
     def _compute_guid(self):

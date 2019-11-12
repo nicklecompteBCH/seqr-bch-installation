@@ -20,7 +20,7 @@ class GeneList(models.Model):
 
     seqr_locus_list = models.ForeignKey(LocusList, null=True, blank=True, on_delete=models.SET_NULL)  # simplifies migration to new seqr.models schema
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     def num_genes(self):

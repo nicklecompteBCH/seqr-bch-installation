@@ -40,7 +40,7 @@ class UserProfile(models.Model):
     display_name = models.CharField(default="", blank=True, max_length=100)
     set_password_token = models.CharField(max_length=40, blank=True, default="")
 
-    def __unicode__(self):
+    def __str__(self):
         return self.display_name if self.display_name else self.user.email
 
     def get_set_password_link(self):
@@ -95,7 +95,7 @@ class VCFFile(models.Model):
 
     loaded_date = models.DateTimeField(null=True, blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.file_path
 
     def path(self):
@@ -118,7 +118,7 @@ class ReferencePopulation(models.Model):
     file_path = models.CharField(default="", max_length=500)
     is_public = models.BooleanField(default=False)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     def to_dict(self):
@@ -187,7 +187,7 @@ class Project(models.Model):
     combined_projects_info = models.TextField(default="", blank=True)
     seqr_project = models.ForeignKey('seqr.Project', null=True, blank=True, on_delete=models.SET_NULL)  # simplifies migration to new seqr.models schema
 
-    def __unicode__(self):
+    def __str__(self):
         return self.project_name if self.project_name != "" else self.project_id
 
     def is_collaborator(self, user, collaborator_type=None):
@@ -496,7 +496,7 @@ class Family(models.Model):
     combined_families_info = models.TextField(default="", blank=True)
     seqr_family = models.ForeignKey('seqr.Family', null=True, blank=True, on_delete=models.SET_NULL)  # simplifies migration to new seqr.models schema
 
-    def __unicode__(self):
+    def __str__(self):
         return self.family_name if self.family_name != "" else self.family_id
 
     def toJSON(self):
@@ -725,7 +725,7 @@ class Cohort(models.Model):
 
     variant_stats_json = models.TextField(default="", blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.display_name if self.display_name != "" else self.cohort_id
 
     def get_individuals(self):
@@ -881,7 +881,7 @@ class Individual(models.Model):
     combined_individuals_info = models.TextField(default="", blank=True)
     seqr_individual = models.ForeignKey('seqr.Individual', null=True, blank=True, on_delete=models.SET_NULL)  # simplifies migration to new seqr.models schema
 
-    def __unicode__(self):
+    def __str__(self):
         ret = self.indiv_id
         if self.nickname:
             ret += " (%s)" % self.nickname
@@ -1153,7 +1153,7 @@ class ProjectPhenotype(models.Model):
     category = models.CharField(choices=PHENOTYPE_CATEGORIES, max_length=20)
     datatype = models.CharField(choices=PHENOTYPE_DATATYPES, max_length=20)
 
-    def __unicode__(self):
+    def __str__(self):
         return "{} in {}".format(self.name, self.project)
 
     def toJSON(self):
@@ -1192,7 +1192,7 @@ class FamilyGroup(models.Model):
     seqr_analysis_group = models.ForeignKey('seqr.AnalysisGroup', null=True, blank=True, on_delete=models.SET_NULL)  # simplifies migration to new seqr.models schema
 
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     def get_families(self):
@@ -1241,7 +1241,7 @@ class ProjectTag(models.Model):
             ])
         super(ProjectTag, self).save(*args, **kwargs)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.title if self.title else self.tag
 
     def toJSON(self):
