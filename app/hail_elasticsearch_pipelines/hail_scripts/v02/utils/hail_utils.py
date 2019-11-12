@@ -75,7 +75,7 @@ def import_vcf(
     mt = mt.annotate_globals(sourceFilePath=vcf_path, genomeVersion=genome_version)
 
     mt = mt.annotate_rows(
-        original_alt_alleles=hl.or_missing(hl.len(mt.alleles) > 2, get_expr_for_variant_ids(mt.locus, mt.alleles))
+        originalAltAlleles=hl.or_missing(hl.len(mt.alleles) > 2, get_expr_for_variant_ids(mt.locus, mt.alleles))
     )
 
     mt = mt.annotate_rows(

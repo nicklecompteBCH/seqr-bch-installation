@@ -21,10 +21,9 @@ class LocusInterval:
     end: int,
     chromosome2: ChromosomeNumber = None
 ):
-
-    self.chromosome1 = chromosome1
-    self.start = start
-    self.end = end
+        self.chromosome1 = chromosome1
+        self.start = start
+        self.end = end
 
     def to_hail_expr(self):
         if not self.chromosome2:

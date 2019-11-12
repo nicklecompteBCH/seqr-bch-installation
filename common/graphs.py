@@ -7,7 +7,7 @@ are not Netflix (e.g a medium cluster with a few smaller ones).
 from typing import (
     TypeVar, List, Dict,
     Generic, Union, Set,
-    Tuple, Callable
+    Tuple, Callable, Sequence, Iterable
 )
 from common.exceptions import InvalidTypeException
 from common.helpers import (
@@ -31,9 +31,9 @@ class Star(Generic[T,U]):
 
         2           3
         |_____ _____|
-            _ 1 _
-        |--|  |  |---|
-        4     5      6
+              1
+       4---/  |  \---6
+              5
 
     :param center: The designated center of the graph. The only vertex with > 1 adjacent node.
     :type center: T. T MUST have an implementation of __hash__.
@@ -49,21 +49,21 @@ class Star(Generic[T,U]):
         leaves: Set[U],
         is_directed = True
     ):
-        vertex_list = [center] + list(leaves)
+        vertex_list : Sequence[Union[T,U]] = [l for l in leaves]
         if len(set(vertex_list)) != len(vertex_list):
             if center in leaves:
                 raise ValueError(f"Center and leaves of a star must be distinct, {center} was in both.")
-            grouped = group_by(vertex_list, lambda x : x)
+            grouped : Dict[Union[T,U],List[Union[T,U]]] = group_by(vertex_list, lambda x : x)
             for g in grouped:
                 if len(grouped[g]) > 1:
                     raise ValueError(f"Each leaf of a star must be unique. Saw the following repeats: {grouped[g]}")
         self._vertex_set = set(vertex_list)
         self.center = center
         self.leaves = leaves
-        self._adjacency_map = None
+        self._adjacency_map : Union[None, Dict[Union[T,U],Iterable[Union[T,U]]]] = None
         self.is_directed = is_directed
 
-    def get_vertex_set(self) -> List[T]:
+    def get_vertex_set(self) -> Set[Union[T,U]]:
         """Get the vertex set (i.e. the center + the leaves).
         Simple helper function.
 
@@ -77,7 +77,7 @@ class Star(Generic[T,U]):
         return retset
 
 
-    def get_adjacency_map(self) -> Dict[T, List[U]]:
+    def get_adjacency_map(self) -> Dict[Union[T,U], Iterable[Union[T,U]]]:
         """Converts a Star into an adjacency map dictionary.
         For details, please see the docstring at the top of this module,
         as well as the documentation on the Graph class
@@ -90,7 +90,7 @@ class Star(Generic[T,U]):
             # This could very well be None, it is lazily memoized.
             return self._adjacency_map
         # If self._adjacency_map is None, compute the adjacency map.
-        retdict = {self.center: self.leaves}
+        retdict : Dict[Union[T, U], Iterable[Union[T, U]]] = {self.center: self.leaves}
         for leaf in self.leaves:
             if self.is_directed:
                 retdict.update({leaf: set()})
@@ -163,8 +163,8 @@ class Path(Generic[TNode]):
         is_directed = True
     ):
         self.path = input_list
-        self._vertex_set = None
-        self._adjacency_map = None
+        self._vertex_set : Union[None,Set[TNode]] = None
+        self._adjacency_map : Union[None, Dict[TNode,Iterable[TNode]]] = None
         self.is_empty = (len(input_list) > 0)
         self.start = input_list[0] if len(input_list) > 0 else None
         # Even if it's incomplete, a path has an endpoint.

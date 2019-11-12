@@ -46,7 +46,7 @@ def get_expr_for_variant_ids(
     return alleles[1:].map(compute_variant_id)
 
 
-def get_expr_for_variant_type(table:hl.Table) -> hl.str:
+def get_expr_for_variant_type(table:hl.MatrixTable) -> hl.str:
     return hl.bind(
         lambda ref_len, alt_len: (
             hl.case()
@@ -56,7 +56,7 @@ def get_expr_for_variant_type(table:hl.Table) -> hl.str:
                 .default("S")
         ),
         hl.len(get_expr_for_ref_allele(table)),
-        hl.len(get_expr_for_alt_allele(table)),
+        hl.len(get_expr_for_alt_allele(table)),\
     )
 
 
@@ -94,3 +94,11 @@ def get_expr_for_xpos(locus: hl.expr.LocusExpression) -> hl.expr.Int64Expression
     """
     contig_number = get_expr_for_contig_number(locus)
     return hl.int64(contig_number) * 1_000_000_000 + locus.position
+
+def get_expr_for_xpos_end(locus: hl.expr.LocusExpression) -> hl.expr.Int64Expression:
+    """Genomic position represented as a single number = contig_number * 10**9 + position.
+    This represents chrom:pos more compactly and allows for easier sorting.
+    """
+    contig_number = get_expr_for_contig_number(locus)
+    length = hl.contig_length(contig_number, reference_genome='GRCh37')
+    return hl.int64(contig_number) * 1_000_000_000 + locus.position + (hl.expr.functions.int64(length) )

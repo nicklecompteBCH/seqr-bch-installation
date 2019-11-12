@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Dict, List
+from typing import Dict, List, Any
 from django.db.models import Max
 import elasticsearch
 from elasticsearch_dsl import Search, Q, Index, MultiSearch
@@ -1076,7 +1076,7 @@ def _annotations_filter(annotations):
     return consequences_filter, vep_consequences
 
 
-POPULATIONS = {
+POPULATIONS : Dict[str,Dict[str,Any]] = {
     'callset': {
         'AF': 'AF',
         'AC': 'AC',
@@ -1098,7 +1098,7 @@ POPULATIONS = {
     'gnomad_exomes': {},
     'gnomad_genomes': {},
 }
-POPULATION_FIELD_CONFIGS = {
+POPULATION_FIELD_CONFIGS : Dict[str, Dict[str,Any]] = {
     'AF': {'fields': ['AF_POPMAX_OR_GLOBAL'], 'format_value': float},
     'AC': {},
     'AN': {},

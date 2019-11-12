@@ -1,6 +1,7 @@
 import gzip
 import os
 import subprocess
+from enum import Enum
 
 import hail as hl
 
@@ -8,6 +9,21 @@ from hail_scripts.v02.utils.hail_utils import import_vcf
 
 CLINVAR_FTP_PATH = "ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh{genome_version}/clinvar.vcf.gz"
 CLINVAR_HT_PATH = "gs://seqr-reference-data/GRCh{genome_version}/clinvar/clinvar.GRCh{genome_version}.ht"
+
+class ClinvarClinicalSignificance(Enum):
+    Benign = 1
+    LikelyBenign = 2
+    Uncertain = 3
+    LikelyPathogenic = 4
+    Pathogenic = 5
+    DrugResponse = 6
+    Association = 7
+    RiskFactor = 8
+    Protective = 9
+    Affects = 10
+    ConflictingDataFromSubmitters = 11
+    Other = 12
+    NotProvided = 13
 
 CLINVAR_GOLD_STARS_LOOKUP = hl.dict(
     {

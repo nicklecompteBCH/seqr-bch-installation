@@ -2,7 +2,7 @@
 # most of this stuff belongs on the server
 
 import copy
-from typing import List, Dict, Union
+from typing import List, Dict, Union, Sequence
 
 GENOME_VERSION_GRCh37 = '37'
 GENOME_VERSION_GRCh38 = '38'
@@ -564,7 +564,8 @@ ANNOTATION_GROUPS_MAP_INTERNAL = { item['slug']: item for item in ANNOTATION_GRO
 
 ANNOTATION_DEFINITIONS_GROUPED = copy.deepcopy(ANNOTATION_GROUPS)
 for group in ANNOTATION_DEFINITIONS_GROUPED:
-   group['children'] = [ ANNOTATION_DEFINITIONS_MAP[item] for item in group['children'] ]
+    itemlist : Sequence[str] = group['children']
+    group['children'] = [ ANNOTATION_DEFINITIONS_MAP[item] for item in itemlist ]
 
 ANNOTATION_DEFINITIONS_GROUPED_INTERNAL = copy.deepcopy(ANNOTATION_GROUPS_INTERNAL)
 for group in ANNOTATION_DEFINITIONS_GROUPED_INTERNAL:

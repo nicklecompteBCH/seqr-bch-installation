@@ -4,8 +4,8 @@ from typing import Union, Tuple
 
 from common_types import LocusInterval
 
-from hail_scripts.v02.utils.computed_fields.variant_id import *
-from hail_scripts.v02.utils.computed_fields.vep import *
+from hail_elasticsearch_pipelines.hail_scripts.v02.utils.computed_fields.variant_id import *
+from hail_elasticsearch_pipelines.hail_scripts.v02.utils.computed_fields.vep import *
 
 def annotate_mt_with_derived_fields(mt: hl.MatrixTable) -> hl.MatrixTable:
 
@@ -21,7 +21,7 @@ def annotate_mt_with_derived_fields(mt: hl.MatrixTable) -> hl.MatrixTable:
         alt = get_expr_for_alt_allele(mt),
         xpos = get_expr_for_xpos(mt.locus),
         xstart = get_expr_for_xpos(mt.locus),
-        xstop = get_expr_for_end_pos(mt.locus),
+        xstop = get_expr_for_xpos_end(mt.locus),
         sortedTranscriptConsequences=get_expr_for_vep_sorted_transcript_consequences_array(vep_root=mt.vep),
         main_transcript=get_expr_for_worst_transcript_consequence_annotations_struct(
             vep_sorted_transcript_consequences_root=mt.sortedTranscriptConsequences),

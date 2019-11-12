@@ -1,10 +1,13 @@
-from typing import List, Dict, Callable, Generic, TypeVar
+from typing import (
+    List, Dict, Callable,
+    Generic, TypeVar, Iterable
+)
 
 T = TypeVar('T')
 U = TypeVar('U')
 
-def group_by(ls : List[T], mapping: Callable[[T],U]) -> Dict[U, List[T]]:
-    retdict = {}
+def group_by(ls : Iterable[T], mapping: Callable[[T],U]) -> Dict[U, List[T]]:
+    retdict : Dict[U, List[T]] = {}
     for elt in ls:
         key = mapping(elt)
         if key in retdict:

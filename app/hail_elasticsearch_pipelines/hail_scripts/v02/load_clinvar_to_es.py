@@ -1,3 +1,57 @@
+"""
+
+Elasticsearch export example:
+
+ "_index" : "clinvar_grch37",
+        "_type" : "variant",
+        "_id" : "LisTFG4Bc_h0gSJWUFlc",
+        "_score" : 1.0,
+        "_source" : {
+          "allele_id" : 652722,
+          "alt" : "T",
+          "chrom" : "17",
+          "clinical_significance" : "Pathogenic",
+          "domains" : [ ],
+          "gene_ids" : [
+            "ENSG00000196712"
+          ],
+          "gene_id_to_consequence_json" : "{\"ENSG00000196712\":\"splice_acceptor_variant\"}",
+          "gold_stars" : 1,
+          "main_transcript_biotype" : "protein_coding",
+          "main_transcript_canonical" : 1,
+          "main_transcript_category" : "lof",
+          "main_transcript_gene_id" : "ENSG00000196712",
+          "main_transcript_gene_symbol" : "NF1",
+          "main_transcript_hgvs" : "c.1642-2A>T",
+          "main_transcript_hgvsc" : "ENST00000358273.4:c.1642-2A>T",
+          "main_transcript_major_consequence" : "splice_acceptor_variant",
+          "main_transcript_major_consequence_rank" : 1,
+          "main_transcript_transcript_id" : "ENST00000358273",
+          "main_transcript_protein_id" : "ENSP00000351015",
+          "pos" : 29548866,
+          "ref" : "A",
+          "review_status" : "criteria_provided,_single_submitter",
+          "transcript_consequence_terms" : [
+            "NMD_transcript_variant",
+            "splice_acceptor_variant"
+          ],
+          "transcript_ids" : [
+            "ENST00000356175",
+            "ENST00000358273",
+            "ENST00000431387",
+            "ENST00000456735",
+            "ENST00000495910",
+            "ENST00000579081"
+          ],
+          "transcript_id_to_consequence_json" : "{\"ENST00000358273\": \"splice_acceptor_variant\",\"ENST00000356175\": \"splice_acceptor_variant\",\"ENST00000431387\": \"splice_acceptor_variant\",\"ENST00000456735\": \"splice_acceptor_variant\",\"ENST00000495910\": \"splice_acceptor_variant\",\"ENST00000579081\": \"splice_acceptor_variant\"}",
+          "variant_id" : "17-29548866-A-T",
+          "xpos" : 17029548866
+        }
+      },
+
+
+"""
+
 import argparse
 
 import hail as hl

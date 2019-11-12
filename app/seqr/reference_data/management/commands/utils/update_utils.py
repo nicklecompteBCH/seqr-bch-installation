@@ -8,16 +8,18 @@ from reference_data.management.commands.utils.download_utils import download_fil
 from reference_data.management.commands.utils.gene_utils import get_genes_by_symbol_and_id
 from reference_data.models import GeneInfo
 
+from typing import Optional, Type
+
 logger = logging.getLogger(__name__)
 
 
 class ReferenceDataHandler(object):
 
-    model_cls = None
-    url = None
+    model_cls : Optional[Type] = None
+    url : Optional[str] = None
     header_fields = None
     post_process_models = None
-    batch_size = None
+    batch_size : Optional[int] = None
     keep_existing_records = False
 
     def __init__(self, **kwargs):

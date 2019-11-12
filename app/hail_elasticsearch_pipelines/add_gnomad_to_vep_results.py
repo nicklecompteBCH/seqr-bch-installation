@@ -99,8 +99,7 @@ class GnomadDataset(Enum):
 def read_gnomad_ht(
     gnomad_version: GnomadDataset,
     subset: Union[LocusInterval, None] = None
-) -> hl.MatrixTable
-:
+) -> hl.MatrixTable:
     gnomad_s3_path = gnomad_version.get_bch_s3_path()
     gnomad_hailtable = hl.import_table(gnomad_s3_path)
     if subset:
@@ -116,7 +115,7 @@ def add_gnomad_to_vep_matrixtable(
     gnomad_table = read_gnomad_ht(gnomad_version)
 
 
-    vep_results = vep_results.
+#    vep_results = vep_results.
 
 
     raise NotImplementedError()

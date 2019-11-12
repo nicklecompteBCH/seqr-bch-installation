@@ -3,7 +3,8 @@ import os
 import random
 import string
 import sys
-from typing import List
+from typing import List, Any
+from seqr_settings.local_settings import ANNOTATOR_SETTINGS, DATABASES
 
 logger = logging.getLogger(__name__)
 
@@ -396,7 +397,7 @@ MONARCH_MATCH_URL = 'https://mme.monarchinitiative.org/match'
 SEQR_HOSTNAME_FOR_SLACK_POST='https://seqr.broadinstitute.org/project'
 
 
-PROJECT_IDS_TO_EXCLUDE_FROM_DISCOVERY_SHEET_DOWNLOAD = []
+PROJECT_IDS_TO_EXCLUDE_FROM_DISCOVERY_SHEET_DOWNLOAD : List[Any] = []
 
 
 from seqr_settings.local_settings import *
