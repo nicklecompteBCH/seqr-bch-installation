@@ -782,7 +782,7 @@ class ElasticsearchDatastore(datastore.Datastore):
                     'grch37_coords': grch37_coord,
                     'grch38_coords': grch38_coord,
                     'alt_allele_pos': 0,
-                    'orig_alt_alleles': map(str, [a.split("-")[-1] for a in hit["originalAltAlleles"]]) if "originalAltAlleles" in hit else None
+                    'orig_alt_alleles': list(map(str, [a.split("-")[-1] for a in hit["originalAltAlleles"]])) if "originalAltAlleles" in hit else None
                 },
                 'genotypes': genotypes,
                 'pos': long(hit['start']),
