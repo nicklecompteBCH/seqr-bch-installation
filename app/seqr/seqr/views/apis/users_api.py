@@ -99,7 +99,7 @@ def create_staff_user(request):
     try:
         _create_user(request, is_staff=True)
     except CreateUserException as e:
-        return create_json_response({'error': e.message}, status=e.status_code, reason=e.message)
+        return create_json_response({'error': str(e)}, status=e.status_code, reason=str(e))
 
     return create_json_response({'success': True})
 
@@ -115,7 +115,7 @@ def create_project_collaborator(request, project_guid):
         if e.existing_user:
             return _update_existing_user(e.existing_user, project, json.loads(request.body))
         else:
-            return create_json_response({'error': e.message}, status=e.status_code, reason=e.message)
+            return create_json_response({'error': str(e)}, status=e.status_code, reason=str(e))
 
     project.can_view_group.user_set.add(user)
     create_xbrowse_project_collaborator(project, user)

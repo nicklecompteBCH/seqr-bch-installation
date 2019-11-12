@@ -59,14 +59,14 @@ def query_variants_handler(request, search_hash):
     try:
         results_model = _get_or_create_results_model(search_hash, json.loads(request.body or '{}'), request.user)
     except Exception as e:
-        return create_json_response({}, status=400, reason=e.message)
+        return create_json_response({}, status=400, reason=str(e))
 
     _check_results_permission(results_model, request.user)
 
     try:
         variants, total_results = get_es_variants(results_model, sort=sort, page=page, num_results=per_page)
     except InvalidIndexException as e:
-        return create_json_response({}, status=400, reason=e.message)
+        return create_json_response({}, status=400, reason=str(e))
     except ConnectionTimeout as e:
         return create_json_response({}, status=504, reason='Query Time Out')
 
@@ -297,7 +297,7 @@ def search_context_handler(request):
         try:
             results_model = _get_or_create_results_model(context['searchHash'], context.get('searchParams'), request.user)
         except Exception as e:
-            return create_json_response({}, status=400, reason=e.message)
+            return create_json_response({}, status=400, reason=str(e))
         projects = Project.objects.filter(family__in=results_model.families.all())
     else:
         return create_json_response({}, status=400, reason='Invalid context params: {}'.format(json.dumps(context)))

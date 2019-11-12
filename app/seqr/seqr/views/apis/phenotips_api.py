@@ -80,7 +80,7 @@ def receive_hpo_table_handler(request, project_guid):
     try:
         uploaded_file_id, _, json_records = save_uploaded_file(request, process_records=_process_hpo_records)
     except Exception as e:
-        return create_json_response({'errors': [e.message or str(e)], 'warnings': []}, status=400, reason=e.message or str(e))
+        return create_json_response({'errors': [str(e)], 'warnings': []}, status=400, reason=str(e))
 
     updates_by_individual_guid = {}
     missing_individuals = []
@@ -519,7 +519,7 @@ def _make_api_call(
         response = proxy_request(None, url, headers=http_headers, method=method, scheme='http', data=data,
                                  auth_tuple=auth_tuple, host=settings.PHENOTIPS_SERVER, verbose=verbose)
     except requests.exceptions.RequestException as e:
-        raise PhenotipsException(e.message)
+        raise PhenotipsException(str(e))
     if (isinstance(expected_status_code, int) and response.status_code != expected_status_code) or (
         isinstance(expected_status_code, list) and response.status_code not in expected_status_code):
         raise PhenotipsException("Unable to retrieve %s. response code = %s: %s" % (

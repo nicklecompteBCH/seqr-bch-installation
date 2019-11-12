@@ -35,7 +35,7 @@ def get_index_metadata(index_name, client):
         mappings = index.get_mapping(doc_type=[VARIANT_DOC_TYPE])
     except Exception as e:
         raise InvalidIndexException('Error accessing index "{}": {}'.format(
-            index_name, e.error if hasattr(e, 'error') else e.message))
+            index_name, e.error if hasattr(e, 'error') else str(e)))
     index_metadata = {}
     for index_name, mapping in mappings.items():
         variant_mapping = mapping['mappings'].get(VARIANT_DOC_TYPE, {})

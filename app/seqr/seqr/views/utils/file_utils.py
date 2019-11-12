@@ -23,7 +23,7 @@ def save_temp_file(request):
     try:
         uploaded_file_id, filename, json_records = save_uploaded_file(request)
     except Exception as e:
-        return create_json_response({'errors': [e.message]}, status=400)
+        return create_json_response({'errors': [str(e)]}, status=400)
 
     response = {'uploadedFileId': uploaded_file_id}
     if request.GET.get('parsedData'):

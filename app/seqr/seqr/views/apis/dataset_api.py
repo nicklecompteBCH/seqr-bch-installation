@@ -106,7 +106,7 @@ def add_variants_dataset_handler(request, project_guid):
 
     except Exception as e:
         traceback.print_exc()
-        return create_json_response({'errors': [e.message or str(e)]}, status=400)
+        return create_json_response({'errors': [str(e)]}, status=400)
 
     if not matched_sample_id_to_sample_record:
         return create_json_response({'samplesByGuid': {}})
@@ -193,7 +193,7 @@ def add_alignment_dataset_handler(request, project_guid):
 
     except Exception as e:
         traceback.print_exc()
-        return create_json_response({'errors': [e.message or str(e)]}, status=400)
+        return create_json_response({'errors': [str(e)]}, status=400)
 
     if not matched_sample_id_to_sample_record:
         return create_json_response({'samplesByGuid': {}})

@@ -812,7 +812,7 @@ def receive_qc_pipeline_output(request):
     try:
         uploaded_file_id, _, json_records = save_uploaded_file(request, process_records=_process_qc_records)
     except Exception as e:
-        return create_json_response({'errors': [e.message or str(e)]}, status=400, reason=e.message or str(e))
+        return create_json_response({'errors': [str(e)]}, status=400, reason=str(e))
 
     dataset_type = next(record['DATA_TYPE'].lower() for record in json_records if record['DATA_TYPE'].lower() != 'n/a')
     info = ['Parsed {} {} samples'.format(len(json_records), dataset_type)]

@@ -295,7 +295,7 @@ def send_mme_contact_email(request, matchmaker_result_guid):
     try:
         email_message.send()
     except Exception as e:
-        message = e.message
+        message = str(e)
         json_body = {}
         if hasattr(e, 'response'):
             message = e.response.content

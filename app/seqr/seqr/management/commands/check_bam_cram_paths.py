@@ -30,7 +30,7 @@ class Command(BaseCommand):
             except Exception as e:
                 individual_id = sample.individual.individual_id
                 failed.append(individual_id)
-                print('Error at {} (Individual: {}): {} '.format(sample.dataset_file_path, individual_id, e.message))
+                print('Error at {} (Individual: {}): {} '.format(sample.dataset_file_path, individual_id, str(e)))
 
         print('---- DONE ----')
         print('Checked {} samples'.format(len(samples)))

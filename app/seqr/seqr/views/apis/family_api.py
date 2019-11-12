@@ -250,7 +250,7 @@ def receive_families_table_handler(request, project_guid):
     try:
         uploaded_file_id, filename, json_records = save_uploaded_file(request, process_records=_process_records)
     except Exception as e:
-        return create_json_response({'errors': [e.message or str(e)], 'warnings': []}, status=400, reason=e.message or str(e))
+        return create_json_response({'errors': [str(e)], 'warnings': []}, status=400, reason=str(e))
 
     prev_fam_ids = {r[PREVIOUS_FAMILY_ID_FIELD] for r in json_records if r.get(PREVIOUS_FAMILY_ID_FIELD)}
     existing_prev_fam_ids = {f.family_id for f in Family.objects.filter(family_id__in=prev_fam_ids, project=project).only('family_id')}
