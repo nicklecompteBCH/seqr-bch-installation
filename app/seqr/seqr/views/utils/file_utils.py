@@ -36,7 +36,7 @@ def save_temp_file(request):
 
 def parse_file(filename, stream):
     if filename.endswith('.tsv') or filename.endswith('.fam') or filename.endswith('.ped'):
-        return [map(lambda s: s.strip().strip('"'), line.decode().rstrip('\n').split('\t')) for line in stream]
+        return [list(map(lambda s: s.strip().strip('"'), line.decode().rstrip('\n').split('\t'))) for line in stream]
 
     elif filename.endswith('.csv'):
         return [list(map(lambda s: s.strip().strip('"'), (line.rstrip('\n').split(',') if isinstance(line, str) else line.decode().rstrip('\n').split(',')))) for line in stream]
