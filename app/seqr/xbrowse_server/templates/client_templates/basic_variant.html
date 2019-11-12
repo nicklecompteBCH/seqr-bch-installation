@@ -40,8 +40,8 @@
                 if(variant.extras.clinvar_clinsig) { %>
                    &nbsp; &nbsp;
                 <% }
-                var hgmd_color = utils.getHGMDClassColor(variant.extras.hgmd_class);
-                var hgmd_label = utils.getHGMDClassName(variant.extras.hgmd_class); %>
+                var hgmd_color = utils.getHGMDClassColor(variant.extras.hgmd_hgmdclass);
+                var hgmd_label = utils.getHGMDClassName(variant.extras.hgmd_hgmdclass); %>
                 <div style="display: inline-block;">
                     <a target="_blank" href="https://portal.biobase-international.com/hgmd/pro/mut.php?acc=<%= variant.extras.hgmd_accession %>">
                         HGMD: <span style="font-weight:500">

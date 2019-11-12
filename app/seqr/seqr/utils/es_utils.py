@@ -1058,7 +1058,7 @@ def _pathogenicity_filter(pathogenicity):
         for hgmd_filter in hgmd_filters:
             hgmd_class.update(HGMD_CLASS_MAP.get(hgmd_filter, []))
 
-        hgmd_q = Q('terms', hgmd_class=list(hgmd_class))
+        hgmd_q = Q('terms', hgmd_hgmdclass=list(hgmd_class))
         pathogenicity_filter = pathogenicity_filter | hgmd_q if pathogenicity_filter else hgmd_q
 
     return pathogenicity_filter
@@ -1171,7 +1171,7 @@ SORT_FIELDS = {
         '_script': {
             'type': 'number',
             'script': {
-               'source': "(!doc['hgmd_class'].empty && doc['hgmd_class'].value == 'DM') ? 0 : 1"
+               'source': "(!doc['hgmd_hgmdclass'].empty && doc['hgmd_hgmdclass'].value == 'DM') ? 0 : 1"
             }
         }
     }],
@@ -1229,7 +1229,7 @@ def _get_sort(sort_key):
 
 
 CLINVAR_FIELDS : List[str] = ['clinical_significance', 'variation_id', 'allele_id', 'gold_stars']
-HGMD_FIELDS : List[str] = ['accession', 'class']
+HGMD_FIELDS : List[str] = ['accession', 'hgmdclass']
 GENOTYPES_FIELD_KEY = 'genotypes'
 HAS_ALT_FIELD_KEYS : List[str] = ['samples_num_alt_1', 'samples_num_alt_2']
 SORTED_TRANSCRIPTS_FIELD_KEY = 'sortedTranscriptConsequences'

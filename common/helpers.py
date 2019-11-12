@@ -1,6 +1,6 @@
 from typing import (
     List, Dict, Callable,
-    Generic, TypeVar, Iterable
+    Generic, TypeVar, Iterable, Any
 )
 
 T = TypeVar('T')
@@ -16,7 +16,7 @@ def group_by(ls : Iterable[T], mapping: Callable[[T],U]) -> Dict[U, List[T]]:
             retdict.update({key: [elt]})
     return retdict
 
-def indefinite_or(input_list:list) -> bool:
+def indefinite_or(input_list:Iterable[Any]) -> bool:
     """Not sure if Python had this.
 
     :param input_list: A list of Boolable items.

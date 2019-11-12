@@ -157,7 +157,7 @@ def variant_details(variant_json, project, user, individual_guids_by_id=None):
         },
         'hgmd': {
             'accession': extras.get('hgmd_accession'),
-            'class': extras.get('hgmd_class') if (user and user.is_staff) else None,
+            'hgmdclass': extras.get('hgmd_hgmdclass') if (user and user.is_staff) else None,
         },
         'genotypes': genotypes,
         'genotypeFilters': next(list(genotype.get('filter') for genotype in variant_json.get('genotypes', {}).values()), None),

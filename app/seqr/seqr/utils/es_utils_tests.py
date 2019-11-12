@@ -96,7 +96,7 @@ ES_VARIANTS = [
               ]
             }
           ],
-          'hgmd_class': None,
+          'hgmd_hgmdclass': None,
           'AC': 2,
           'exac_AN_Adj': 121308,
           'mpc_MPC': None,
@@ -244,7 +244,7 @@ ES_VARIANTS = [
                   ]
               }
           ],
-          'hgmd_class': None,
+          'hgmd_hgmdclass': None,
           'AC': 1,
           'exac_AN_Adj': 121336,
           'mpc_MPC': None,
@@ -448,7 +448,7 @@ PARSED_VARIANTS = [
         },
         'genomeVersion': '37',
         'genotypeFilters': '',
-        'hgmd': {'accession': None, 'class': None},
+        'hgmd': {'accession': None, 'hgmdclass': None},
         'liftedOverChrom': None,
         'liftedOverGenomeVersion': None,
         'liftedOverPos': None,
@@ -489,7 +489,7 @@ PARSED_VARIANTS = [
         },
         'genotypeFilters': '',
         'genomeVersion': '37',
-        'hgmd': {'accession': None, 'class': None},
+        'hgmd': {'accession': None, 'hgmdclass': None},
         'liftedOverGenomeVersion': None,
         'liftedOverChrom': None,
         'liftedOverPos': None,
@@ -593,7 +593,7 @@ MAPPING_FIELDS = [
     'clinvar_variation_id',
     'clinvar_gold_stars',
     'hgmd_accession',
-    'hgmd_class',
+    'hgmd_hgmdclass',
     'AC',
     'AF',
     'callset_AF',
@@ -1057,7 +1057,7 @@ class EsUtilsTest(TestCase):
                                 'Pathogenic', 'Likely_pathogenic', 'Pathogenic/Likely_pathogenic'
                             ]
                         }},
-                        {'terms': {'hgmd_class': ['DM', 'DM?']}},
+                        {'terms': {'hgmd_hgmdclass': ['DM', 'DM?']}},
                     ]
                 }
             },

@@ -24,7 +24,10 @@
                 },
                 {
                     "Classification":"spark",
-                    "ConfigurationProperties":{"maximizeResourceAllocation":"true"}
+                    "ConfigurationProperties":{
+                        "maximizeResourceAllocation":"true",
+                        "speculation" : "true"
+                    }
                 },
                 {
                     "Classification":"yarn-site",

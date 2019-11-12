@@ -75,7 +75,7 @@ const clinvarUrl = (clinvar) => {
 }
 
 const Pathogenicity = ({ variant, user }) => {
-  if (!variant.clinvar.variationId && !variant.clinvar.alleleId && !(user.isStaff && variant.hgmd.class)) {
+  if (!variant.clinvar.variationId && !variant.clinvar.alleleId && !(user.isStaff && variant.hgmd.hgmdclass)) {
     return null
   }
 
@@ -93,12 +93,12 @@ const Pathogenicity = ({ variant, user }) => {
           />
         </span>
       }
-      {user.isStaff && variant.hgmd.class &&
+      {user.isStaff && variant.hgmd.hgmdclass &&
         <span>
           <HorizontalSpacer width={5} />
           <b>HGMD:<HorizontalSpacer width={5} /></b>
           <PathogenicityLink
-            significance={variant.hgmd.class}
+            significance={variant.hgmd.hgmdclass}
             href={`https://portal.biobase-international.com/hgmd/pro/mut.php?acc=${variant.hgmd.accession}`}
             formatName={hgmdName}
           />

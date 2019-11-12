@@ -459,7 +459,7 @@ class ElasticsearchDatastore(datastore.Datastore):
                         else:
                             raise ValueError("Unexpected hgmd filter: " + str(hgmd_filter))
 
-                    consequences_filter = consequences_filter | Q("terms", hgmd_class=list(hgmd_class))
+                    consequences_filter = consequences_filter | Q("terms", hgmd_hgmdclass=list(hgmd_class))
 
                 if 'intergenic_variant' in vep_consequences:
                     # for many intergenic variants VEP doesn't add any annotations, so if user selected 'intergenic_variant', also match variants where transcriptConsequenceTerms is emtpy
@@ -776,7 +776,7 @@ class ElasticsearchDatastore(datastore.Datastore):
                     'clinvar_allele_id': hit['clinvar_allele_id'] if 'clinvar_allele_id' in hit and hit['clinvar_allele_id'] else None,
                     'clinvar_clinsig': hit['clinvar_clinical_significance'].lower() if ('clinvar_clinical_significance' in hit) and hit['clinvar_clinical_significance'] else None,
                     'clinvar_gold_stars': hit['clinvar_gold_stars'] if 'clinvar_gold_stars' in hit and hit['clinvar_gold_stars'] else None,
-                    'hgmd_class': hit['hgmd_class'] if 'hgmd_class' in hit and user and user.is_staff else None,
+                    'hgmd_class': hit['hgmd_hgmdclass'] if 'hgmd_hgmdclass' in hit and user and user.is_staff else None,
                     'hgmd_accession': hit['hgmd_accession'] if 'hgmd_accession' in hit else None,
                     'genome_version': project.genome_version,
                     'grch37_coords': grch37_coord,
