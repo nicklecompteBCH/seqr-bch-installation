@@ -285,6 +285,9 @@ def convert_seqr_kwargs_to_xbrowse_kwargs(seqr_model, **kwargs):
         if xbrowse_model_class and hasattr(xbrowse_model_class, timestamp_key) and timestamp_key not in xbrowse_kwargs:
             xbrowse_kwargs[timestamp_key] = timezone.now()
 
+    if 'guid' in xbrowse_kwargs:
+        xbrowse_kwargs.pop('guid')
+
     return xbrowse_kwargs
 
 
