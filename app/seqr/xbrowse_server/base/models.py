@@ -895,7 +895,7 @@ class Individual(models.Model):
             self.created_date = timezone.now()
             # generate the global unique id for this individual (<date>_<time>_<microsec>_<indiv_id>)
 
-            self.phenotips_id = timezone.now().strftime("%Y%m%d_%H%M%S_%f_") + unicode(self.indiv_id).encode('utf-8')
+            self.phenotips_id = timezone.now().strftime("%Y%m%d_%H%M%S_%f_") + str(self.indiv_id).encode('utf-8')
 
         super(Individual, self).save(*args, **kwargs)
 
