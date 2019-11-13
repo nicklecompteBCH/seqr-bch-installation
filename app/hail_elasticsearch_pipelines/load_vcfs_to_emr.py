@@ -335,10 +335,10 @@ def finalize_annotated_table_for_seqr_variants(mt: hl.MatrixTable) -> hl.MatrixT
         clinical_significance=clinvar_mt.clinical_significance,
         domains=get_expr_for_vep_protein_domains_set(vep_transcript_consequences_root=mt.vep.transcript_consequences),
         gene_ids=clinvar_mt.gene_ids,
-        gene_id_to_consequence_json=get_expr_for_vep_gene_id_to_consequence_map(
-            vep_sorted_transcript_consequences_root=mt.sortedTranscriptConsequences,
-            gene_ids=mt.gene_ids
-        ),
+        # gene_id_to_consequence_json=get_expr_for_vep_gene_id_to_consequence_map(
+        #     vep_sorted_transcript_consequences_root=mt.sortedTranscriptConsequences,
+        #     gene_ids=clinvar_mt.gene_ids
+        # ),
         gold_stars= hl.int(goldstar_dict.get(review_status_str)),
         **{f"main_transcript_{field}": mt.main_transcript[field] for field in mt.main_transcript.dtype.fields},
         pos=get_expr_for_start_pos(mt),
