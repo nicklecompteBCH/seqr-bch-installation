@@ -328,6 +328,8 @@ def finalize_annotated_table_for_seqr_variants(mt: hl.MatrixTable) -> hl.MatrixT
         sortedTranscriptConsequences=get_expr_for_vep_sorted_transcript_consequences_array(vep_root=mt.vep)
     )
 
+    review_status_str = hl.delimit(hl.sorted(hl.array(hl.set(mt.info.CLNREVSTAT)), key=lambda s: s.replace("^_", "z")))
+
     goldstar_dict = hl.literal(CLINVAR_GOLD_STARS_LOOKUP)
 
     mt = mt.select_rows(
