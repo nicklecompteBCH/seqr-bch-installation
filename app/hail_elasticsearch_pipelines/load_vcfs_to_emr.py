@@ -238,7 +238,7 @@ def load_clinvar(export_to_es=False):
     hl.summarize_variants(mt)
 
         # Drop key columns for export
-    if export_table_to_elasticsearch:
+    if export_to_es:
         rows = mt.rows()
         rows = rows.order_by(rows.variant_id).drop("locus", "alleles")
         print("\n=== Exporting ClinVar to Elasticsearch ===")
@@ -326,10 +326,10 @@ def finalize_annotated_table_for_seqr_variants(mt: hl.MatrixTable) -> hl.MatrixT
     """
 
     mt = mt.select_rows(
-        allele_id=mt.info.ALLELEID,
+        allele_id=clinvar_mt.info.ALLELEID,
         alt=get_expr_for_alt_allele(mt),
         chrom=get_expr_for_contig(mt.locus),
-        clinical_significance=hl.delimit(hl.sorted(hl.array(hl.set(mt.info.CLNSIG)), key=lambda s: s.replace("^_", "z"))),
+        clinical_significance=hl.delimit(hl.sorted(hl.array(hl.set(clinvar_mt.info.CLNSIG)), key=lambda s: s.replace("^_", "z"))),
         domains=get_expr_for_vep_protein_domains_set(vep_transcript_consequences_root=mt.vep.transcript_consequences),
         gene_ids=mt.gene_ids,
         gene_id_to_consequence_json=get_expr_for_vep_gene_id_to_consequence_map(
