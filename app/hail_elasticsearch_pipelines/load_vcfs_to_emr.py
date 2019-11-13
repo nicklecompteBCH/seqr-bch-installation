@@ -329,7 +329,7 @@ def finalize_annotated_table_for_seqr_variants(mt: hl.MatrixTable) -> hl.MatrixT
     )
 
     mt = mt.select_rows(
-        allele_id=clinvar_mt.allele_id,
+        allele_id=clinvar_mt.index_rows(mt.locus,mt.alleles).allele_id,
         alt=get_expr_for_alt_allele(mt),
         chrom=get_expr_for_contig(mt.locus),
         clinical_significance=clinvar_mt.index_rows(mt.locus,mt.alleles).clinical_significance,
