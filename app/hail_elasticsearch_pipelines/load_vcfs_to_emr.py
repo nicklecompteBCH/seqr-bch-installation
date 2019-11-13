@@ -332,7 +332,7 @@ def finalize_annotated_table_for_seqr_variants(mt: hl.MatrixTable) -> hl.MatrixT
         allele_id=clinvar_mt.allele_id,
         alt=get_expr_for_alt_allele(mt),
         chrom=get_expr_for_contig(mt.locus),
-        clinical_significance=clinvar_mt.index().clinical_significance,
+        clinical_significance=clinvar_mt.clinical_significance,
         domains=get_expr_for_vep_protein_domains_set(vep_transcript_consequences_root=mt.vep.transcript_consequences),
         gene_ids=clinvar_mt.gene_ids,
         # gene_id_to_consequence_json=get_expr_for_vep_gene_id_to_consequence_map(
