@@ -328,6 +328,8 @@ def finalize_annotated_table_for_seqr_variants(mt: hl.MatrixTable) -> hl.MatrixT
         sortedTranscriptConsequences=get_expr_for_vep_sorted_transcript_consequences_array(vep_root=mt.vep)
     )
 
+    goldstar_dict = hl.literal(CLINVAR_GOLD_STARS_LOOKUP)
+
     mt = mt.select_rows(
         allele_id=clinvar_mt.allele_id,
         alt=get_expr_for_alt_allele(mt),
