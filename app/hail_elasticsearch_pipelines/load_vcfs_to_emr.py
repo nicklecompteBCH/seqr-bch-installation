@@ -326,7 +326,7 @@ def finalize_annotated_table_for_seqr_variants(mt: hl.MatrixTable) -> hl.MatrixT
     """
 
     mt = mt.select_rows(
-        allele_id=clinvar_mt.ALLELEID,
+        allele_id=clinvar_mt.allele_id,
         alt=get_expr_for_alt_allele(mt),
         chrom=get_expr_for_contig(mt.locus),
         clinical_significance=hl.delimit(hl.sorted(hl.array(hl.set(clinvar_mt.clinical_significance)), key=lambda s: s.replace("^_", "z"))),
