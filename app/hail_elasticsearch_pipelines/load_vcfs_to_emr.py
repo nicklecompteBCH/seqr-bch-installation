@@ -342,7 +342,7 @@ def finalize_annotated_table_for_seqr_variants(mt: hl.MatrixTable) -> hl.MatrixT
         gold_stars= clinvar_mt.index_rows(mt.locus,mt.alleles).gold_stars,
         pos=get_expr_for_start_pos(mt),
         ref=get_expr_for_ref_allele(mt),
-        review_status=clinvar_mt.review_status,
+        review_status=clinvar_mt.index_rows(mt.locus,mt.alleles).review_status,
         transcript_consequence_terms=get_expr_for_vep_consequence_terms_set(
             vep_transcript_consequences_root=mt.sortedTranscriptConsequences
         ),
