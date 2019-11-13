@@ -324,6 +324,9 @@ def finalize_annotated_table_for_seqr_variants(mt: hl.MatrixTable) -> hl.MatrixT
     proper formatting to be consumed by Seqr.
     :rtype: hl.MatrixTable
     """
+    mt = mt.annotate_rows(
+        sortedTranscriptConsequences=get_expr_for_vep_sorted_transcript_consequences_array(vep_root=mt.vep)
+    )
 
     mt = mt.select_rows(
         allele_id=clinvar_mt.allele_id,
