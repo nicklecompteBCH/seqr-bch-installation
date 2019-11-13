@@ -328,10 +328,6 @@ def finalize_annotated_table_for_seqr_variants(mt: hl.MatrixTable) -> hl.MatrixT
         sortedTranscriptConsequences=get_expr_for_vep_sorted_transcript_consequences_array(vep_root=mt.vep)
     )
 
-    review_status_str = hl.delimit(hl.sorted(hl.array(hl.set(mt.info.CLNREVSTAT)), key=lambda s: s.replace("^_", "z")))
-
-    goldstar_dict = hl.literal(CLINVAR_GOLD_STARS_LOOKUP)
-
     mt = mt.select_rows(
         allele_id=clinvar_mt.allele_id,
         alt=get_expr_for_alt_allele(mt),
@@ -343,11 +339,10 @@ def finalize_annotated_table_for_seqr_variants(mt: hl.MatrixTable) -> hl.MatrixT
         #     vep_sorted_transcript_consequences_root=mt.sortedTranscriptConsequences,
         #     gene_ids=clinvar_mt.gene_ids
         # ),
-        gold_stars= hl.int(goldstar_dict.get(review_status_str)),
-        **{f"main_transcript_{field}": mt.main_transcript[field] for field in mt.main_transcript.dtype.fields},
+        gold_stars= clinvar_mt.gold_stars
         pos=get_expr_for_start_pos(mt),
         ref=get_expr_for_ref_allele(mt),
-        review_status=review_status_str,
+        review_status=clinvar_mt.review_status,
         transcript_consequence_terms=get_expr_for_vep_consequence_terms_set(
             vep_transcript_consequences_root=mt.sortedTranscriptConsequences
         ),
