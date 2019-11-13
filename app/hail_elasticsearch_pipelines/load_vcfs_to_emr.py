@@ -339,7 +339,7 @@ def finalize_annotated_table_for_seqr_variants(mt: hl.MatrixTable) -> hl.MatrixT
         #     vep_sorted_transcript_consequences_root=mt.sortedTranscriptConsequences,
         #     gene_ids=clinvar_mt.gene_ids
         # ),
-        gold_stars= clinvar_mt.gold_stars
+        gold_stars= clinvar_mt.gold_stars,
         pos=get_expr_for_start_pos(mt),
         ref=get_expr_for_ref_allele(mt),
         review_status=clinvar_mt.review_status,
