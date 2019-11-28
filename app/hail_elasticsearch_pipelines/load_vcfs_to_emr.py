@@ -10,13 +10,19 @@ import requests
 from typing import Iterable, Union
 from enum import Enum
 
-from hail_scripts.v02.utils.hail_utils import import_vcf, run_vep
-from hail_scripts.v02.export_table_to_es import export_table_to_elasticsearch
-from hail_scripts.v02.utils.computed_fields.variant_id import *
-from hail_scripts.v02.utils.computed_fields.vep import *
-from hail_scripts.v02.utils.elasticsearch_client import ElasticsearchClient
+from hail_elasticsearch_pipelines.hail_scripts.v02.utils.hail_utils import import_vcf, run_vep
+from hail_elasticsearch_pipelines.hail_scripts.v02.export_table_to_es import export_table_to_elasticsearch
+from hail_elasticsearch_pipelines.hail_scripts.v02.utils.computed_fields.variant_id import *
+from hail_elasticsearch_pipelines.hail_scripts.v02.utils.computed_fields.vep import (
+    get_expr_for_vep_gene_id_to_consequence_map,
+    get_expr_for_vep_sorted_transcript_consequences_array,
+    get_expr_for_worst_transcript_consequence_annotations_struct
+)
+from hail_elasticsearch_pipelines.hail_scripts.v02.utils.elasticsearch_client import ElasticsearchClient
+from hail_elasticsearch_pipelines.hail_scripts.v02.utils.clinvar import CLINVAR_GOLD_STARS_LOOKUP, download_and_import_latest_clinvar_vcf
 
-from hail_scripts.v02.utils.clinvar import CLINVAR_GOLD_STARS_LOOKUP, download_and_import_latest_clinvar_vcf
+from seqr_utils.seqr_dataset import *
+
 import hail as hl
 
 
@@ -27,53 +33,6 @@ ELASTICSEARCH_HOST=os.environ['ELASTICSEARCH_HOST']
 
 client = boto3.client('emr')
 s3client = boto3.client('s3')
-
-# """ class SexChromosome(Enum):
-#     X = 1,
-#     Y = 2
-
-#     def __str__(self):
-#         if self == SexChromosome.X:
-#             return "X"
-#         elif self == SexChromosome.Y:
-#             return "Y"
-#         else:
-#             raise ValueError(f"unexpected value for SexChromosome {self}")
-
-# class AlleleId:
-
-#     def __init__(
-#         self,
-#         chromosome: Union[Int, SexChromosome],
-#         position: int,
-#         change: str
-#     ):
-#         self.chromosome = chromosome
-#         self.position = position
-#         self.change = change
-
-#     def __str__(self):
-#         return f"{str(self.chromosome)}-{self.position}-{self.change}"
-
-
-
-# class ElasticsearchVariant:
-
-#     The fields that need to get exported to Elasticsearch.
-
-#     """
-
-def parse_vcf_s3_path(s3path):
-    parsed = urlparse(s3path)
-    bucket = parsed.netloc
-    path = parsed.path[1:]
-    object_list = path.split('/')
-    filename = object_list[-1]
-    return {
-        "bucket" : bucket,
-        "path" : path,
-        "filename" : filename
-    }
 
 
 def get_hail_cluster():
@@ -95,31 +54,12 @@ def get_hail_cluster():
     hail_cluster = hail_cluster_list[0]
     return hail_cluster
 
-def add_global_metadata(vds, s3bucket, genomeVersion="37", sampleType="WES", datasetType="VARIANTS"):
-    """Adds structured metadata to the vds 'global' struct. This will later be copied to the elasticsearch index _meta field."""
 
-    # Store step0_output_vds as the cached version of the dataset in google buckets, and also set it as the global.sourceFilePath
-    # because
-    # 1) vep is the most time-consuming step (other than exporting to elasticsearch), so it makes sense to cache results
-    # 2) at this stage, all subsetting and remapping has already been applied, so the samples in the dataset are only the ones exported to elasticsearch
-    # 3) annotations may be updated / added more often than vep versions.
-    vds = vds.annotate_globals(sourceFilePath = s3bucket)
-    vds = vds.annotate_globals(genomeVersion =genomeVersion)
-    vds = vds.annotate_globals(sampleType = sampleType)
-    vds = vds.annotate_globals(datasetType = datasetType)
-
-    return vds
-
-def add_vcf_to_hail(s3path_to_vcf):
-    parts = parse_vcf_s3_path(s3path_to_vcf)
-    s3buckets = boto3.resource('s3')
-    s3bucket = s3buckets.Bucket(parts['bucket'])
-    s3bucket.download_file(parts['path'], parts['filename'])
-    os.system('hdfs dfs -put ' + parts['filename'])
+def add_vcf_to_hail(filename, family_name, s3path_to_vcf):
     mt = import_vcf(
-        parts['filename'],
+        filename,
         GENOME_VERSION,
-        parts['filename'],
+        family_name,
         force_bgz=True,
         min_partitions=1000)
     mt = add_global_metadata(mt, s3path_to_vcf)
@@ -149,20 +89,45 @@ class SeqrProjectDataSet:
         self.sample_type = sample_type
 
 
-def bch_connect_export_to_seqr_datasets(inputline: dict) -> SeqrProjectDataSet:
+def bch_connect_csv_line_to_seqr_sample(inputline: dict) -> SeqrSample:
 # record_id	de_identified_subject family_name processed_bam
 # processed_vcf investigator elasticsearch_import_yn elasticsearch_index
 # import_seqr_yn seqr_project_name seqr_id seqr_failure_log
-    indiv_id = inputline['de_identified_subject']
     split_id = indiv_id.split('.')
-    fam_id = split_id[0]
+    fam_id = inputline['family_name']
     vcf_s3_path = inputline['processed_vcf']
     bam_s3_path = inputline['processed_bam']
     project_name = inputline['investigator']
-    return SeqrProjectDataSet(
-        indiv_id, fam_id,
-        vcf_s3_path, bam_s3_path, project_name
+
+    return SeqrSample(
+        indiv_id, project_name, FamilyMemberType.from_bchconnect_str(inputline['initial_study_participant_kind']),
+        vcf_s3_path, bam_s3_path
     )
+
+
+def group_by(input_list, key_function):
+    ret_dict = {}
+    for v in input_list:
+        key = key_function(v)
+        if key in ret_dict:
+            ret_dict[key].append(v)
+        else:
+            ret_dict.update({key:[v]})
+    return ret_dict
+
+
+def bch_connect_to_seqr_families(filepath: str) -> List[SeqrFamily]:
+    sample_list = []
+    with open(filepath, 'r+') as csvfile:
+        for row in csv.DictReader(csvfile):
+            fam_id = split_id[0]
+            sample_list.append(bch_connect_csv_line_to_seqr_sample(row))
+
+    grouped_by_family = group_by(sample_list, lambda x: x.family_id)
+
+
+
+
 
 def compute_index_name(dataset: SeqrProjectDataSet, sample_type='wes',dataset_type='VARIANTS'):
     """Returns elasticsearch index name computed based on command-line args"""
@@ -171,7 +136,6 @@ def compute_index_name(dataset: SeqrProjectDataSet, sample_type='wes',dataset_ty
     index_name = "%s%s%s__%s__grch%s__%s__%s" % (
         dataset.project_name,
         "__"+dataset.fam_id,  # optional family id
-        "__"+dataset.indiv_id,  # optional individual id
         sample_type,
         'GRCh37',
         dataset_type,

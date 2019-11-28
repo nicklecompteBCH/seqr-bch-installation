@@ -1,7 +1,7 @@
 from enum import Enum
 
 from typing import (
-    List, Optional
+    List, Optional, Set, Iterable
 )
 
 class BCHSeqrProject(Enum):
@@ -47,11 +47,14 @@ class SeqrSample:
         path_to_bam : str
     ):
         self.individual_id = individual_id
+        self.family_id = family_id
         self.project = project
         self.family_member_type = family_member_type
         self.path_to_vcf = path_to_vcf
         self.path_to_bam = path_to_bam
 
+    def __hash__(self):
+        return hash(self.individual_id + self.family_id + str(self.project))
 
 class SeqrFamily:
 
@@ -62,9 +65,9 @@ class SeqrFamily:
         index_sample : SeqrSample,
         mother_sample : Optional[SeqrSample],
         father_sample : Optional[SeqrSample],
-        other_samples : List[SeqrSample]
+        other_samples : Iterable[SeqrSample]
     ):
-        samples = list(filter(None, [mother_sample, father_sample])) + other_samples
+        samples = list(filter(None, [mother_sample, father_sample])) + List(other_samples)
 
         # Validate that all the samples belong to the same project.
         project_set = set(
@@ -104,5 +107,44 @@ class SeqrFamily:
         self.index_sample = index_sample
         self.mother_sample = mother_sample
         self.father_sample = father_sample
-        self.other_samples = other_samples
+        self.other_samples = set(other_samples)
         self.elasticsearch_index = index_sample.individual_id
+
+    @staticmethod
+    def from_list_samples(inputlist: List[SeqrSample]):
+        if not inputlist:
+            return ValueError("inputlist in SeqrFamily.from_list_samples was empty")
+        indexsample = None
+        mothersample = None
+        fathersample = None
+        othersamples : Set[SeqrSample] = set()
+        familyid = inputlist[0].family_id
+        project = inputlist[0].project
+        for sample in inputlist:
+            if sample.family_id != familyid:
+                return ValueError(f"Non-unique family_ids detected in SeqrFamily.from_list_samples: {familyid} and {sample.family_id} ")
+            if sample.family_member_type == FamilyMemberType.Index:
+                if indexsample:
+                    # We want to *return* Exceptions, not raise them, to better handle errors.
+                    return ValueError(f"Two index samples represented in SeqrFamily.from_list_samples: {indexsample.individual_id} and {sample.individual_id}")
+                indexsample = sample
+            elif sample.family_member_type == FamilyMemberType.Mother:
+                if mothersample:
+                    return ValueError(f"Two mother samples represented in SeqrFamily.from_list_samples: {mothersample.individual_id} and {sample.individual_id}")
+                mothersample = sample
+            elif sample.family_member_type == FamilyMemberType.Father:
+                if fathersample:
+                    return ValueError(f"Two father samples represented in SeqrFamily.from_list_samples: {fathersample.individual_id} and {sample.individual_id}")
+                fathersample = sample
+            else:
+                if sample in othersamples:
+                    return ValueError(f"Duplicate samples in SeqrFamily.from_list_samples: {sample.individual_id}")
+                othersamples.add(sample)
+
+        if not indexsample:
+            return ValueError(f"No index sample provided in SeqrFamily.from_list_samples for family {familyid}")
+
+        return SeqrFamily(
+            familyid, project, indexsample,
+            mothersample, fathersample, othersamples
+        )

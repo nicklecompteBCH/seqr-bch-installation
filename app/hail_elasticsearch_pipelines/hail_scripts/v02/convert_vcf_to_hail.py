@@ -1,6 +1,6 @@
 import argparse as ap
 import logging
-from hail_scripts.v02.utils.hail_utils import write_mt, write_ht, import_vcf
+from .hail_scripts.v02.utils.hail_utils import write_mt, write_ht, import_vcf
 
 logger = logging.getLogger()
 

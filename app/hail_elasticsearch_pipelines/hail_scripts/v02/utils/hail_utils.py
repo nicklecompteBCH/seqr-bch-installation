@@ -1,8 +1,8 @@
 import hail as hl
 import logging
 
-from hail_scripts.v02.utils.computed_fields.variant_id import get_expr_for_variant_ids,get_expr_for_variant_id_ind
-from hail_scripts.v02.utils.computed_fields.variant_id import get_expr_for_xpos, get_expr_for_end_pos
+from hail_elasticsearch_pipelines.hail_scripts.v02.utils.computed_fields.variant_id import get_expr_for_variant_ids,get_expr_for_variant_id_ind
+from hail_elasticsearch_pipelines.hail_scripts.v02.utils.computed_fields.variant_id import get_expr_for_xpos, get_expr_for_end_pos
 
 logger = logging.getLogger()
 

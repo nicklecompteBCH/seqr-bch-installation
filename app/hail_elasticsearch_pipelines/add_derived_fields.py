@@ -2,7 +2,7 @@ import hail as hl
 from enum import Enum
 from typing import Union, Tuple
 
-from common_types import LocusInterval
+from .common_types import LocusInterval
 
 from hail_elasticsearch_pipelines.hail_scripts.v02.utils.computed_fields.variant_id import *
 from hail_elasticsearch_pipelines.hail_scripts.v02.utils.computed_fields.vep import *

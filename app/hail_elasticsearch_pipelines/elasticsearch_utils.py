@@ -1,14 +1,14 @@
 import logging
 
-from elasticsearch_base import ElasticsearchClient as BaseElasticsearchClient
-from hail_scripts.shared.elasticsearch_utils import (
+from .elasticsearch_base import ElasticsearchClient as BaseElasticsearchClient
+from hail_elasticsearch_pipelines.hail_scripts.shared.elasticsearch_utils import (
     ELASTICSEARCH_CREATE,
     ELASTICSEARCH_INDEX,
     ELASTICSEARCH_UPDATE,
     ELASTICSEARCH_UPSERT,
     _encode_field_name,
 )
-from hail_scripts.v01.utils.elasticsearch_utils import (
+from hail_elasticsearch_pipelines.hail_scripts.v01.utils.elasticsearch_utils import (
     VARIANT_GENOTYPE_FIELDS_TO_EXPORT,
     VARIANT_GENOTYPE_FIELD_TO_ELASTICSEARCH_TYPE_MAP,
     generate_elasticsearch_schema,

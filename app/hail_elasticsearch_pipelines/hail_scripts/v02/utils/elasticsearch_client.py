@@ -4,15 +4,15 @@ from pprint import pformat
 
 import hail as hl
 
-from hail_scripts.shared.elasticsearch_client import ElasticsearchClient as BaseElasticsearchClient
-from hail_scripts.shared.elasticsearch_utils import (
+from hail_elasticsearch_pipelines.hail_scripts.shared.elasticsearch_client import ElasticsearchClient as BaseElasticsearchClient
+from hail_elasticsearch_pipelines.hail_scripts.shared.elasticsearch_utils import (
     ELASTICSEARCH_INDEX,
     ELASTICSEARCH_UPDATE,
     ELASTICSEARCH_UPSERT,
     ELASTICSEARCH_WRITE_OPERATIONS,
     _encode_field_name,
 )
-from hail_scripts.v02.utils.elasticsearch_utils import elasticsearch_schema_for_table
+from hail_elasticsearch_pipelines.hail_scripts.v02.utils.elasticsearch_utils import elasticsearch_schema_for_table
 
 
 logger = logging.getLogger()
