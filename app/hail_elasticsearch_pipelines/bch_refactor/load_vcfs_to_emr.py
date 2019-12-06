@@ -196,6 +196,30 @@ def compute_index_name(dataset: SeqrProjectDataSet, sample_type='wes',dataset_ty
 
     return index_name
 
+def annotate_with_samples_alt(mt: hl.MatrixTable) -> hl.MatrixTable:
+    mt = mt.annotate_rows(
+        samples_num_alt_1 = mt.cols.s,
+        samples_num_alt_2 = hl.cond(mt.num_alt == 2, mt.cols(2).s,""),
+        samples_num_alt_3 = hl.cond(mt.num_alt == 3, mt.cols(3).s,"")
+    )
+
+def annotate_with_genotype_num_alt(mt: hl.MatrixTable) -> hl.MatrixTable:
+    mt = mt.annotate_rows(
+        num_alt = hl.cond(mt.isCalled(), mt.rows.nNonRefAlleles(), -1),
+        gq = hl.cond(mt.isCalled(), mt.gq, None),
+        ab = hl.cond(mt.isCalled() and mt.ad.sum != 0 and mt.ad.length > 1, (mt.ad[1] / mt.ad.sum),None),
+        dp = hl.cond(mt.isCalled(), hl.min(mt.dp,32000), None)
+    )
+    return mt
+
+
+# VARIANT_GENOTYPE_FIELDS_TO_EXPORT = {
+#     'num_alt': 'if(g.isCalled()) g.nNonRefAlleles() else -1',
+#     'gq': 'if(g.isCalled()) g.gq else NA:Int',
+#     'ab': 'let total=g.ad.sum in if(g.isCalled() && total != 0 && g.ad.length > 1) (g.ad[1] / total).toFloat else NA:Float',
+#     'dp': 'if(g.isCalled()) [g.dp, '+ELASTICSEARCH_MAX_SIGNED_SHORT_INT_TYPE+'].min() else NA:Int',  # compute min() to avoid integer overflow
+#     #'pl = if(g.isCalled) g.pl.mkString(",") else NA:String',  # store but don't index
+# }
 
 def load_clinvar(export_to_es=False):
     index_name = "clinvar_grch37" #"clinvar_grch{}".format(args.genome_version)
@@ -369,6 +393,8 @@ def finalize_annotated_table_for_seqr_variants(mt: hl.MatrixTable) -> hl.MatrixT
         variant_id=get_expr_for_variant_id(mt),
         xpos=get_expr_for_xpos(mt.locus)
     )
+    mt = annotate_with_genotype_num_alt(mt)
+    mt = annotate_with_samples_alt(mt)
     return mt
 
 def add_project_dataset_to_elastic_search(
@@ -384,60 +410,8 @@ def add_project_dataset_to_elastic_search(
     vep_mt = add_vep_to_vcf(vcf)
     clinvar_mt = annoate_with_clinvar(vep_mt)
     gnomad_mt = annotate_adj(clinvar_mt)
+    final = finalize_annotated_table_for_seqr_variants(gnomad_mt)
 
-
-        # """
-        # 'genotypes': [
-        #     {
-        #       'num_alt': 2,
-        #       'ab': 1,
-        #       'dp': 74,
-        #       'gq': 99,
-        #       'sample_id': 'NA20870',
-        #     },
-        # """
-
-    # vep_mt = vep_mt.annotate_entries(
-    #     genotypes = hl.Struct(**{
-    #         'num_alt' : vep_mt.info.NS,
-    #         'ab':vep_mt.info.AO,
-    #         'dp': vep_mt.info.DP,
-    #         'gq': vep_mt.qual,
-    #         'sample_id': hl.literal(parse_vcf_s3_path(dataset.vcf_s3_path)['filename'])
-    #     })
-    # )
-
-    #review_status_str = hl.delimit(hl.sorted(hl.array(hl.set(clinvar_mt.info.CLNREVSTAT)), key=lambda s: s.replace("^_", "z")))
-
-    # vep_mt = vep_mt.annotate_rows(
-    #         allele_id=clinvar_mt.info.ALLELEID,
-    #         alt=get_expr_for_alt_allele(vep_mt),
-    #         chrom=get_expr_for_contig(vep_mt.locus),
-    #         clinical_significance=hl.delimit(hl.sorted(hl.array(hl.set(clinvar_mt.info.CLNSIG)), key=lambda s: s.replace("^_", "z"))),
-    #         domains=get_expr_for_vep_protein_domains_set(vep_transcript_consequences_root=vep_mt.vep.transcript_consequences),
-    #         gene_id_to_consequence_json=get_expr_for_vep_gene_id_to_consequence_map(
-    #             vep_sorted_transcript_consequences_root=vep_mt.sortedTranscriptConsequences,
-    #             gene_ids=vep_mt.gene_ids
-    #         ),
-    #         #gold_stars=CLINVAR_GOLD_STARS_LOOKUP[review_status_str],
-    #         #**{f"main_transcript_{field}": vep_mt.main_transcript[field] for field in vep_mt.main_transcript.dtype.fields},
-    #         pos=get_expr_for_start_pos(vep_mt),
-    #         ref=get_expr_for_ref_allele(vep_mt),
-    #         #review_status=review_status_str,
-    #         # transcript_consequence_terms=get_expr_for_vep_consequence_terms_set(
-    #         #     vep_transcript_consequences_root=vep_mt.sortedTranscriptConsequences
-    #         # ),
-    #         # transcript_ids=get_expr_for_vep_transcript_ids_set(
-    #         #     vep_transcript_consequences_root=vep_mt.sortedTranscriptConsequences
-    #         # ),
-    #         #transcript_id_to_consequence_json=get_expr_for_vep_transcript_id_to_consequence_map(
-    #         #    vep_transcript_consequences_root=vep_mt.sortedTranscriptConsequences
-    #         #)
-    #         #variant_id=get_expr_for_variant_id(vep_mt),
-    #     )
-    # add clinvar
-    #vep_mt = vep_mt.union_cols(clinvar_mt)
-    vep_mt = finalize_annotated_table_for_seqr_variants(vep_mt)
     export_table_to_elasticsearch(vep_mt.rows(), host, index_name+"vep", index_type, is_vds=True, port=port,num_shards=num_shards, block_size=block_size)
 #    export_table_to_elasticsearch(vep_mt.rows(), host, index_name+"vep", index_type, port=port, num_shards=num_shards, block_size=block_size)
     print("ES index name : %s, family : %s, individual : %s ",(index_name,dataset.fam_id, dataset.indiv_id))
