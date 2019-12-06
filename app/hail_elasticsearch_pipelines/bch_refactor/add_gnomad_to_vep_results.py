@@ -10,7 +10,7 @@ import hail as hl
 from enum import Enum
 from typing import Union, Tuple
 
-from common_types import LocusInterval
+from .common_types import LocusInterval
 
 def get_adj_expr(
         gt_expr: hl.expr.CallExpression,
@@ -68,7 +68,7 @@ GNOMAD_SEQR_VDS_PATHS_oh_one = {
 }
 
 GNOMAD_HT_PATHS = {
-    "exomes_37": "" #"s3://seqr-resources/GRCh37/gnomad/gnomad.exomes.r2.0.2.sites.grch37.split.vds",
+    "exomes_37": "s3://seqr-resources/gnomad/37/exomes/ht/gnomad_exomes.r2.1.1.sites.ht", #"s3://seqr-resources/GRCh37/gnomad/gnomad.exomes.r2.0.2.sites.grch37.split.vds",
 }
 
 def read_gnomad_vds_oh_one(hail_context, genome_version, exomes_or_genomes, subset=None):
@@ -92,7 +92,7 @@ class GnomadDataset(Enum):
 
     def get_bch_s3_path(self):
         if self == GnomadDataset.Exomes37:
-            return "" # upload to s3
+            return GNOMAD_HT_PATHS["exomes_37"]
         else:
             raise NotImplementedError("Have not uploaded these yet...")
 
