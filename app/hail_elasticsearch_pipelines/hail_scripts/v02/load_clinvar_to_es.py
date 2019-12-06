@@ -57,13 +57,16 @@ import argparse
 import hail as hl
 
 from hail_elasticsearch_pipelines.hail_scripts.v02.utils.clinvar import CLINVAR_GOLD_STARS_LOOKUP, download_and_import_latest_clinvar_vcf
-from hail_elasticsearch_pipelines.hail_scripts.v02.utils.computed_fields import (
+from hail_elasticsearch_pipelines.hail_scripts.v02.utils.computed_fields.variant_id import (
     get_expr_for_alt_allele,
     get_expr_for_contig,
     get_expr_for_ref_allele,
     get_expr_for_start_pos,
     get_expr_for_variant_id,
     get_expr_for_xpos,
+)
+
+from hail_elasticsearch_pipelines.hail_scripts.v02.utils.computed_fields.vep import (
     get_expr_for_vep_consequence_terms_set,
     get_expr_for_vep_gene_id_to_consequence_map,
     get_expr_for_vep_gene_ids_set,
@@ -73,6 +76,7 @@ from hail_elasticsearch_pipelines.hail_scripts.v02.utils.computed_fields import 
     get_expr_for_vep_transcript_ids_set,
     get_expr_for_worst_transcript_consequence_annotations_struct,
 )
+
 from hail_scripts.v02.utils.elasticsearch_client import ElasticsearchClient
 
 

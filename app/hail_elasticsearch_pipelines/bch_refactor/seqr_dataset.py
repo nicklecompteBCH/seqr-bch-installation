@@ -47,6 +47,7 @@ class SeqrSample:
         path_to_bam : str
     ):
         self.individual_id = individual_id
+        self.family_id = family_id
         self.project = project
         self.family_member_type = family_member_type
         self.path_to_vcf = path_to_vcf
@@ -64,7 +65,7 @@ class SeqrFamily:
         father_sample : Optional[SeqrSample],
         other_samples : List[SeqrSample]
     ):
-        samples = list(filter(None, [mother_sample, father_sample])) + other_samples
+        samples : List[SeqrSample] = list(filter(None, [mother_sample, father_sample])) + other_samples
 
         # Validate that all the samples belong to the same project.
         project_set = set(

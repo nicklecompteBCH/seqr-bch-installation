@@ -16,14 +16,20 @@ from hail_elasticsearch_pipelines.hail_scripts.v02.utils.computed_fields.variant
 from hail_elasticsearch_pipelines.hail_scripts.v02.utils.computed_fields.vep import (
     get_expr_for_vep_gene_id_to_consequence_map,
     get_expr_for_vep_sorted_transcript_consequences_array,
-    get_expr_for_worst_transcript_consequence_annotations_struct
+    get_expr_for_worst_transcript_consequence_annotations_struct,
+    get_expr_for_vep_consequence_terms_set,
+    get_expr_for_vep_protein_domains_set,
+    get_expr_for_vep_transcript_ids_set,
+    get_expr_for_vep_transcript_id_to_consequence_map
 )
 from hail_elasticsearch_pipelines.hail_scripts.v02.utils.elasticsearch_client import ElasticsearchClient
 from hail_elasticsearch_pipelines.hail_scripts.v02.utils.clinvar import CLINVAR_GOLD_STARS_LOOKUP, download_and_import_latest_clinvar_vcf
 
-from seqr_utils.seqr_dataset import *
-
+from .seqr_utils.seqr_dataset import *
+import csv
 import hail as hl
+from  .cloud.s3_tools import parse_vcf_s3_path
+from .hail_ops  import add_global_metadata
 
 
 BCH_CLUSTER_TAG = "bch-hail-cluster"
@@ -93,14 +99,14 @@ def bch_connect_csv_line_to_seqr_sample(inputline: dict) -> SeqrSample:
 # record_id	de_identified_subject family_name processed_bam
 # processed_vcf investigator elasticsearch_import_yn elasticsearch_index
 # import_seqr_yn seqr_project_name seqr_id seqr_failure_log
-    split_id = indiv_id.split('.')
+    indiv_id = inputline['deidentifier']
     fam_id = inputline['family_name']
     vcf_s3_path = inputline['processed_vcf']
     bam_s3_path = inputline['processed_bam']
     project_name = inputline['investigator']
 
     return SeqrSample(
-        indiv_id, project_name, FamilyMemberType.from_bchconnect_str(inputline['initial_study_participant_kind']),
+        indiv_id, fam_id, project_name, FamilyMemberType.from_bchconnect_str(inputline['initial_study_participant_kind']),
         vcf_s3_path, bam_s3_path
     )
 
@@ -120,10 +126,10 @@ def bch_connect_to_seqr_families(filepath: str) -> List[SeqrFamily]:
     sample_list = []
     with open(filepath, 'r+') as csvfile:
         for row in csv.DictReader(csvfile):
-            fam_id = split_id[0]
             sample_list.append(bch_connect_csv_line_to_seqr_sample(row))
 
     grouped_by_family = group_by(sample_list, lambda x: x.family_id)
+    return []
 
 
 
@@ -140,6 +146,7 @@ def compute_index_name(dataset: SeqrProjectDataSet, sample_type='wes',dataset_ty
         'GRCh37',
         dataset_type,
         time.strftime("%Y%m%d"),
+
     )
 
     index_name = index_name.lower()  # elasticsearch requires index names to be all lower-case
@@ -327,7 +334,8 @@ def add_project_dataset_to_elastic_search(
     port=9200, num_shards=12, block_size=200):
     client = ElasticsearchClient(host=host,port=port)
 
-    vcf_mt = add_vcf_to_hail(dataset.vcf_s3_path)
+    filename = parse_vcf_s3_path(dataset.vcf_s3_path)['filename']
+    vcf_mt = add_vcf_to_hail(filename, dataset.fam_id, dataset.vcf_s3_path)
     vcf = add_global_metadata(vcf_mt,dataset.vcf_s3_path)
     index_name = compute_index_name(dataset)
     vep_mt = add_vep_to_vcf(vcf)
@@ -406,7 +414,7 @@ def run_all_connect(
     with open('import_log.csv','w') as log:
         with open('bchconnect.csv','r') as connect_results:
             for row in csv.DictReader(connect_results):
-                parsed_dataset = bch_connect_export_to_seqr_datasets(row)
+                parsed_dataset : SeqrProjectDataSet = None # bch_connect_csv_line_to_seqr_sample(row)
                 if project_whitelist:
                     if parsed_dataset.project_name not in project_whitelist:
                         print(parsed_dataset.project_name + " is not on the whitelist")

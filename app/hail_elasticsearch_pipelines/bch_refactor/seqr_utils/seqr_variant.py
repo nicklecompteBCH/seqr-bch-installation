@@ -18,26 +18,52 @@ class EnsemblBiotype(Enum):
     ProteinCoding = 9
 
     def to_elasticsearch_string(self) -> str:
-        if self == ThreePrimeOverlappingNCRNA:
+        if self == EnsemblBiotype.ThreePrimeOverlappingNCRNA:
             return "3'_overlapping_ncrna"
-        elif self == Antisense:
+        elif self == EnsemblBiotype.Antisense:
             return "antisense"
-        elif self == MacroIncRNA:
+        elif self == EnsemblBiotype.MacroIncRNA:
             return "macro_incrna"
-        elif self == NonCoding:
+        elif self == EnsemblBiotype.NonCoding:
             return "non_coding"
-        elif self == RetainedIntron:
+        elif self == EnsemblBiotype.RetainedIntron:
             return "retained_intron"
-        elif self == SenseIntronic:
+        elif self == EnsemblBiotype.SenseIntronic:
             return "sense_intronic"
-        elif self == SenseOverlapping:
+        elif self == EnsemblBiotype.SenseOverlapping:
             return "sense_overlapping"
-        elif self == LincRNA:
+        elif self == EnsemblBiotype.LincRNA:
             return "lincrna"
-        elif self == ProteinCoding:
+        elif self == EnsemblBiotype.ProteinCoding:
             return "protein_coding"
+        else:
+            raise ValueError("Missed EnsemblyBiotype " + str(self))
 
+class SeqrColocatedVariant:
+    def __init__(
+        self,
+        aa_allele : str,
+        aa_maf : float,
+        afr_allele : str,
+        allele_sring : str,
+        amr_allele : str,
+        amr_maf : float,
+        clin_sig : str,
+        ea_allele : str,
+        ea_maf : str,
+    ):
+        pass
 
+class SeqrVariant:
+
+    def __init__(
+        self,
+        allele_string: str,
+        ancestry: str,
+        assembly_name : HumanGenomeReference,
+
+    ):
+        pass
 
 """
     MOCK_VEP_DATA = hl.struct(

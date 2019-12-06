@@ -1,16 +1,5 @@
 import hail as hl
 
-
-def get_expr_for_variant_type():
-    """Returns "I" (insertion), "D" (deletion), "S" (snp) or "M" (MNP)"""
-
-    return """
-        if(v.ref.length > v.alt.length) "D"
-        else if (v.ref.length < v.alt.length) "I"
-        else if (v.ref.length > 1) "M"
-        else "S"
-    """
-
 # Consequence terms in order of severity (more severe to less severe) as estimated by Ensembl.
 # See https://ensembl.org/info/genome/variation/prediction/predicted_data.html
 CONSEQUENCE_TERMS = [

@@ -14,7 +14,7 @@ def parse_vcf_s3_path(s3path):
         "filename" : filename
     }
 
-def add_vcf_to_hdfs(s3path_to_vcf)
+def add_vcf_to_hdfs(s3path_to_vcf):
 
     parts = parse_vcf_s3_path(s3path_to_vcf)
     s3buckets = boto3.resource('s3')
