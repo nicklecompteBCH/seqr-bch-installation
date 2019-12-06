@@ -5,6 +5,7 @@ from hail_elasticsearch_pipelines.hail_scripts.v02.utils.computed_fields.variant
 from hail_elasticsearch_pipelines.hail_scripts.v02.utils.computed_fields.variant_id import get_expr_for_xpos, get_expr_for_end_pos
 
 logger = logging.getLogger()
+from typing import List, Union
 
 
 def import_table(
@@ -34,7 +35,7 @@ def import_table(
 
 
 def import_vcf(
-        vcf_path: str,
+        vcf_path: Union[str,List[str]],
         genome_version: str,
         sample_name: str,
         min_partitions: int = None,

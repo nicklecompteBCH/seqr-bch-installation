@@ -90,7 +90,6 @@ class SeqrFamily:
         if father_sample:
             if father_sample.family_member_type != FamilyMemberType.Father:
                 raise ValueError(f"SeqrFamily index_sample with individual_id {father_sample.individual_id} was not labelled an index")
-
         # Make sure everyone belongs to the same family, and that the family_id is consistent.
         famid_set = set(
             map(
@@ -109,6 +108,7 @@ class SeqrFamily:
         self.father_sample = father_sample
         self.other_samples = set(other_samples)
         self.elasticsearch_index = index_sample.individual_id
+        self.samples = samples
 
     @staticmethod
     def from_list_samples(inputlist: List[SeqrSample]):

@@ -7,7 +7,7 @@ from urllib.parse import urlparse
 import os
 import time
 import requests
-from typing import Iterable, Union
+from typing import Iterable, Union, List
 from enum import Enum
 
 from hail_elasticsearch_pipelines.hail_scripts.v02.utils.hail_utils import import_vcf, run_vep
@@ -28,8 +28,9 @@ from hail_elasticsearch_pipelines.hail_scripts.v02.utils.clinvar import CLINVAR_
 from .seqr_utils.seqr_dataset import *
 import csv
 import hail as hl
-from  .cloud.s3_tools import parse_vcf_s3_path
+from  .cloud.s3_tools import parse_vcf_s3_path, add_vcf_to_hdfs
 from .hail_ops  import add_global_metadata
+from .add_gnomad_to_vep_results import annotate_adj
 
 
 BCH_CLUSTER_TAG = "bch-hail-cluster"
@@ -72,6 +73,19 @@ def add_vcf_to_hail(filename, family_name, s3path_to_vcf):
 
     return mt
 
+def add_seqr_sample_to_hadoop(sample: SeqrSample):
+    add_vcf_to_hdfs(sample.path_to_vcf)
+
+
+def add_seqr_family_to_hail(family: SeqrFamily) -> hl.MatrixTable:
+    filenames : List[str] = []
+    for sample in family.samples:
+        add_seqr_sample_to_hadoop(sample)
+        parts = parse_vcf_s3_path(sample.path_to_vcf)
+        filenames.append(parts['filename'])
+    mt = add_vcf_to_hail(filenames,family.family_id,family.index_sample.path_to_vcf)
+    return mt
+
 
 def add_vep_to_vcf(mt):
     mt = run_vep(mt, GENOME_VERSION)
@@ -96,19 +110,61 @@ class SeqrProjectDataSet:
 
 
 def bch_connect_csv_line_to_seqr_sample(inputline: dict) -> SeqrSample:
-# record_id	de_identified_subject family_name processed_bam
-# processed_vcf investigator elasticsearch_import_yn elasticsearch_index
-# import_seqr_yn seqr_project_name seqr_id seqr_failure_log
-    indiv_id = inputline['deidentifier']
+# From the REDCap report:
+# record_id,redcap_repeat_instrument,redcap_repeat_instance,
+# de_identified_subject,family_name,
+# processed_bam,processed_vcf,investigator,
+# elasticsearch_import_yn,elasticsearch_index,import_seqr_yn,seqr_project_name,seqr_id,seqr_failure_log
+    indiv_id = inputline['de_identified_subject']
     fam_id = inputline['family_name']
     vcf_s3_path = inputline['processed_vcf']
     bam_s3_path = inputline['processed_bam']
     project_name = inputline['investigator']
+    family_member_type = FamilyMemberType.from_bchconnect_str(inputline['initial_study_participant_kind'])
 
     return SeqrSample(
-        indiv_id, fam_id, project_name, FamilyMemberType.from_bchconnect_str(inputline['initial_study_participant_kind']),
+        indiv_id, fam_id, project_name, family_member_type,
         vcf_s3_path, bam_s3_path
     )
+
+# def run_all_connect(
+#     dry_run = True,
+#     project_whitelist : Iterable = None, project_blacklist : Iterable = None
+# ):
+#     import csv
+
+#                 parsed_dataset : SeqrProjectDataSet = None # bch_connect_csv_line_to_seqr_sample(row)
+#                 if project_whitelist:
+#                     if parsed_dataset.project_name not in project_whitelist:
+#                         print(parsed_dataset.project_name + " is not on the whitelist")
+#                         continue
+#                 if project_blacklist:
+#                     if parsed_dataset.project_name in project_blacklist:
+#                         continue
+#                 if determine_if_already_uploaded(parsed_dataset):
+#                     retstr = f"Project {parsed_dataset.project_name} individual {parsed_dataset.indiv_id} already in Seqr under index {compute_index_name(parsed_dataset)}"
+#                     if dry_run:
+#                         print(retstr)
+#                     else:
+#                         print(retstr)
+#                         log.write(retstr + "\n")
+#                 if dry_run:
+#                     print(parsed_dataset.vcf_s3_path, compute_index_name(parsed_dataset))
+#                 else:
+#                     add_project_dataset_to_elastic_search(
+#                         parsed_dataset, ELASTICSEARCH_HOST, compute_index_name(parsed_dataset))
+#                     log.write(parsed_dataset.project_name + "," + parsed_dataset.indiv_id + "," + compute_index_name(parsed_dataset))
+
+def bch_connect_report_to_seqr_families(filepath) -> List[SeqrFamily]:
+    samples : List[SeqrSample] = []
+
+    with open(filepath, 'r') as connect_results:
+        for row in csv.DictReader(connect_results):
+            sample = bch_connect_csv_line_to_seqr_sample(row)
+            samples.append(sample)
+    grouped_by_family = group_by(samples, lambda x: x.family_id)
+    families : List[SeqrFamily] = list(map(lambda famlist: SeqrFamily.from_list_samples(famlist),grouped_by_family.values()))
+    return families
 
 
 def group_by(input_list, key_function):
@@ -120,19 +176,6 @@ def group_by(input_list, key_function):
         else:
             ret_dict.update({key:[v]})
     return ret_dict
-
-
-def bch_connect_to_seqr_families(filepath: str) -> List[SeqrFamily]:
-    sample_list = []
-    with open(filepath, 'r+') as csvfile:
-        for row in csv.DictReader(csvfile):
-            sample_list.append(bch_connect_csv_line_to_seqr_sample(row))
-
-    grouped_by_family = group_by(sample_list, lambda x: x.family_id)
-    return []
-
-
-
 
 
 def compute_index_name(dataset: SeqrProjectDataSet, sample_type='wes',dataset_type='VARIANTS'):
@@ -339,6 +382,9 @@ def add_project_dataset_to_elastic_search(
     vcf = add_global_metadata(vcf_mt,dataset.vcf_s3_path)
     index_name = compute_index_name(dataset)
     vep_mt = add_vep_to_vcf(vcf)
+    clinvar_mt = annoate_with_clinvar(vep_mt)
+    gnomad_mt = annotate_adj(clinvar_mt)
+
 
         # """
         # 'genotypes': [
@@ -396,54 +442,17 @@ def add_project_dataset_to_elastic_search(
 #    export_table_to_elasticsearch(vep_mt.rows(), host, index_name+"vep", index_type, port=port, num_shards=num_shards, block_size=block_size)
     print("ES index name : %s, family : %s, individual : %s ",(index_name,dataset.fam_id, dataset.indiv_id))
 
-def run_all_beggs(host,dry_run = True):
-    import csv
-    with open('beggs.csv','r') as beggs:
-        for row in csv.DictReader(beggs):
-            dataset = beggs_redcap_csv_line_to_seqr_dataset(row)
-            if dry_run:
-                print(dataset.vcf_s3_path, compute_index_name(dataset))
-            else:
-                add_project_dataset_to_elastic_search(dataset, host, compute_index_name(dataset))
-
-def run_all_connect(
-    dry_run = True,
-    project_whitelist : Iterable = None, project_blacklist : Iterable = None
-):
-    import csv
-    with open('import_log.csv','w') as log:
-        with open('bchconnect.csv','r') as connect_results:
-            for row in csv.DictReader(connect_results):
-                parsed_dataset : SeqrProjectDataSet = None # bch_connect_csv_line_to_seqr_sample(row)
-                if project_whitelist:
-                    if parsed_dataset.project_name not in project_whitelist:
-                        print(parsed_dataset.project_name + " is not on the whitelist")
-                        continue
-                if project_blacklist:
-                    if parsed_dataset.project_name in project_blacklist:
-                        continue
-                if determine_if_already_uploaded(parsed_dataset):
-                    retstr = f"Project {parsed_dataset.project_name} individual {parsed_dataset.indiv_id} already in Seqr under index {compute_index_name(parsed_dataset)}"
-                    if dry_run:
-                        print(retstr)
-                    else:
-                        print(retstr)
-                        log.write(retstr + "\n")
-                if dry_run:
-                    print(parsed_dataset.vcf_s3_path, compute_index_name(parsed_dataset))
-                else:
-                    add_project_dataset_to_elastic_search(
-                        parsed_dataset, ELASTICSEARCH_HOST, compute_index_name(parsed_dataset))
-                    log.write(parsed_dataset.project_name + "," + parsed_dataset.indiv_id + "," + compute_index_name(parsed_dataset))
-
 if __name__ == "__main__":
     import argparse
-
     p = argparse.ArgumentParser()
     p.add_argument("-clinvar", "--clinvar", help="Run clinvar instead of loading samples",  action="store_true")
+    p.add_argument("-p","--path",help="Filepath of csv from BCH_Connect seqr report.")
     args = p.parse_args()
 
     if not args.clinvar:
-        run_all_connect(dry_run=False)
+        path = args.path
+        families = bch_connect_report_to_seqr_families(path)
+        for family in families:
+            pass
     else:
         load_clinvar(export_to_es=True)
