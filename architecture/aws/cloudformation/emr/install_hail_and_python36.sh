@@ -1,9 +1,4 @@
 #!/bin/bash
-exec 3>&1 4>&2
-trap 'exec 2>&4 1>&3' 0 1 2 3
-exec 1>/tmp/cloudcreation_log.out 2>&1
-
-set -x
 
 export HAIL_HOME="/opt/hail"
 export HASH="current"
@@ -80,7 +75,7 @@ echo "Compiling with Wheel..."
 make clean
 make wheel
 HAIL_WHEEL=`ls /opt/hail/src/hail/hail/build/deploy/dist | grep "whl"`
-sudo python3 -m pip install --no-deps /opt/hail/src/hail/hail/build/deploy/dist/$HAIL_WHEEL
+sudo python3 -m pip install /opt/hail/src/hail/hail/build/deploy/dist/$HAIL_WHEEL
 
 # else  ./gradlew -Dspark.version=$SPARK_VERSION -Dbreeze.version=0.13.2 -Dpy4j.version=0.10.6 shadowJar archiveZip
 #     cp $PWD/build/distributions/hail-python.zip $HOME

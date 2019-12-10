@@ -82,24 +82,7 @@
                 {"Key" : "Name", "Value" : "bch-hail-cluster"},
                 {"Key" : "Project", "Value" : "seqr-bch"},
                 {"Key" : "Owner", "Value" : "nicklecompte"}  ],
-            "VisibleToAllUsers" : false,
-            "BootstrapActions" :
-                [
-                    {
-                        "Name" : "install-python-3-and-hail",
-                        "ScriptBootstrapAction" :
-                        {
-                            "Path" : "s3://bch-seqr-deployment/install_hail_and_python36.sh"
-                        }
-                    },
-                    {
-                        "Name" : "install-vep",
-                        "ScriptBootstrapAction" :
-                        {
-                            "Path" : "s3://bch-seqr-deployment/install_vep.sh"
-                        }
-                    }
-                ]
+            "VisibleToAllUsers" : false
             }
         }
     }

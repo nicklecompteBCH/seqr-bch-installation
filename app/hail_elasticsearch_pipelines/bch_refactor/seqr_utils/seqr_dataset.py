@@ -10,6 +10,11 @@ class BCHSeqrProject(Enum):
     TimYu = 3
     Testing = 999
 
+    @staticmethod
+    def from_string(string):
+        if string == "alan_beggs":
+            return BCHSeqrProject.AlanBeggs
+
 class FamilyMemberType(Enum):
     Index = 1
     Mother = 2

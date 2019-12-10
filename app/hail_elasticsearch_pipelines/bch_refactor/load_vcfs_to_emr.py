@@ -20,7 +20,7 @@ from hail_elasticsearch_pipelines.hail_scripts.v02.utils.computed_fields.vep imp
     get_expr_for_vep_consequence_terms_set,
     get_expr_for_vep_protein_domains_set,
     get_expr_for_vep_transcript_ids_set,
-    get_expr_for_vep_transcript_id_to_consequence_map
+    get_expr_for_vep_transcript_id_to_consequence_map,get_expr_for_vep_gene_ids_set
 )
 from hail_elasticsearch_pipelines.hail_scripts.v02.utils.elasticsearch_client import ElasticsearchClient
 from hail_elasticsearch_pipelines.hail_scripts.v02.utils.clinvar import CLINVAR_GOLD_STARS_LOOKUP, download_and_import_latest_clinvar_vcf
@@ -120,10 +120,11 @@ def bch_connect_csv_line_to_seqr_sample(inputline: dict) -> SeqrSample:
     vcf_s3_path = inputline['processed_vcf']
     bam_s3_path = inputline['processed_bam']
     project_name = inputline['investigator']
+    project = BCHSeqrProject.from_string(project_name)
     family_member_type = FamilyMemberType.from_bchconnect_str(inputline['initial_study_participant_kind'])
 
     return SeqrSample(
-        indiv_id, fam_id, project_name, family_member_type,
+        indiv_id, fam_id, project, family_member_type,
         vcf_s3_path, bam_s3_path
     )
 
@@ -342,7 +343,7 @@ def annotate_with_hgmd(mt: hl.MatrixTable) -> hl.MatrixTable:
 
 
 def determine_if_already_uploaded(dataset: SeqrProjectDataSet):
-    resp = requests.get(ELASTICSEARCH_HOST + ":9200/" + compute_index_name(dataset) + "0.5vep")
+    resp = requests.get(ELASTICSEARCH_HOST + ":9200/" + compute_index_name(dataset))
     if "index_not_found_exception" in resp.text:
         return False
     return True
@@ -412,7 +413,7 @@ def add_project_dataset_to_elastic_search(
     gnomad_mt = annotate_adj(clinvar_mt)
     final = finalize_annotated_table_for_seqr_variants(gnomad_mt)
 
-    export_table_to_elasticsearch(vep_mt.rows(), host, index_name+"vep", index_type, is_vds=True, port=port,num_shards=num_shards, block_size=block_size)
+    export_table_to_elasticsearch(final.rows(), host, index_name+"vep", index_type, is_vds=True, port=port,num_shards=num_shards, block_size=block_size)
 #    export_table_to_elasticsearch(vep_mt.rows(), host, index_name+"vep", index_type, port=port, num_shards=num_shards, block_size=block_size)
     print("ES index name : %s, family : %s, individual : %s ",(index_name,dataset.fam_id, dataset.indiv_id))
 

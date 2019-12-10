@@ -16,3 +16,4 @@ src/*
 *__GITIGNORE__*
 *phenotips-standalone-1.2.6*
 *mypy*
+.metals/*
