@@ -5,7 +5,7 @@ from enum import Enum
 
 import hail as hl
 
-from .hail_scripts.v02.utils.hail_utils import import_vcf
+from .hail_utils import import_vcf
 
 CLINVAR_FTP_PATH = "ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh{genome_version}/clinvar.vcf.gz"
 CLINVAR_HT_PATH = "gs://seqr-reference-data/GRCh{genome_version}/clinvar/clinvar.GRCh{genome_version}.ht"
@@ -52,13 +52,13 @@ def download_and_import_latest_clinvar_vcf(genome_version: str) -> hl.MatrixTabl
 
     clinvar_url = CLINVAR_FTP_PATH.format(genome_version=genome_version)
     local_tmp_file_path = "/tmp/clinvar.vcf.gz"
-    clinvar_vcf_hdfs_path = "/" + os.path.basename(local_tmp_file_path)
+    clinvar_vcf_hdfs_path =  os.path.basename(local_tmp_file_path)
 
-    subprocess.run(["wget", clinvar_url, "-O", local_tmp_file_path], check=True)
-    subprocess.run(["hdfs", "dfs", "-cp", "-f", f"file://{local_tmp_file_path}", clinvar_vcf_hdfs_path], check=True)
+    #subprocess.run(["wget", clinvar_url, "-O", local_tmp_file_path], check=True)
+    #subprocess.run(["hdfs", "dfs", "-put", "-f", f"file://{local_tmp_file_path}", clinvar_vcf_hdfs_path], check=True)
 
     clinvar_release_date = _parse_clinvar_release_date(local_tmp_file_path)
-    mt = import_vcf(clinvar_vcf_hdfs_path, genome_version, "clinvar37",drop_samples=True, min_partitions=2000, skip_invalid_loci=True)
+    mt = import_vcf("/tmp/" + clinvar_vcf_hdfs_path, genome_version, "clinvar37",drop_samples=True, min_partitions=2000, skip_invalid_loci=True)
     mt = mt.annotate_globals(version=clinvar_release_date)
 
     return mt

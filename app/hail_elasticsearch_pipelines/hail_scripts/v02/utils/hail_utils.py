@@ -79,20 +79,8 @@ def import_vcf(
         originalAltAlleles=hl.or_missing(hl.len(mt.alleles) > 2, get_expr_for_variant_ids(mt.locus, mt.alleles))
     )
 
-    mt = mt.annotate_rows(
-        samples_num_alt_1= hl.literal(sample_name)
-        #get_expr_for_variant_id_ind(mt.alleles[1],mt.locus, mt.alleles[0])#hl.or_missing(hl.len(mt.alleles) > 2, get_expr_for_variant_ids(mt.locus, mt.alleles))
-
-    )
-
-    mt = mt.annotate_rows(
-        samples_num_alt_2= hl.literal(sample_name)  #get_expr_for_variant_id_ind(mt.alleles[2],mt.locus, mt.alleles[0]))#hl.or_missing(hl.len(mt.alleles) > 2, get_expr_for_variant_ids(mt.locus, mt.alleles))
-
-    )
-
-    mt = mt.annotate_rows(
-        samples_num_alt_3= hl.literal(sample_name)#get_expr_for_variant_id_ind(mt.alleles[3],mt.locus, mt.alleles[0]))#hl.or_missing(hl.len(mt.alleles) > 2, get_expr_for_variant_ids(mt.locus, mt.alleles))
-    )
+ #hl.or_missing(hl.len(mt.alleles) > 2, get_expr_for_variant_ids(mt.locus, mt.alleles))
+    
     #xpos
     mt = mt.annotate_rows(
         xpos=get_expr_for_xpos(mt.locus)
@@ -144,7 +132,7 @@ def run_vep(
     """
     if genome_version == "37":
         mt = mt.annotate_globals(gencodeVersion="19")  # see gs://hail-common/vep/vep/homo_sapiens/85_GRCh38/info.txt
-        config = "vep85-loftee-gcloud.json"
+        config = "/vep85-loftee-gcloud.json"
     elif genome_version == "38":
         mt = mt.annotate_globals(gencodeVersion="25")
         config = "gs://hail-common/vep/vep/vep95-GRCh38-loftee-gcloud.json"
