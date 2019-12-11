@@ -1,6 +1,7 @@
 import boto3
 
 import os
+from urllib.parse import urlparse
 
 def parse_vcf_s3_path(s3path):
     parsed = urlparse(s3path)

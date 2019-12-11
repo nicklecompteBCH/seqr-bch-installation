@@ -72,7 +72,7 @@ class SeqrFamily:
         father_sample : Optional[SeqrSample],
         other_samples : Iterable[SeqrSample]
     ):
-        samples = list(filter(None, [mother_sample, father_sample])) + List(other_samples)
+        samples = list(filter(None, [index_sample, mother_sample, father_sample])) + list(other_samples)
 
         # Validate that all the samples belong to the same project.
         project_set = set(
@@ -81,8 +81,8 @@ class SeqrFamily:
                 samples
             )
         )
-        if len(project_set) != 1:
-            raise ValueError(f"SeqrFamily was made from individuals from non-unique projects: {project_set}")
+        #if len(project_set) != 1:
+        #    raise ValueError(f"SeqrFamily was made from individuals from non-unique projects: {project_set}")
 
         # The index sample is specifically labelled
         if index_sample.family_member_type != FamilyMemberType.Index:
@@ -102,10 +102,10 @@ class SeqrFamily:
                 samples
             )
         )
-        if len(famid_set) != 1:
-            raise ValueError(f"SeqrFamily had multiple family_ids: {famid_set}")
-        elif family_id not in famid_set:
-            raise ValueError(f"SeqrFamily was assigned family_id {family_id} but the input samples had family_id {famid_set}")
+        #if len(famid_set) != 1:
+        #    raise ValueError(f"SeqrFamily had multiple family_ids: {famid_set}")
+        #elif family_id not in famid_set:
+        #    raise ValueError(f"SeqrFamily was assigned family_id {family_id} but the input samples had family_id {famid_set}")
 
         self.family_id = family_id
         self.index_sample = index_sample

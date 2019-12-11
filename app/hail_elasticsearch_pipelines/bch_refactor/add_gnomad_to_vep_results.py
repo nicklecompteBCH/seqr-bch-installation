@@ -55,7 +55,7 @@ def annotate_adj(
     Annotate genotypes with adj criteria (assumes diploid)
     Defaults correspond to gnomAD values.
     """
-    return mt.annotate_entries(adj=get_adj_expr(mt.GT, mt.GQ, mt.DP, mt.AD, adj_gq, adj_dp, adj_ab, haploid_adj_dp))
+    return mt.annotate_entries(adj=get_adj_expr(mt.GT, mt.GQ, mt.DP, mt.AO, adj_gq, adj_dp, adj_ab, haploid_adj_dp))
 
 
 

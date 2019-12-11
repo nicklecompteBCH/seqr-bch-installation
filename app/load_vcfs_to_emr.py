@@ -64,6 +64,7 @@ def get_hail_cluster():
 
 
 def add_vcf_to_hail(filename, family_name, s3path_to_vcf):
+    print("Trying to add " + str(filename) + " to hail...")
     mt = import_vcf(
         filename,
         GENOME_VERSION,
@@ -199,22 +200,40 @@ def compute_index_name(dataset: SeqrProjectDataSet, sample_type='wes',dataset_ty
     return index_name
 
 def annotate_with_samples_alt(mt: hl.MatrixTable) -> hl.MatrixTable:
+    mt.describe()
+    mt.rows().head(10).show()
     mt = mt.annotate_rows(
-        samples_num_alt_1 = mt.aggregate_cols(hl.agg.collect(mt.s))[0],
-        samples_num_alt_2 = hl.cond(mt.aggregate_entries(hl.agg.any(mt.num_alt >= 1)),mt.aggregate_cols(hl.agg.collect(mt.s))[1],""), #hl.cond((mt.index_rows(mt.locus, mt.alleles)).entries().num_alt >= 2, mt.cols(2).s,""),
-        samples_num_alt_3 = hl.cond(mt.aggregate_entries(hl.agg.any(mt.num_alt >= 2)),mt.aggregate_cols(hl.agg.collect(mt.s))[2],"") #hl.cond((mt.index_rows(mt.locus, mt.alleles)).num_alt >= 3, mt.cols(3).s,"")
+        samples_num_alt_1 = (mt.genotypes.filter(lambda s: s.num_alt == 1).map(lambda s: s.sample_id)),
+        samples_num_alt_2 = (mt.genotypes.filter(lambda s: s.num_alt == 2).map(lambda s: s.sample_id)),
+        samples_num_alt_3 = (mt.genotypes.filter(lambda s: s.num_alt > 2).map(lambda s: s.sample_id))
     )
     return mt
 
 def annotate_with_genotype_num_alt(mt: hl.MatrixTable) -> hl.MatrixTable:
     mt.describe()
-    mt = mt.annotate_entries(
-        num_alt = mt.GT.n_alt_alleles() #hl.cond(mt.GT=="0/0",0,hl.cond(mt.GT=="1/0",1,hl.cond(mt.GT=="0/1",1,hl.cond((mt.GT=="1/1",2,hl.cond(mt.GT=="1/2",2,hl.cond(mt.GT=="2/1",2,hl.cond(mt.GT=="2/2",2,-1))))))))
+    mt.head(10).show()
+    if 'AD' in set(mt.entry):
+        # GATK-consistent VCF
+        mt = mt.annotate_rows(
+            genotypes = (hl.agg.collect(hl.struct(
+                num_alt = hl.cond(mt.alleles[1] == '<CNV>', 0, mt.GT.n_alt_alleles()), 
+                ab = hl.cond(mt.alleles[1] == '<CNV>', 0.0, hl.cond(hl.eval(hl.fold(lambda i, j : i + j, 0, mt.AD)) != 0 and hl.len(mt.AD) > 1, hl.float(mt.AD[1])/hl.float(hl.eval(hl.fold(lambda i, j : i + j, 0, mt.AD))), 0)), 
+                gq = mt.GQ, 
+                sample_id = mt.s,
+                dp=mt.DP))
+        )
+    )
+    elif 'AO' in set(mt.entry):
+
+        mt = mt.annotate_rows(
+            genotypes = hl.agg.collect(hl.struct(
+                    num_alt=hl.cond(mt.alleles[1] == '<CNV>', 0, mt.GT.n_alt_alleles()), 
+                    ab=hl.cond(mt.alleles[1] == '<CNV>', 0.0, hl.float(mt.AO[0])/hl.float(mt.DP)), 
+                    dp = mt.DP,  gq = mt.GQ, sample_id = mt.s))) #hl.cond(mt.GT=="0/0",0,hl.cond(mt.GT=="1/0",1,hl.cond(mt.GT=="0/1",1,hl.cond((mt.GT=="1/1",2,hl.cond(mt.GT=="1/2",2,hl.cond(mt.GT=="2/1",2,hl.cond(mt.GT=="2/2",2,-1))))))))
         #gt = mt.index_entries(mt.row_key,mt.col_key)[(mt.locus,mt.alleles),mt.cols().head(1)].GT,
         #gq = mt.index_entries(mt.row_key,mt.col_key)[(mt.locus,mt.alleles),mt.cols().head(1)].GQ,#hl.cond(mt.isCalled(), mt.gq, None),
         #ab = mt.index_entries(mt.row_key,mt.col_key)[(mt.locus,mt.alleles),mt.cols().head(1)].AB,#hl.cond(mt.isCalled() and mt.ad.sum != 0 and mt.ad.length > 1, (mt.ad[1] / mt.ad.sum),None),
         #dp = hl.min(mt.index_entries(mt.row_key,mt.col_key)[(mt.locus,mt.alleles),mt.cols().head(1)].DP,32000) #hl.cond(mt.isCalled(), hl.min(mt.dp,32000), None)
-    )
     return mt
 
 
@@ -229,7 +248,7 @@ def annotate_with_genotype_num_alt(mt: hl.MatrixTable) -> hl.MatrixTable:
 def load_clinvar(export_to_es=False):
     index_name = "clinvar_grch37" #"clinvar_grch{}".format(args.genome_version)
     mt = download_and_import_latest_clinvar_vcf("37")
-    mt = hl.vep(mt, "vep85-loftee-gcloud.json", name="vep", block_size=1000)
+    mt = hl.vep(mt, "/vep85-loftee-gcloud.json", name="vep", block_size=1000)
     mt = mt.annotate_rows(
         sortedTranscriptConsequences=get_expr_for_vep_sorted_transcript_consequences_array(vep_root=mt.vep)
     )
@@ -248,6 +267,7 @@ def load_clinvar(export_to_es=False):
 
     goldstar_dict = hl.literal(CLINVAR_GOLD_STARS_LOOKUP)
 
+     
 
     mt = mt.annotate_rows(
         allele_id=mt.info.ALLELEID,
@@ -277,6 +297,8 @@ def load_clinvar(export_to_es=False):
         variant_id=get_expr_for_variant_id(mt),
         xpos=get_expr_for_xpos(mt.locus)
     )
+
+    mt = mt.annotate_rows(clinvar_clinical_significance = mt.clinical_significance)
 
     hl.summarize_variants(mt)
 
@@ -315,10 +337,11 @@ clinvar_mt = load_clinvar()
 
 def annoate_with_clinvar(mt: hl.MatrixTable) -> hl.MatrixTable:
     #joined_mt = clinvar_mt.semi_join_rows(mt)
-    mt = mt.annotate_entries(
-        allele_id = clinvar_mt.index_rows(mt.locus, mt.alleles).allele_id,
-        clinvar_clinical_significance = clinvar_mt.index_rows(mt.locus, mt.alleles).clinical_significance,
-        gold_stars = clinvar_mt.index_rows(mt.locus, mt.alleles).gold_stars
+    clinvar_mt.describe()
+    mt = mt.annotate_rows(
+        allele_id = clinvar_mt.index_rows(mt.row_key).allele_id,
+        clinvar_clinical_significance = clinvar_mt.index_rows(mt.row_key).clinvar_clinical_significance,
+        gold_stars = clinvar_mt.index_rows(mt.row_key).gold_stars
     )
     return mt
         # vds = vds.annotate_variants_vds(clinvar_vds, expr="""
@@ -327,9 +350,10 @@ def annoate_with_clinvar(mt: hl.MatrixTable) -> hl.MatrixTable:
         # %(root)s.gold_stars = %(CLINVAR_GOLD_STARS_LOOKUP)s.get(vds.info.CLNREVSTAT.toSet.mkString(","))
 
 def load_hgmd_vcf():
-
+    s3client.download_file('seqr-resources','GRCh37/hgmd/hgmd_pro_2018.4_hg19.vcf.gz','/tmp/hgmd.vcf.gz')
+    
     mt = import_vcf(
-        's3://seqr-resources/GRCh37/hgmd/hgmd_pro_2018.4_hg19.vcf.gz',
+        '/tmp/hgmd.vcf.gz',
         "37",
         "hgmd_grch37",
     )
@@ -372,21 +396,24 @@ def finalize_annotated_table_for_seqr_variants(mt: hl.MatrixTable) -> hl.MatrixT
         sortedTranscriptConsequences=get_expr_for_vep_sorted_transcript_consequences_array(vep_root=mt.vep)
     )
 
-    mt = mt.select_rows(
-        allele_id=clinvar_mt.index_rows(mt.locus,mt.alleles).allele_id,
+
+
+
+    mt = mt.annotate_rows(
+        #allele_id=clinvar_mt.index_rows(mt.row_key).vep.id,
         alt=get_expr_for_alt_allele(mt),
         chrom=get_expr_for_contig(mt.locus),
-        clinical_significance=clinvar_mt.index_rows(mt.locus,mt.alleles).clinical_significance,
+        #clinvar_clinical_significance=clinvar_mt.index_rows(mt.row_key).clinical_significance,
         domains=get_expr_for_vep_protein_domains_set(vep_transcript_consequences_root=mt.vep.transcript_consequences),
-        gene_ids=clinvar_mt.index_rows(mt.locus,mt.alleles).gene_ids,
+        #gene_ids=clinvar_mt.index_rows(mt.locus,mt.alleles).gene_ids,
         # gene_id_to_consequence_json=get_expr_for_vep_gene_id_to_consequence_map(
         #     vep_sorted_transcript_consequences_root=mt.sortedTranscriptConsequences,
         #     gene_ids=clinvar_mt.gene_ids
         # ),
-        gold_stars= clinvar_mt.index_rows(mt.locus,mt.alleles).gold_stars,
+        #gold_stars= clinvar_mt.index_entries(mt.row_key,mt.col_key).gold_stars,
         pos=get_expr_for_start_pos(mt),
         ref=get_expr_for_ref_allele(mt),
-        review_status=clinvar_mt.index_rows(mt.locus,mt.alleles).review_status,
+        #review_status=clinvar_mt.index_rows(mt.locus,mt.alleles).review_status,
         transcript_consequence_terms=get_expr_for_vep_consequence_terms_set(
             vep_transcript_consequences_root=mt.sortedTranscriptConsequences
         ),
@@ -399,8 +426,9 @@ def finalize_annotated_table_for_seqr_variants(mt: hl.MatrixTable) -> hl.MatrixT
         variant_id=get_expr_for_variant_id(mt),
         xpos=get_expr_for_xpos(mt.locus)
     )
-    #mt = annotate_with_genotype_num_alt(mt)
-    #mt = annotate_with_samples_alt(mt)
+    mt = annotate_with_genotype_num_alt(mt)
+    mt = annotate_with_samples_alt(mt)
+    mt.describe()
     return mt
 
 def add_project_dataset_to_elastic_search(
@@ -442,7 +470,7 @@ if __name__ == "__main__":
             mt = annotate_with_samples_alt(mt)
             gnomad_mt = annotate_adj(mt)
             final = finalize_annotated_table_for_seqr_variants(gnomad_mt)
-            export_table_to_elasticsearch(final.rows(), host, index_name+"vep", index_type, is_vds=True, port=port,num_shards=num_shards, block_size=block_size)
+            export_table_to_elasticsearch(final.rows(), ELASTICSEARCH_HOST, (index_name+"vep").lower(), "variant", is_vds=True, port=9200,num_shards=12, block_size=200)
             
     else:
         load_clinvar(export_to_es=True)
