@@ -81,7 +81,7 @@ def get_loaded_projects_for_user(user, fields=None):
     for project in es_projects:
         project.datastore_type = 'es'
 
-    return mongo_projects + es_projects
+    return list(mongo_projects) + list(es_projects)
 
 
 def get_collaborators_for_user(user):
