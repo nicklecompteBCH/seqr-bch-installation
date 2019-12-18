@@ -95,6 +95,27 @@ def add_vep_to_vcf(mt):
     mt = run_vep(mt, GENOME_VERSION)
     return mt
 
+def load_hgmd_vcf():
+    s3client.download_file('seqr-resources','GRCh37/hgmd/hgmd_pro_2018.4_hg19.vcf.gz','/tmp/hgmd.vcf.gz')
+
+    mt = import_vcf(
+        '/tmp/hgmd.vcf.gz',
+        "37",
+        "hgmd_grch37",
+    )
+    return mt
+
+
+def annotate_with_hgmd(mt: hl.MatrixTable) -> hl.MatrixTable:
+    mt = mt.annotate_rows(
+        hgmd=hl.struct(
+            accession=hgmd_mt.rsid,
+            hgmdclass = hgmd_mt.info.CLASS
+        )
+    )
+    return mt
+
+
 class SeqrProjectDataSet:
     def __init__(
         self,
@@ -132,33 +153,6 @@ def bch_connect_csv_line_to_seqr_sample(inputline: dict) -> SeqrSample:
         vcf_s3_path, bam_s3_path
     )
 
-# def run_all_connect(
-#     dry_run = True,
-#     project_whitelist : Iterable = None, project_blacklist : Iterable = None
-# ):
-#     import csv
-
-#                 parsed_dataset : SeqrProjectDataSet = None # bch_connect_csv_line_to_seqr_sample(row)
-#                 if project_whitelist:
-#                     if parsed_dataset.project_name not in project_whitelist:
-#                         print(parsed_dataset.project_name + " is not on the whitelist")
-#                         continue
-#                 if project_blacklist:
-#                     if parsed_dataset.project_name in project_blacklist:
-#                         continue
-#                 if determine_if_already_uploaded(parsed_dataset):
-#                     retstr = f"Project {parsed_dataset.project_name} individual {parsed_dataset.indiv_id} already in Seqr under index {compute_index_name(parsed_dataset)}"
-#                     if dry_run:
-#                         print(retstr)
-#                     else:
-#                         print(retstr)
-#                         log.write(retstr + "\n")
-#                 if dry_run:
-#                     print(parsed_dataset.vcf_s3_path, compute_index_name(parsed_dataset))
-#                 else:
-#                     add_project_dataset_to_elastic_search(
-#                         parsed_dataset, ELASTICSEARCH_HOST, compute_index_name(parsed_dataset))
-#                     log.write(parsed_dataset.project_name + "," + parsed_dataset.indiv_id + "," + compute_index_name(parsed_dataset))
 
 def bch_connect_report_to_seqr_families(filepath) -> List[SeqrFamily]:
     samples : List[SeqrSample] = []
@@ -218,9 +212,9 @@ def annotate_with_genotype_num_alt(mt: hl.MatrixTable) -> hl.MatrixTable:
         # GATK-consistent VCF
         mt = mt.annotate_rows(
             genotypes = (hl.agg.collect(hl.struct(
-                num_alt = hl.cond(mt.alleles[1] == '<CNV>', 0, mt.GT.n_alt_alleles()), 
-                ab = hl.cond(mt.alleles[1] == '<CNV>', 0.0, hl.cond(hl.eval(hl.fold(lambda i, j : i + j, 0, mt.AD)) != 0 and hl.len(mt.AD) > 1, hl.float(mt.AD[1])/hl.float(hl.eval(hl.fold(lambda i, j : i + j, 0, mt.AD))), 0)), 
-                gq = mt.GQ, 
+                num_alt = hl.cond(mt.alleles[1] == '<CNV>', 0, mt.GT.n_alt_alleles()),
+                ab = hl.cond(mt.alleles[1] == '<CNV>', 0.0, hl.cond(hl.eval(hl.fold(lambda i, j : i + j, 0, mt.AD)) != 0 and hl.len(mt.AD) > 1, hl.float(mt.AD[1])/hl.float(hl.eval(hl.fold(lambda i, j : i + j, 0, mt.AD))), 0)),
+                gq = mt.GQ,
                 sample_id = mt.s,
                 dp=mt.DP))
         )
@@ -229,23 +223,12 @@ def annotate_with_genotype_num_alt(mt: hl.MatrixTable) -> hl.MatrixTable:
 
         mt = mt.annotate_rows(
             genotypes = hl.agg.collect(hl.struct(
-                    num_alt=hl.cond(mt.alleles[1] == '<CNV>', 0, mt.GT.n_alt_alleles()), 
-                    ab=hl.cond(mt.alleles[1] == '<CNV>', 0.0, hl.float(mt.AO[0])/hl.float(mt.DP)), 
+                    num_alt=hl.cond(mt.alleles[1] == '<CNV>', 0, mt.GT.n_alt_alleles()),
+                    ab=hl.cond(mt.alleles[1] == '<CNV>', 0.0, hl.float(mt.AO[0])/hl.float(mt.DP)),
                     dp = mt.DP,  gq = mt.GQ, sample_id = mt.s))) #hl.cond(mt.GT=="0/0",0,hl.cond(mt.GT=="1/0",1,hl.cond(mt.GT=="0/1",1,hl.cond((mt.GT=="1/1",2,hl.cond(mt.GT=="1/2",2,hl.cond(mt.GT=="2/1",2,hl.cond(mt.GT=="2/2",2,-1))))))))
-        #gt = mt.index_entries(mt.row_key,mt.col_key)[(mt.locus,mt.alleles),mt.cols().head(1)].GT,
-        #gq = mt.index_entries(mt.row_key,mt.col_key)[(mt.locus,mt.alleles),mt.cols().head(1)].GQ,#hl.cond(mt.isCalled(), mt.gq, None),
-        #ab = mt.index_entries(mt.row_key,mt.col_key)[(mt.locus,mt.alleles),mt.cols().head(1)].AB,#hl.cond(mt.isCalled() and mt.ad.sum != 0 and mt.ad.length > 1, (mt.ad[1] / mt.ad.sum),None),
-        #dp = hl.min(mt.index_entries(mt.row_key,mt.col_key)[(mt.locus,mt.alleles),mt.cols().head(1)].DP,32000) #hl.cond(mt.isCalled(), hl.min(mt.dp,32000), None)
     return mt
 
 
-# VARIANT_GENOTYPE_FIELDS_TO_EXPORT = {
-#     'num_alt': 'if(g.isCalled()) g.nNonRefAlleles() else -1',
-#     'gq': 'if(g.isCalled()) g.gq else NA:Int',
-#     'ab': 'let total=g.ad.sum in if(g.isCalled() && total != 0 && g.ad.length > 1) (g.ad[1] / total).toFloat else NA:Float',
-#     'dp': 'if(g.isCalled()) [g.dp, '+ELASTICSEARCH_MAX_SIGNED_SHORT_INT_TYPE+'].min() else NA:Int',  # compute min() to avoid integer overflow
-#     #'pl = if(g.isCalled) g.pl.mkString(",") else NA:String',  # store but don't index
-# }
 
 def load_clinvar(export_to_es=False):
     index_name = "clinvar_grch37" #"clinvar_grch{}".format(args.genome_version)
@@ -269,7 +252,7 @@ def load_clinvar(export_to_es=False):
 
     goldstar_dict = hl.literal(CLINVAR_GOLD_STARS_LOOKUP)
 
-     
+
 
     mt = mt.annotate_rows(
         allele_id=mt.info.ALLELEID,
@@ -350,28 +333,6 @@ def annoate_with_clinvar(mt: hl.MatrixTable) -> hl.MatrixTable:
         # %(root)s.allele_id = vds.info.ALLELEID,
         # %(root)s.clinical_significance = vds.info.CLNSIG.toSet.mkString(","),
         # %(root)s.gold_stars = %(CLINVAR_GOLD_STARS_LOOKUP)s.get(vds.info.CLNREVSTAT.toSet.mkString(","))
-
-def load_hgmd_vcf():
-    s3client.download_file('seqr-resources','GRCh37/hgmd/hgmd_pro_2018.4_hg19.vcf.gz','/tmp/hgmd.vcf.gz')
-    
-    mt = import_vcf(
-        '/tmp/hgmd.vcf.gz',
-        "37",
-        "hgmd_grch37",
-    )
-    return mt
-
-#hgmd_mt = load_hgmd_vcf()
-
-def annotate_with_hgmd(mt: hl.MatrixTable) -> hl.MatrixTable:
-    mt = mt.annotate_rows(
-        hgmd=hl.struct(
-            accession=hgmd_mt.rsid,
-            hgmdclass = hgmd_mt.info.CLASS
-        )
-    )
-    return mt
-
 
 def determine_if_already_uploaded(dataset: SeqrProjectDataSet):
     resp = requests.get(ELASTICSEARCH_HOST + ":9200/" + compute_index_name(dataset) + "0.5vep")
@@ -460,8 +421,11 @@ if __name__ == "__main__":
     args = p.parse_args()
     print(str(hl.utils.hadoop_ls('/')))
     if not args.clinvar:
-        gnomad = read_gnomad_ht(GnomadDataset.Genomes37)
-        gnomad.describe()
+        gnomad = read_gnomad_ht(GnomadDataset.Exomes37)
+        #gnomad.describe()
+        hgmd_mt = load_hgmd_vcf()
+        hgmd_mt.describe()
+
         path = args.path
         families = bch_connect_report_to_seqr_families(path)
         for family in families:
@@ -475,6 +439,6 @@ if __name__ == "__main__":
             gnomad_mt = annotate_adj(mt)
             final = finalize_annotated_table_for_seqr_variants(gnomad_mt)
             export_table_to_elasticsearch(final.rows(), ELASTICSEARCH_HOST, (index_name+"vep").lower(), "variant", is_vds=True, port=9200,num_shards=12, block_size=200)
-            
+
     else:
         load_clinvar(export_to_es=True)

@@ -88,8 +88,8 @@ def read_gnomad_vds_oh_one(hail_context, genome_version, exomes_or_genomes, subs
 class GnomadDataset(Enum):
     Genomes37 = 1
     Genomes38 = 2
-    Exomes37 = 1
-    Exomes38 = 2
+    Exomes37 = 3
+    Exomes38 = 4
 
     def get_bch_s3_path(self):
         if self == GnomadDataset.Exomes37:
