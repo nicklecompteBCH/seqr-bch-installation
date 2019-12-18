@@ -11,6 +11,7 @@ from enum import Enum
 from typing import Union, Tuple
 
 from .common_types import LocusInterval
+from .cloud.s3_tools import *
 
 def get_adj_expr(
         gt_expr: hl.expr.CallExpression,
@@ -68,7 +69,7 @@ GNOMAD_SEQR_VDS_PATHS_oh_one = {
 }
 
 GNOMAD_HT_PATHS = {
-    "exomes_37": "s3://seqr-resources/gnomad/37/exomes/ht/gnomad_exomes.r2.1.1.sites.ht", #"s3://seqr-resources/GRCh37/gnomad/gnomad.exomes.r2.0.2.sites.grch37.split.vds",
+    "exomes_37": "s3n://seqr-resources/gnomad/37/exomes/ht/gnomad_exomes.r2.1.1.sites.ht", #"s3://seqr-resources/GRCh37/gnomad/gnomad.exomes.r2.0.2.sites.grch37.split.vds",
 }
 
 def read_gnomad_vds_oh_one(hail_context, genome_version, exomes_or_genomes, subset=None):
@@ -100,8 +101,9 @@ def read_gnomad_ht(
     gnomad_version: GnomadDataset,
     subset: Union[LocusInterval, None] = None
 ) -> hl.MatrixTable:
-    gnomad_s3_path = gnomad_version.get_bch_s3_path()
-    gnomad_hailtable = hl.import_table(gnomad_s3_path)
+    #gnomad_s3_path = gnomad_version.get_bch_s3_path()
+    #hdfs_path = add_ht_to_hdfs("GRCh37/gnomad/","seqr-resources","gnomad")
+    gnomad_hailtable = hl.read_table('/tmp/gnomad/ht/gnomad.exomes.r2.1.1.sites.ht/')
     if subset:
         locus_expr = hl.parse_locus_interval(subset.to_hail_expr())
         gnomad_hailtable = gnomad_hailtable.filter(hl.is_defined(gnomad_hailtable[locus_expr]))

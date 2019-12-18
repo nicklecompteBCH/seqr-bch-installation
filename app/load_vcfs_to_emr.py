@@ -31,7 +31,9 @@ import csv
 import hail as hl
 from hail_elasticsearch_pipelines.bch_refactor.cloud.s3_tools import parse_vcf_s3_path, add_vcf_to_hdfs
 from hail_elasticsearch_pipelines.bch_refactor.hail_ops  import add_global_metadata
-from hail_elasticsearch_pipelines.bch_refactor.add_gnomad_to_vep_results import annotate_adj
+from hail_elasticsearch_pipelines.bch_refactor.add_gnomad_to_vep_results import (
+        annotate_adj, read_gnomad_ht, GnomadDataset
+)
 
 
 BCH_CLUSTER_TAG = "bch-hail-cluster"
@@ -333,7 +335,7 @@ CLINVAR_GOLD_STARS_LOOKUP = {
 
 }
 
-clinvar_mt = load_clinvar()
+#clinvar_mt = load_clinvar()
 
 def annoate_with_clinvar(mt: hl.MatrixTable) -> hl.MatrixTable:
     #joined_mt = clinvar_mt.semi_join_rows(mt)
@@ -359,7 +361,7 @@ def load_hgmd_vcf():
     )
     return mt
 
-hgmd_mt = load_hgmd_vcf()
+#hgmd_mt = load_hgmd_vcf()
 
 def annotate_with_hgmd(mt: hl.MatrixTable) -> hl.MatrixTable:
     mt = mt.annotate_rows(
@@ -456,8 +458,10 @@ if __name__ == "__main__":
     p.add_argument("-clinvar", "--clinvar", help="Run clinvar instead of loading samples",  action="store_true")
     p.add_argument("-p","--path",help="Filepath of csv from BCH_Connect seqr report.")
     args = p.parse_args()
-
+    print(str(hl.utils.hadoop_ls('/')))
     if not args.clinvar:
+        gnomad = read_gnomad_ht(GnomadDataset.Genomes37)
+        gnomad.describe()
         path = args.path
         families = bch_connect_report_to_seqr_families(path)
         for family in families:
