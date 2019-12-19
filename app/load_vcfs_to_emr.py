@@ -121,8 +121,8 @@ def load_hgmd_vcf():
 def annotate_with_hgmd(mt: hl.MatrixTable, hgmd_mt: hl.MatrixTable) -> hl.MatrixTable:
     mt = mt.annotate_rows(
         hgmd=hl.struct(
-            accession=hgmd_mt.rsid,
-            hgmdclass = hgmd_mt.info.CLASS
+            accession=hgmd_mt.index_rows(mt.row_key).rsid,
+            hgmdclass = hgmd_mt.index_rows(mt.row_key).info.CLASS
         )
     )
     return mt
