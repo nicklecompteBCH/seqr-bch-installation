@@ -32,7 +32,7 @@ import hail as hl
 from hail_elasticsearch_pipelines.bch_refactor.cloud.s3_tools import parse_vcf_s3_path, add_vcf_to_hdfs
 from hail_elasticsearch_pipelines.bch_refactor.hail_ops  import add_global_metadata
 from hail_elasticsearch_pipelines.bch_refactor.add_gnomad_to_vep_results import (
-        annotate_adj, read_gnomad_ht, GnomadDataset, annotate_with_gnomad
+        read_gnomad_ht, GnomadDataset, annotate_with_gnomad
 )
 from hail_elasticsearch_pipelines.bch_refactor.cadd import (
         get_cadd, annotate_with_cadd
