@@ -1,0 +1,35 @@
+Global fields:
+    'sourceFilePath': str
+    'genomeVersion': str
+----------------------------------------
+Column fields:
+    's': str
+----------------------------------------
+Row fields:
+    'locus': locus<GRCh37>
+    'alleles': array<str>
+    'rsid': str
+    'qual': float64
+    'filters': set<str>
+    'info': struct {
+        CLASS: str,
+        MUT: str,
+        GENE: str,
+        STRAND: str,
+        DNA: str,
+        PROT: str,
+        DBSNP_ID: str,
+        PHEN: str,
+        RANKSCORE: float64
+    }
+    'originalAltAlleles': array<str>
+    'xpos': int64
+    'ref': str
+    'a_index': int32
+    'was_split': bool
+----------------------------------------
+Entry fields:
+    None
+----------------------------------------
+Column key: ['s']
+Row key: ['locus', 'alleles']

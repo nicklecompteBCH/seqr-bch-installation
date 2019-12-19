@@ -44,19 +44,23 @@ def get_adj_expr(
     )
 
 
-def annotate_adj(
+def annotate_with_gnomad(
         mt: hl.MatrixTable,
-        adj_gq: int = 20,
-        adj_dp: int = 10,
-        adj_ab: float = 0.2,
-        haploid_adj_dp: int = 10
+        gnomad_ht : hl.MarixTable
 ) -> hl.MatrixTable:
     """
     https://github.com/macarthur-lab/gnomad_hail/blob/master/utils/gnomad_functions.py
     Annotate genotypes with adj criteria (assumes diploid)
     Defaults correspond to gnomAD values.
     """
-    return mt.annotate_entries(adj=get_adj_expr(mt.GT, mt.GQ, mt.DP, mt.AO, adj_gq, adj_dp, adj_ab, haploid_adj_dp))
+    return mt.annotate_rows(
+        gnomad = hl.struct(
+            AC = gnomad_ht.index_rows(mt.locus,mt.alleles).freq[0].AC,
+            AF = gnomad_ht.index_rows(mt.locus,mt.alleles).freq[0].AF,
+            AN = gnomad_ht.index_rows(mt.locus,mt.alleles).freq[0].AN,
+            AF_POPMAX_OR_GLOBAL = gnomad_ht.index_rows(mt.locus,mt.alleles).popmax[0].AF
+        )
+    )
 
 
 
@@ -131,6 +135,13 @@ USEFUL_INFO_FIELDS = """
     AN: Int,
     AF_POPMAX_OR_GLOBAL: Double
 """
+
+    # 'freq': array<struct {
+    #     AC: int32,
+    #     AF: float64,
+    #     AN: int32,
+    #     homozygote_count: int32
+    # }>
 
 # def add_gnomad_to_vds_oh_one(hail_context, vds, genome_version, exomes_or_genomes, root=None, top_level_fields=USEFUL_TOP_LEVEL_FIELDS, info_fields=USEFUL_INFO_FIELDS, subset=None, verbose=True):
 #     if genome_version not in ("37", "38"):

@@ -32,7 +32,13 @@ import hail as hl
 from hail_elasticsearch_pipelines.bch_refactor.cloud.s3_tools import parse_vcf_s3_path, add_vcf_to_hdfs
 from hail_elasticsearch_pipelines.bch_refactor.hail_ops  import add_global_metadata
 from hail_elasticsearch_pipelines.bch_refactor.add_gnomad_to_vep_results import (
-        annotate_adj, read_gnomad_ht, GnomadDataset
+        annotate_adj, read_gnomad_ht, GnomadDataset, annotate_with_gnomad
+)
+from hail_elasticsearch_pipelines.bch_refactor.cadd import (
+        get_cadd, annotate_with_cadd
+)
+from hail_elasticsearch_pipelines.bch_refactor.eigen import (
+    get_eigen, annotate_with_eigen
 )
 
 
@@ -394,6 +400,9 @@ def finalize_annotated_table_for_seqr_variants(mt: hl.MatrixTable) -> hl.MatrixT
     mt.describe()
     return mt
 
+gnomad = read_gnomad_ht(GnomadDataset.Exomes37)
+cadd = get_cadd()
+
 def add_project_dataset_to_elastic_search(
     dataset: SeqrProjectDataSet,
     host, index_name, index_type="variant",
@@ -406,7 +415,8 @@ def add_project_dataset_to_elastic_search(
     index_name = compute_index_name(dataset)
     vep_mt = add_vep_to_vcf(vcf)
     clinvar_mt = annoate_with_clinvar(vep_mt)
-    gnomad_mt = annotate_adj(clinvar_mt)
+    gnomad_mt = annotate_with_gnomad(clinvar_mt, gnomad)
+    cadd_mt = annotate_with_cadd(gnomad_mt, cadd)
     final = finalize_annotated_table_for_seqr_variants(gnomad_mt)
 
     export_table_to_elasticsearch(vep_mt.rows(), host, index_name+"vep", index_type, is_vds=True, port=port,num_shards=num_shards, block_size=block_size)
@@ -421,10 +431,12 @@ if __name__ == "__main__":
     args = p.parse_args()
     print(str(hl.utils.hadoop_ls('/')))
     if not args.clinvar:
-        gnomad = read_gnomad_ht(GnomadDataset.Exomes37)
         #gnomad.describe()
         hgmd_mt = load_hgmd_vcf()
         hgmd_mt.describe()
+
+        eigen_mt = get_eigen()
+        eigen_mt.describe()
 
         path = args.path
         families = bch_connect_report_to_seqr_families(path)
