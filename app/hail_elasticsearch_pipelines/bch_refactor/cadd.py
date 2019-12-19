@@ -30,8 +30,8 @@ def import_cadd_table(path: str, genome_version: str="37") -> hl.Table:
 
 def get_cadd():
 
-    snvs_ht = import_cadd_table(f"/tmp/CADD/whole_genome_SNVs.v1.4.tsv.bgz", genome_version)
-    indel_ht = import_cadd_table(f"/tmp/CADD/InDels.v1.4.tsv.bgz", genome_version)
+    snvs_ht = import_cadd_table(f"/tmp/CADD/whole_genome_SNVs.v1.4.tsv.bgz")
+    indel_ht = import_cadd_table(f"/tmp/CADD/InDels.v1.4.tsv.bgz")
 
     ht = snvs_ht.union(indel_ht)
     return ht
