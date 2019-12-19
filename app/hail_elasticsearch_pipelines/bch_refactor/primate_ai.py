@@ -1,5 +1,5 @@
 import hail as hl
-from hail_elasticsearch_pipelines.hail_scripts.v02.utils.hail_utils import write_ht, import_table
+from hail_elasticsearch_pipelines.hail_scripts.v02.utils.hail_utils import write_ht, import_vcf
 
 def import_primate():
 
