@@ -41,6 +41,13 @@ from hail_elasticsearch_pipelines.bch_refactor.eigen import (
     get_eigen, annotate_with_eigen
 )
 
+from hail_elasticsearch_pipelines.bch_refactor.primate_ai import (
+    import_primate, annotate_with_primate
+)
+
+from hail_elasticsearch_pipelines.bch_refactor.clinvar import (
+    load_clinvar, annotate_with_clinvar
+)
 
 BCH_CLUSTER_TAG = "bch-hail-cluster"
 BCH_CLUSTER_NAME = 'hail-bch'
@@ -102,7 +109,6 @@ def add_vep_to_vcf(mt):
     return mt
 
 def load_hgmd_vcf():
-    s3client.download_file('seqr-resources','GRCh37/hgmd/hgmd_pro_2018.4_hg19.vcf.gz','/tmp/hgmd.vcf.gz')
 
     mt = import_vcf(
         '/tmp/hgmd.vcf.gz',
@@ -112,7 +118,7 @@ def load_hgmd_vcf():
     return mt
 
 
-def annotate_with_hgmd(mt: hl.MatrixTable) -> hl.MatrixTable:
+def annotate_with_hgmd(mt: hl.MatrixTable, hgmd_mt: hl.MatrixTable) -> hl.MatrixTable:
     mt = mt.annotate_rows(
         hgmd=hl.struct(
             accession=hgmd_mt.rsid,
@@ -235,106 +241,6 @@ def annotate_with_genotype_num_alt(mt: hl.MatrixTable) -> hl.MatrixTable:
     return mt
 
 
-
-def load_clinvar(export_to_es=False):
-    index_name = "clinvar_grch37" #"clinvar_grch{}".format(args.genome_version)
-    mt = download_and_import_latest_clinvar_vcf("37")
-    mt = hl.vep(mt, "/vep85-loftee-gcloud.json", name="vep", block_size=1000)
-    mt = mt.annotate_rows(
-        sortedTranscriptConsequences=get_expr_for_vep_sorted_transcript_consequences_array(vep_root=mt.vep)
-    )
-    mt = mt.annotate_rows(
-        main_transcript=get_expr_for_worst_transcript_consequence_annotations_struct(
-            vep_sorted_transcript_consequences_root=mt.sortedTranscriptConsequences
-        )
-    )
-    mt = mt.annotate_rows(
-        gene_ids=get_expr_for_vep_gene_ids_set(
-            vep_transcript_consequences_root=mt.sortedTranscriptConsequences
-        ),
-    )
-
-    review_status_str = hl.delimit(hl.sorted(hl.array(hl.set(mt.info.CLNREVSTAT)), key=lambda s: s.replace("^_", "z")))
-
-    goldstar_dict = hl.literal(CLINVAR_GOLD_STARS_LOOKUP)
-
-
-
-    mt = mt.annotate_rows(
-        allele_id=mt.info.ALLELEID,
-        alt=get_expr_for_alt_allele(mt),
-        chrom=get_expr_for_contig(mt.locus),
-        clinical_significance=hl.delimit(hl.sorted(hl.array(hl.set(mt.info.CLNSIG)), key=lambda s: s.replace("^_", "z"))),
-        domains=get_expr_for_vep_protein_domains_set(vep_transcript_consequences_root=mt.vep.transcript_consequences),
-        gene_ids=mt.gene_ids,
-        gene_id_to_consequence_json=get_expr_for_vep_gene_id_to_consequence_map(
-            vep_sorted_transcript_consequences_root=mt.sortedTranscriptConsequences,
-            gene_ids=mt.gene_ids
-        ),
-        gold_stars= hl.int(goldstar_dict.get(review_status_str)),
-        **{f"main_transcript_{field}": mt.main_transcript[field] for field in mt.main_transcript.dtype.fields},
-        pos=get_expr_for_start_pos(mt),
-        ref=get_expr_for_ref_allele(mt),
-        review_status=review_status_str,
-        transcript_consequence_terms=get_expr_for_vep_consequence_terms_set(
-            vep_transcript_consequences_root=mt.sortedTranscriptConsequences
-        ),
-        transcript_ids=get_expr_for_vep_transcript_ids_set(
-            vep_transcript_consequences_root=mt.sortedTranscriptConsequences
-        ),
-        transcript_id_to_consequence_json=get_expr_for_vep_transcript_id_to_consequence_map(
-            vep_transcript_consequences_root=mt.sortedTranscriptConsequences
-        ),
-        variant_id=get_expr_for_variant_id(mt),
-        xpos=get_expr_for_xpos(mt.locus)
-    )
-
-    mt = mt.annotate_rows(clinvar_clinical_significance = mt.clinical_significance)
-
-    hl.summarize_variants(mt)
-
-        # Drop key columns for export
-    if export_to_es:
-        rows = mt.rows()
-        rows = rows.order_by(rows.variant_id).drop("locus", "alleles")
-        print("\n=== Exporting ClinVar to Elasticsearch ===")
-        es = ElasticsearchClient(ELASTICSEARCH_HOST, "9200")
-        es.export_table_to_elasticsearch(
-            rows,
-            index_name=index_name,
-            index_type_name='variant',
-            block_size=200,
-            num_shards=2,
-            delete_index_before_exporting=True,
-            export_globals_to_index_meta=True,
-            verbose=True,
-        )
-    else:
-        return mt
-
-CLINVAR_GOLD_STARS_LOOKUP = {
-    'no_interpretation_for_the_single_variant': "0",
-    'no_assertion_provided' : "0",
-    'no_assertion_criteria_provided' : "0",
-    'criteria_provided,_single_submitter' : "1",
-    'criteria_provided,_conflicting_interpretations' : "1",
-    'criteria_provided,_multiple_submitters,_no_conflicts' : "2",
-    'reviewed_by_expert_panel' : "3",
-    'practice_guideline' : "4"
-
-}
-
-#clinvar_mt = load_clinvar()
-
-def annoate_with_clinvar(mt: hl.MatrixTable) -> hl.MatrixTable:
-    #joined_mt = clinvar_mt.semi_join_rows(mt)
-    clinvar_mt.describe()
-    mt = mt.annotate_rows(
-        allele_id = clinvar_mt.index_rows(mt.row_key).allele_id,
-        clinvar_clinical_significance = clinvar_mt.index_rows(mt.row_key).clinvar_clinical_significance,
-        gold_stars = clinvar_mt.index_rows(mt.row_key).gold_stars
-    )
-    return mt
         # vds = vds.annotate_variants_vds(clinvar_vds, expr="""
         # %(root)s.allele_id = vds.info.ALLELEID,
         # %(root)s.clinical_significance = vds.info.CLNSIG.toSet.mkString(","),
@@ -402,6 +308,10 @@ def finalize_annotated_table_for_seqr_variants(mt: hl.MatrixTable) -> hl.MatrixT
 
 gnomad = read_gnomad_ht(GnomadDataset.Exomes37)
 cadd = get_cadd()
+eigen = get_eigen()
+hgmd = load_hgmd_vcf()
+primate = import_primate()
+clinvar = load_clinvar()
 
 def add_project_dataset_to_elastic_search(
     dataset: SeqrProjectDataSet,
@@ -414,10 +324,13 @@ def add_project_dataset_to_elastic_search(
     vcf = add_global_metadata(vcf_mt,dataset.vcf_s3_path)
     index_name = compute_index_name(dataset)
     vep_mt = add_vep_to_vcf(vcf)
-    clinvar_mt = annoate_with_clinvar(vep_mt)
-    gnomad_mt = annotate_with_gnomad(clinvar_mt, gnomad)
-    cadd_mt = annotate_with_cadd(gnomad_mt, cadd)
-    final = finalize_annotated_table_for_seqr_variants(gnomad_mt)
+    vep_mt = annotate_with_clinvar(vep_mt, clinvar)
+    vep_mt = annotate_with_hgmd(vep_mt, hgmd)
+    vep_mt = annotate_with_gnomad(vep_mt, gnomad)
+    vep_mt = annotate_with_cadd(vep_mt, cadd)
+    vep_mt = annotate_with_eigen(vep_mt, eigen)
+    vep_mt = annotate_with_primate(vep_mt, primate)
+    final = finalize_annotated_table_for_seqr_variants(vep_mt)
 
     export_table_to_elasticsearch(vep_mt.rows(), host, index_name+"vep", index_type, is_vds=True, port=port,num_shards=num_shards, block_size=block_size)
 #    export_table_to_elasticsearch(vep_mt.rows(), host, index_name+"vep", index_type, port=port, num_shards=num_shards, block_size=block_size)
@@ -432,11 +345,6 @@ if __name__ == "__main__":
     print(str(hl.utils.hadoop_ls('/')))
     if not args.clinvar:
         #gnomad.describe()
-        hgmd_mt = load_hgmd_vcf()
-        #hgmd_mt.describe()
-
-        eigen_mt = get_eigen()
-        #eigen_mt.describe()
 
         path = args.path
         families = bch_connect_report_to_seqr_families(path)
