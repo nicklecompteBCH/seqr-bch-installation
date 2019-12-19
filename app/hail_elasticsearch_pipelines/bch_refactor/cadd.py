@@ -42,3 +42,4 @@ def annotate_with_cadd(ht : hl.MatrixTable, cadd_ht : hl.Table):
             PHRED = cadd_ht.index(ht.locus, ht.alleles).PHRED
         )
     )
+    return newht
