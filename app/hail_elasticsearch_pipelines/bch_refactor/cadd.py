@@ -1,5 +1,5 @@
 import hail as hl
-from hail_scripts.v02.utils.hail_utils import write_ht, import_table
+from hail_elasticsearch_pipelines.hail_scripts.v02.utils.hail_utils import write_ht, import_table
 
 def import_cadd_table(path: str, genome_version: str="37") -> hl.Table:
     if genome_version not in ("37", "38"):
