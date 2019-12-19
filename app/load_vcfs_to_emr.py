@@ -273,9 +273,6 @@ def finalize_annotated_table_for_seqr_variants(mt: hl.MatrixTable) -> hl.MatrixT
         sortedTranscriptConsequences=get_expr_for_vep_sorted_transcript_consequences_array(vep_root=mt.vep)
     )
 
-
-
-
     mt = mt.annotate_rows(
         #allele_id=clinvar_mt.index_rows(mt.row_key).vep.id,
         alt=get_expr_for_alt_allele(mt),
@@ -303,8 +300,6 @@ def finalize_annotated_table_for_seqr_variants(mt: hl.MatrixTable) -> hl.MatrixT
         variant_id=get_expr_for_variant_id(mt),
         xpos=get_expr_for_xpos(mt.locus)
     )
-    mt = annotate_with_genotype_num_alt(mt)
-    mt = annotate_with_samples_alt(mt)
     mt.describe()
     return mt
 
@@ -356,7 +351,13 @@ if __name__ == "__main__":
             index_name = "alan_beggs__" + family.family_id + "__wes__" + "GRCh37__" + "VARIANTS__" + time.strftime("%Y%m%d")
             vep_mt = add_vep_to_vcf(mt)
             vep_mt = annotate_with_genotype_num_alt(vep_mt)
-            vep_mt = annotate_with_samples_alt(mt)
+            vep_mt = annotate_with_samples_alt(vep_mt)
+            vep_mt = annotate_with_clinvar(vep_mt, clinvar)
+            vep_mt = annotate_with_hgmd(vep_mt, hgmd)
+            vep_mt = annotate_with_gnomad(vep_mt, gnomad)
+            vep_mt = annotate_with_cadd(vep_mt, cadd)
+            vep_mt = annotate_with_eigen(vep_mt, eigen)
+            vep_mt = annotate_with_primate(vep_mt, primate)
             final = finalize_annotated_table_for_seqr_variants(vep_mt)
             export_table_to_elasticsearch(final.rows(), ELASTICSEARCH_HOST, (index_name+"vep").lower(), "variant", is_vds=True, port=9200,num_shards=12, block_size=200)
 
