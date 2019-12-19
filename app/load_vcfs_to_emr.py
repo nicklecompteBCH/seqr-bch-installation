@@ -353,9 +353,9 @@ if __name__ == "__main__":
             mt = add_global_metadata(mt,family.index_sample.path_to_vcf)
             index_name = "alan_beggs__" + family.family_id + "__wes__" + "GRCh37__" + "VARIANTS__" + time.strftime("%Y%m%d")
             vep_mt = add_vep_to_vcf(mt)
-            mt = annotate_with_genotype_num_alt(clinvar_mt)
-            mt = annotate_with_samples_alt(mt)
-            final = finalize_annotated_table_for_seqr_variants(gnomad_mt)
+            vep_mt = annotate_with_genotype_num_alt(vep_mt)
+            vep_mt = annotate_with_samples_alt(mt)
+            final = finalize_annotated_table_for_seqr_variants(vep_mt)
             export_table_to_elasticsearch(final.rows(), ELASTICSEARCH_HOST, (index_name+"vep").lower(), "variant", is_vds=True, port=9200,num_shards=12, block_size=200)
 
     else:
