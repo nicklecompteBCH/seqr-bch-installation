@@ -10,6 +10,7 @@ from hail_elasticsearch_pipelines.hail_scripts.v02.utils.computed_fields.vep imp
 )
 from hail_elasticsearch_pipelines.hail_scripts.v02.utils.elasticsearch_client import ElasticsearchClient
 from hail_elasticsearch_pipelines.hail_scripts.v02.utils.clinvar import CLINVAR_GOLD_STARS_LOOKUP, download_and_import_latest_clinvar_vcf
+from hail_elasticsearch_pipelines.hail_scripts.v02.utils.computed_fields.variant_id import *
 import hail as hl
 
 def load_clinvar(export_to_es=False):
