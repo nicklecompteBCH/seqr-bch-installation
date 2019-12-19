@@ -36,9 +36,9 @@ def get_cadd():
     ht = snvs_ht.union(indel_ht)
     return ht
 
-def annotate_with_cadd(ht : hl.MatrixTable, cadd_ht : hl.MatrixTable):
+def annotate_with_cadd(ht : hl.MatrixTable, cadd_ht : hl.Table):
     newht = ht.annotate_rows(
         cadd = hl.struct(
-            Phred = cadd_ht.index_rows(ht.locus, ht.alleles).phred
+            Phred = cadd_ht.index(ht.locus, ht.alleles).phred
         )
     )
