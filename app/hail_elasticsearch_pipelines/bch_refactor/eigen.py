@@ -9,7 +9,7 @@ def get_eigen():
 def annotate_with_eigen(ht : hl.MatrixTable, eigen_ht : hl.MatrixTable):
     newht = ht.annotate_rows(
         eigen = hl.struct(
-            Eigen_phred = eigen_ht.index_rows(mt.locus,mt.alleles).Eigen-phred
+            Phred = eigen_ht.index_rows(ht.locus,ht.alleles).PHRED
         )
     )
     return newht

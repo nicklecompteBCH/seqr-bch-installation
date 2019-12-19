@@ -39,6 +39,6 @@ def get_cadd():
 def annotate_with_cadd(ht : hl.MatrixTable, cadd_ht : hl.MatrixTable):
     newht = ht.annotate_rows(
         cadd = hl.struct(
-            Phred = cadd.phred
+            Phred = cadd_ht.index_rows(ht.locus, ht.alleles).phred
         )
     )
