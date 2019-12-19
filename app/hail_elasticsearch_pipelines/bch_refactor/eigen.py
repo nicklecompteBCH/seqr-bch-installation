@@ -1,5 +1,5 @@
 import hail as hl
-from hail_scripts.v02.utils.hail_utils import import_vcf
+from hail_elasticsearch_pipelines.hail_scripts.v02.utils.hail_utils import import_vcf
 
 def get_eigen():
 
