@@ -55,10 +55,10 @@ def annotate_with_gnomad(
     """
     return mt.annotate_rows(
         gnomad = hl.struct(
-            AC = gnomad_ht.index_rows(mt.locus,mt.alleles).freq[0].AC,
-            AF = gnomad_ht.index_rows(mt.locus,mt.alleles).freq[0].AF,
-            AN = gnomad_ht.index_rows(mt.locus,mt.alleles).freq[0].AN,
-            AF_POPMAX_OR_GLOBAL = gnomad_ht.index_rows(mt.locus,mt.alleles).popmax[0].AF
+            AC = gnomad_ht.index(mt.locus,mt.alleles).freq[0].AC,
+            AF = gnomad_ht.index(mt.locus,mt.alleles).freq[0].AF,
+            AN = gnomad_ht.index(mt.locus,mt.alleles).freq[0].AN,
+            AF_POPMAX_OR_GLOBAL = gnomad_ht.index(mt.locus,mt.alleles).popmax[0].AF
         )
     )
 
@@ -111,7 +111,7 @@ def read_gnomad_ht(
     if subset:
         locus_expr = hl.parse_locus_interval(subset.to_hail_expr())
         gnomad_hailtable = gnomad_hailtable.filter(hl.is_defined(gnomad_hailtable[locus_expr]))
-    return gnomad_hailtable.to_matrix_table(row_key=('locus', 'alleles'), col_key=('s'))
+    return gnomad_hailtable
 
 def add_gnomad_to_vep_matrixtable(
     vep_results: hl.MatrixTable,
