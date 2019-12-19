@@ -46,7 +46,7 @@ def get_adj_expr(
 
 def annotate_with_gnomad(
         mt: hl.MatrixTable,
-        gnomad_ht : hl.MarixTable
+        gnomad_ht : hl.MatrixTable
 ) -> hl.MatrixTable:
     """
     https://github.com/macarthur-lab/gnomad_hail/blob/master/utils/gnomad_functions.py
