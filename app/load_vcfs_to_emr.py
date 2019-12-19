@@ -433,10 +433,10 @@ if __name__ == "__main__":
     if not args.clinvar:
         #gnomad.describe()
         hgmd_mt = load_hgmd_vcf()
-        hgmd_mt.describe()
+        #hgmd_mt.describe()
 
         eigen_mt = get_eigen()
-        eigen_mt.describe()
+        #eigen_mt.describe()
 
         path = args.path
         families = bch_connect_report_to_seqr_families(path)

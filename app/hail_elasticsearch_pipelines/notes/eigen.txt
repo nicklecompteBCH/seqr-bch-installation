@@ -1,0 +1,28 @@
+Global fields:
+    'sourceFilePath': str
+----------------------------------------
+Row fields:
+    'RawScore': float32
+    'PHRED': float32
+    'locus': locus<GRCh37>
+    'alleles': array<str>
+----------------------------------------
+Key: ['locus', 'alleles']
+----------------------------------------
+2019-12-19 11:00:26 Hail: INFO: Reading table with no type imputation
+  Loading column 'f0' as type 'str' (user-specified)
+  Loading column 'f1' as type 'int32' (user-specified)
+  Loading column 'f2' as type 'str' (type not specified)
+  Loading column 'f3' as type 'str' (type not specified)
+  Loading column 'f4' as type 'float32' (user-specified)
+  Loading column 'f5' as type 'float32' (user-specified)
+
+----------------------------------------
+Global fields:
+    'sourceFilePath': str
+----------------------------------------
+Row fields:
+    'RawScore': float32
+    'PHRED': float32
+    'locus': locus<GRCh37>
+    'alleles': array<str>
