@@ -111,7 +111,7 @@ def read_gnomad_ht(
     if subset:
         locus_expr = hl.parse_locus_interval(subset.to_hail_expr())
         gnomad_hailtable = gnomad_hailtable.filter(hl.is_defined(gnomad_hailtable[locus_expr]))
-    return gnomad_hailtable.to_matrix_table(row_key=('locus', 'alleles'), col_key='s')
+    return gnomad_hailtable.to_matrix_table(row_key=('locus', 'alleles'), col_key=('s'))
 
 def add_gnomad_to_vep_matrixtable(
     vep_results: hl.MatrixTable,
