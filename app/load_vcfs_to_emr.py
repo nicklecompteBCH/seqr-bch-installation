@@ -87,7 +87,6 @@ def add_vcf_to_hail(filename, family_name, s3path_to_vcf):
         force_bgz=True,
         min_partitions=1000)
     mt = add_global_metadata(mt, s3path_to_vcf)
-
     return mt
 
 def add_seqr_sample_to_hadoop(sample: SeqrSample):
@@ -159,7 +158,6 @@ def bch_connect_csv_line_to_seqr_sample(inputline: dict) -> SeqrSample:
     project_name = inputline['investigator']
     project = BCHSeqrProject.from_string(project_name)
     family_member_type = FamilyMemberType.from_bchconnect_str(inputline['initial_study_participant_kind'])
-
     return SeqrSample(
         indiv_id, fam_id, project, family_member_type,
         vcf_s3_path, bam_s3_path
@@ -168,7 +166,6 @@ def bch_connect_csv_line_to_seqr_sample(inputline: dict) -> SeqrSample:
 
 def bch_connect_report_to_seqr_families(filepath) -> List[SeqrFamily]:
     samples : List[SeqrSample] = []
-
     with open(filepath, 'r') as connect_results:
         for row in csv.DictReader(connect_results):
             sample = bch_connect_csv_line_to_seqr_sample(row)
@@ -191,7 +188,6 @@ def group_by(input_list, key_function):
 
 def compute_index_name(dataset: SeqrProjectDataSet, sample_type='wes',dataset_type='VARIANTS'):
     """Returns elasticsearch index name computed based on command-line args"""
-
     # generate the index name as:  <project>_<WGS_WES>_<family?>_<VARIANTS or SVs>_<YYYYMMDD>_<batch>
     index_name = "%s%s%s__%s__grch%s__%s__%s" % (
         dataset.project_name,
@@ -200,11 +196,8 @@ def compute_index_name(dataset: SeqrProjectDataSet, sample_type='wes',dataset_ty
         'GRCh37',
         dataset_type,
         time.strftime("%Y%m%d"),
-
     )
-
     index_name = index_name.lower()  # elasticsearch requires index names to be all lower-case
-
     return index_name
 
 def annotate_with_samples_alt(mt: hl.MatrixTable) -> hl.MatrixTable:
