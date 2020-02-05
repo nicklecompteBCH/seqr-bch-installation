@@ -9,7 +9,7 @@ def import_primate():
 def annotate_with_primate(ht : hl.MatrixTable, primate_ht : hl.MatrixTable):
     newht = ht.annotate_rows(
         primate_ai = hl.struct(
-            score = primate_ht.index_rows(mt.locus,mt.alleles).score
+            score = primate_ht.index_rows(ht.locus,ht.alleles).info.score
         )
     )
     return newht
