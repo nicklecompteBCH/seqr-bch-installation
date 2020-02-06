@@ -16,7 +16,7 @@ import hail as hl
 def load_clinvar(export_to_es=False):
     index_name = "clinvar_grch37" #"clinvar_grch{}".format(args.genome_version)
     mt = download_and_import_latest_clinvar_vcf("37")
-    mt = hl.vep(mt, "/vep85-loftee-gcloud.json", name="vep", block_size=1000)
+    mt = hl.vep(mt, "s3://seqr-resources/vep85-loftee-gcloud.json", name="vep", block_size=1000)
     mt = mt.annotate_rows(
         sortedTranscriptConsequences=get_expr_for_vep_sorted_transcript_consequences_array(vep_root=mt.vep)
     )
