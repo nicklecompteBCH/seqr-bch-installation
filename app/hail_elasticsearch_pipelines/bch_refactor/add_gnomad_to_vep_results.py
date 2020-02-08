@@ -73,7 +73,7 @@ GNOMAD_SEQR_VDS_PATHS_oh_one = {
 }
 
 GNOMAD_HT_PATHS = {
-    "exomes_37": "s3n://seqr-resources/gnomad/37/exomes/ht/gnomad_exomes.r2.1.1.sites.ht", #"s3://seqr-resources/GRCh37/gnomad/gnomad.exomes.r2.0.2.sites.grch37.split.vds",
+    "exomes_37": "s3n://seqr-resources/gnomad/37/exomes/ht/gnomad_exomes.r2.1.1.sites.vcf.gz", #"s3://seqr-resources/GRCh37/gnomad/gnomad.exomes.r2.0.2.sites.grch37.split.vds",
 }
 
 def read_gnomad_vds_oh_one(hail_context, genome_version, exomes_or_genomes, subset=None):
@@ -107,7 +107,7 @@ def read_gnomad_ht(
 ) -> hl.MatrixTable:
     #gnomad_s3_path = gnomad_version.get_bch_s3_path()
     #hdfs_path = add_ht_to_hdfs("GRCh37/gnomad/","seqr-resources","gnomad")
-    gnomad_hailtable = hl.read_table('/tmp/gnomad/ht/gnomad.exomes.r2.1.1.sites.ht/')
+    gnomad_hailtable = hl.import_vcf(GNOMAD_HT_PATHS['exomes_37'])
     if subset:
         locus_expr = hl.parse_locus_interval(subset.to_hail_expr())
         gnomad_hailtable = gnomad_hailtable.filter(hl.is_defined(gnomad_hailtable[locus_expr]))
