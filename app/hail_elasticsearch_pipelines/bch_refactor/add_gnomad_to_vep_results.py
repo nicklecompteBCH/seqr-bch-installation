@@ -73,7 +73,7 @@ GNOMAD_SEQR_VDS_PATHS_oh_one = {
 }
 
 GNOMAD_HT_PATHS = {
-    "exomes_37": "s3n://seqr-resources/gnomad/37/exomes/ht/gnomad_exomes.r2.1.1.sites.vcf.gz", #"s3://seqr-resources/GRCh37/gnomad/gnomad.exomes.r2.0.2.sites.grch37.split.vds",
+    "exomes_37": "s3://seqr-resources/gnomad/37/exomes/gnomad.exomes.r.2.1.1.sites.vcf.bgz", #"s3://seqr-resources/GRCh37/gnomad/gnomad.exomes.r2.0.2.sites.grch37.split.vds",
 }
 
 def read_gnomad_vds_oh_one(hail_context, genome_version, exomes_or_genomes, subset=None):

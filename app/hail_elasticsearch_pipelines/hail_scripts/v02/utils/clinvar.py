@@ -51,15 +51,14 @@ def download_and_import_latest_clinvar_vcf(genome_version: str) -> hl.MatrixTabl
         raise ValueError("Invalid genome_version: " + str(genome_version))
 
     clinvar_url = CLINVAR_FTP_PATH.format(genome_version=genome_version)
-    local_tmp_file_path = "/tmp/clinvar.vcf.gz"
-    clinvar_vcf_hdfs_path =  os.path.basename(local_tmp_file_path)
+    clinvar_vcf_hdfs_path = "s3://seqr-resources/GRCh37/clinvar/clinvar.GRCh37.vcf.gz"
 
     #subprocess.run(["wget", clinvar_url, "-O", local_tmp_file_path], check=True)
     #subprocess.run(["hdfs", "dfs", "-put", "-f", f"file://{local_tmp_file_path}", clinvar_vcf_hdfs_path], check=True)
 
-    clinvar_release_date = _parse_clinvar_release_date(local_tmp_file_path)
+    #clinvar_release_date = _parse_clinvar_release_date(local_tmp_file_path)
     mt = import_vcf("/tmp/" + clinvar_vcf_hdfs_path, genome_version, "clinvar37",drop_samples=True, min_partitions=2000, skip_invalid_loci=True)
-    mt = mt.annotate_globals(version=clinvar_release_date)
+    #mt = mt.annotate_globals(version=clinvar_release_date)
 
     return mt
 
