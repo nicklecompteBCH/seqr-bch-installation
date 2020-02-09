@@ -81,9 +81,17 @@ def get_hail_cluster():
     hail_cluster = hail_cluster_list[0]
     return hail_cluster
 
+def add_vcf_to_hdfs(s3path_to_vcf):
+
+    parts = parse_vcf_s3_path(s3path_to_vcf)
+    s3buckets = boto3.resource('s3')
+    s3bucket = s3buckets.Bucket(parts['bucket'])
+    s3bucket.download_file(parts['path'], parts['filename'])
+    os.system('hdfs dfs -put ' + parts['filename'])
+    return parts['filename']
 
 def add_seqr_sample_to_hadoop(sample: SeqrSample):
-    add_vcf_to_hdfs(sample.path_to_vcf)
+    return add_vcf_to_hdfs(sample.path_to_vcf)
 
 
 def add_families_to_hail(families: List[SeqrFamily]) -> hl.MatrixTable:
@@ -91,7 +99,8 @@ def add_families_to_hail(families: List[SeqrFamily]) -> hl.MatrixTable:
     for family in families:
         fammar = None
         for sample in family.samples:
-            mt = add_vcf_to_hail(sample)
+            filename = add_seqr_sample_to_hadoop(sample)
+            mt = add_vcf_to_hail(sample, filename)
             if not fammar:
                 fanmar = mt
             fanmar = fanmar.union_cols(mt)
@@ -337,6 +346,7 @@ if __name__ == "__main__":
 
         path = args.path
         families = bch_connect_report_to_seqr_families(path)
+        mt = add_families_to_hail(families)
         vep_mt = add_vep_to_vcf(mt)
         vep_mt = annotate_with_genotype_num_alt(vep_mt)
         vep_mt = annotate_with_samples_alt(vep_mt)
