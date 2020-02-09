@@ -49,6 +49,10 @@ from hail_elasticsearch_pipelines.bch_refactor.clinvar import (
     load_clinvar, annotate_with_clinvar
 )
 
+from hail_elasticsearch_pipelines.bch_refactor.hail_ops import (
+    import_vcf
+)
+
 BCH_CLUSTER_TAG = "bch-hail-cluster"
 BCH_CLUSTER_NAME = 'hail-bch'
 GENOME_VERSION = '37'
@@ -78,29 +82,21 @@ def get_hail_cluster():
     return hail_cluster
 
 
-def add_vcf_to_hail(filename, family_name, s3path_to_vcf):
-    print("Trying to add " + str(filename) + " to hail...")
-    mt = import_vcf(
-        filename,
-        GENOME_VERSION,
-        family_name,
-        force_bgz=True,
-        min_partitions=1000)
-    mt = add_global_metadata(mt, s3path_to_vcf)
-    return mt
-
 def add_seqr_sample_to_hadoop(sample: SeqrSample):
     add_vcf_to_hdfs(sample.path_to_vcf)
 
 
-def add_seqr_family_to_hail(family: SeqrFamily) -> hl.MatrixTable:
-    filenames : List[str] = []
-    for sample in family.samples:
-        add_seqr_sample_to_hadoop(sample)
-        parts = parse_vcf_s3_path(sample.path_to_vcf)
-        filenames.append(parts['filename'])
-    mt = add_vcf_to_hail(filenames,family.family_id,family.index_sample.path_to_vcf)
-    return mt
+def add_families_to_hail(families: List[SeqrFamily]) -> hl.MatrixTable:
+    retmr : hl.MatrixTable = None
+    for family in families:
+        filenames : List[str] = []
+        for sample in family.samples:
+            mt = add_vcf_to_hail(sample.path_to_vcf,family.family_id,family.index_sample.path_to_vcf)
+        if not retmr:
+            retmr = mt # I hate python :/
+        retmr = retmr.union_cols(mt)
+    return retmr
+
 
 
 def add_vep_to_vcf(mt):
@@ -338,21 +334,19 @@ if __name__ == "__main__":
 
         path = args.path
         families = bch_connect_report_to_seqr_families(path)
-        for family in families:
-            mt = add_seqr_family_to_hail(family)
-            mt = add_global_metadata(mt,family.index_sample.path_to_vcf)
-            index_name = "alan_beggs__" + family.family_id + "__wes__" + "GRCh37__" + "VARIANTS__" + time.strftime("%Y%m%d")
-            vep_mt = add_vep_to_vcf(mt)
-            vep_mt = annotate_with_genotype_num_alt(vep_mt)
-            vep_mt = annotate_with_samples_alt(vep_mt)
-            vep_mt = annotate_with_clinvar(vep_mt, clinvar)
-            vep_mt = annotate_with_hgmd(vep_mt, hgmd)
-            vep_mt = annotate_with_gnomad(vep_mt, gnomad)
-            vep_mt = annotate_with_cadd(vep_mt, cadd)
-            vep_mt = annotate_with_eigen(vep_mt, eigen)
-            vep_mt = annotate_with_primate(vep_mt, primate)
-            final = finalize_annotated_table_for_seqr_variants(vep_mt)
-            export_table_to_elasticsearch(final.rows(), ELASTICSEARCH_HOST, (index_name+"vep").lower(), "variant", is_vds=True, port=9200,num_shards=12, block_size=200)
+
+        index_name = "alan_beggs__" + family.family_id + "__wes__" + "GRCh37__" + "VARIANTS__" + time.strftime("%Y%m%d")
+        vep_mt = add_vep_to_vcf(mt)
+        vep_mt = annotate_with_genotype_num_alt(vep_mt)
+        vep_mt = annotate_with_samples_alt(vep_mt)
+        vep_mt = annotate_with_clinvar(vep_mt, clinvar)
+        vep_mt = annotate_with_hgmd(vep_mt, hgmd)
+        vep_mt = annotate_with_gnomad(vep_mt, gnomad)
+        vep_mt = annotate_with_cadd(vep_mt, cadd)
+        vep_mt = annotate_with_eigen(vep_mt, eigen)
+        vep_mt = annotate_with_primate(vep_mt, primate)
+        final = finalize_annotated_table_for_seqr_variants(vep_mt)
+        export_table_to_elasticsearch(final.rows(), ELASTICSEARCH_HOST, (index_name+"vep").lower(), "variant", is_vds=True, port=9200,num_shards=12, block_size=200)
 
     else:
         load_clinvar(export_to_es=True)
