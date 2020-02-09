@@ -109,7 +109,7 @@ def add_vep_to_vcf(mt):
 def load_hgmd_vcf():
 
     mt = import_vcf(
-        's3n://seqr-resources/GRCh37/hgmd/hgmd_pro_2018.4_hg19.vcf.gz,
+        's3n://seqr-resources/GRCh37/hgmd/hgmd_pro_2018.4_hg19.vcf.gz',
         "37",
         "hgmd_grch37",
     )
