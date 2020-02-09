@@ -88,6 +88,7 @@ def add_vcf_to_hdfs(s3path_to_vcf):
     s3bucket = s3buckets.Bucket(parts['bucket'])
     s3bucket.download_file(parts['path'], parts['filename'])
     os.system('hdfs dfs -put ' + parts['filename'])
+    print(parts['filename'])
     return parts['filename']
 
 def add_seqr_sample_to_hadoop(sample: SeqrSample):
@@ -358,6 +359,8 @@ if __name__ == "__main__":
         vep_mt = annotate_with_primate(vep_mt, primate)
         final = finalize_annotated_table_for_seqr_variants(vep_mt)
         famids = list(map(lambda x: x.family_id, families))
+        index_name = "alan_beggs__" "__wes__" + "GRCh37__" + "VARIANTS__" + time.strftime("%Y%m%d")
+
         export_table_to_elasticsearch(famids,final, ELASTICSEARCH_HOST, (index_name+"vep").lower(), "variant", is_vds=True, port=9200,num_shards=12, block_size=200)
 
     else:

@@ -55,10 +55,10 @@ def annotate_with_gnomad(
     """
     return mt.annotate_rows(
         gnomad = hl.struct(
-            AC = gnomad_ht.index(mt.locus,mt.alleles).freq[0].AC,
-            AF = gnomad_ht.index(mt.locus,mt.alleles).freq[0].AF,
-            AN = gnomad_ht.index(mt.locus,mt.alleles).freq[0].AN,
-            AF_POPMAX_OR_GLOBAL = gnomad_ht.index(mt.locus,mt.alleles).popmax[0].AF
+            AC = gnomad_ht.index_rows(mt.locus,mt.alleles).info.AC[0],
+            AF = gnomad_ht.index_rows(mt.locus,mt.alleles).info.AF[0],
+            AN = gnomad_ht.index_rows(mt.locus,mt.alleles).info.AN,
+            AF_POPMAX_OR_GLOBAL = gnomad_ht.index_rows(mt.locus,mt.alleles).info.popmax[0]
         )
     )
 

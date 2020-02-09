@@ -40,7 +40,7 @@ def add_global_metadata(
 
 def add_vcf_to_hail(sample : SeqrSample,filename, genome_version="37"):
     mt = import_vcf(
-        "hdfs:///" +  filename,
+        "hdfs:///user/hadoop/" +  filename,
         genome_version,
         sample.individual_id,
         force_bgz=True,
