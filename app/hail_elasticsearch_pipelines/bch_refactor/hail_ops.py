@@ -38,19 +38,18 @@ def add_global_metadata(
     return vds
 
 
-def add_vcf_to_hail(sample : SeqrSample):
+def add_vcf_to_hail(sample : SeqrSample,filename, genome_version="37"):
     mt = import_vcf(
-        sample.path_to_vcf,
-        GENOME_VERSION,
+        "hdfs:///" +  filename,
+        genome_version,
         sample.individual_id,
         force_bgz=True,
         min_partitions=1000)
     mt = add_global_metadata(
         mt,
-        s3path_to_vcf,
+        sample.path_to_vcf,
         sample.family_id,
         sample.individual_id
     )
-    mt = mt.annotate_cols(family_name=sample.family_id)
 
     return mt

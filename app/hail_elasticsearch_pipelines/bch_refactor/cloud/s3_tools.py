@@ -15,14 +15,6 @@ def parse_vcf_s3_path(s3path):
         "filename" : filename
     }
 
-def add_vcf_to_hdfs(s3path_to_vcf):
-
-    parts = parse_vcf_s3_path(s3path_to_vcf)
-    s3buckets = boto3.resource('s3')
-    s3bucket = s3buckets.Bucket(parts['bucket'])
-    s3bucket.download_file(parts['path'], parts['filename'])
-    os.system('hdfs dfs -put ' + parts['filename'])
-
 s3_client = boto3.client('s3')
 
 # https://stackoverflow.com/questions/31918960/boto3-to-download-all-files-from-a-s3-bucket/31929277

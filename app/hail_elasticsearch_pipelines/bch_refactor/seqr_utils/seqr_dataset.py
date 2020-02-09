@@ -118,7 +118,7 @@ class SeqrFamily:
     @staticmethod
     def from_list_samples(inputlist: List[SeqrSample]):
         if not inputlist:
-            return ValueError("inputlist in SeqrFamily.from_list_samples was empty")
+            raise ValueError("inputlist in SeqrFamily.from_list_samples was empty")
         indexsample = None
         mothersample = None
         fathersample = None
@@ -127,27 +127,27 @@ class SeqrFamily:
         project = inputlist[0].project
         for sample in inputlist:
             if sample.family_id != familyid:
-                return ValueError(f"Non-unique family_ids detected in SeqrFamily.from_list_samples: {familyid} and {sample.family_id} ")
+                raise ValueError(f"Non-unique family_ids detected in SeqrFamily.from_list_samples: {familyid} and {sample.family_id} ")
             if sample.family_member_type == FamilyMemberType.Index:
                 if indexsample:
                     # We want to *return* Exceptions, not raise them, to better handle errors.
-                    return ValueError(f"Two index samples represented in SeqrFamily.from_list_samples: {indexsample.individual_id} and {sample.individual_id}")
+                    raise ValueError(f"Two index samples represented in SeqrFamily.from_list_samples: {indexsample.individual_id} and {sample.individual_id}")
                 indexsample = sample
             elif sample.family_member_type == FamilyMemberType.Mother:
                 if mothersample:
-                    return ValueError(f"Two mother samples represented in SeqrFamily.from_list_samples: {mothersample.individual_id} and {sample.individual_id}")
+                    raise ValueError(f"Two mother samples represented in SeqrFamily.from_list_samples: {mothersample.individual_id} and {sample.individual_id}")
                 mothersample = sample
             elif sample.family_member_type == FamilyMemberType.Father:
                 if fathersample:
-                    return ValueError(f"Two father samples represented in SeqrFamily.from_list_samples: {fathersample.individual_id} and {sample.individual_id}")
+                    raise ValueError(f"Two father samples represented in SeqrFamily.from_list_samples: {fathersample.individual_id} and {sample.individual_id}")
                 fathersample = sample
             else:
                 if sample in othersamples:
-                    return ValueError(f"Duplicate samples in SeqrFamily.from_list_samples: {sample.individual_id}")
+                    raise ValueError(f"Duplicate samples in SeqrFamily.from_list_samples: {sample.individual_id}")
                 othersamples.add(sample)
 
         if not indexsample:
-            return ValueError(f"No index sample provided in SeqrFamily.from_list_samples for family {familyid}")
+            raise ValueError(f"No index sample provided in SeqrFamily.from_list_samples for family {familyid}")
 
         return SeqrFamily(
             familyid, project, indexsample,
