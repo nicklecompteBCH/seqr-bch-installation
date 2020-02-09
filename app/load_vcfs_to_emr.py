@@ -50,7 +50,7 @@ from hail_elasticsearch_pipelines.bch_refactor.clinvar import (
 )
 
 from hail_elasticsearch_pipelines.bch_refactor.hail_ops import (
-    import_vcf
+    add_vcf_to_hail
 )
 
 BCH_CLUSTER_TAG = "bch-hail-cluster"
@@ -89,12 +89,15 @@ def add_seqr_sample_to_hadoop(sample: SeqrSample):
 def add_families_to_hail(families: List[SeqrFamily]) -> hl.MatrixTable:
     retmr : hl.MatrixTable = None
     for family in families:
-        filenames : List[str] = []
+        fammar = None
         for sample in family.samples:
-            mt = add_vcf_to_hail(sample.path_to_vcf,family.family_id,family.index_sample.path_to_vcf)
+            mt = add_vcf_to_hail(sample)
+            if not fammar:
+                fanmar = mt
+            fanmar = fanmar.union_cols(mt)
         if not retmr:
-            retmr = mt # I hate python :/
-        retmr = retmr.union_cols(mt)
+            retmr = fanmar # I hate python :/
+        retmr = retmr.union_cols(fanmar)
     return retmr
 
 
@@ -334,8 +337,6 @@ if __name__ == "__main__":
 
         path = args.path
         families = bch_connect_report_to_seqr_families(path)
-
-        index_name = "alan_beggs__" + family.family_id + "__wes__" + "GRCh37__" + "VARIANTS__" + time.strftime("%Y%m%d")
         vep_mt = add_vep_to_vcf(mt)
         vep_mt = annotate_with_genotype_num_alt(vep_mt)
         vep_mt = annotate_with_samples_alt(vep_mt)
@@ -346,7 +347,8 @@ if __name__ == "__main__":
         vep_mt = annotate_with_eigen(vep_mt, eigen)
         vep_mt = annotate_with_primate(vep_mt, primate)
         final = finalize_annotated_table_for_seqr_variants(vep_mt)
-        export_table_to_elasticsearch(final.rows(), ELASTICSEARCH_HOST, (index_name+"vep").lower(), "variant", is_vds=True, port=9200,num_shards=12, block_size=200)
+        famids = list(map(lambda x: x.family_id, families))
+        export_table_to_elasticsearch(famids,final ELASTICSEARCH_HOST, (index_name+"vep").lower(), "variant", is_vds=True, port=9200,num_shards=12, block_size=200)
 
     else:
         load_clinvar(export_to_es=True)

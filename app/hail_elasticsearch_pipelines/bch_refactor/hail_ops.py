@@ -51,5 +51,6 @@ def add_vcf_to_hail(sample : SeqrSample):
         sample.family_id,
         sample.individual_id
     )
+    mt = mt.annotate_cols(family_name=sample.family_id)
 
     return mt

@@ -2,6 +2,8 @@ import argparse
 
 import hail as hl
 
+from typing import List
+
 from hail_elasticsearch_pipelines.hail_scripts.v02.utils.elasticsearch_client import ElasticsearchClient
 
 """
@@ -37,18 +39,22 @@ info (tstruct) – All INFO fields defined in the VCF header can be found in the
 """
 
 
-def export_table_to_elasticsearch(ds: hl.Table, host, index_name, index_type, is_vds  = False, port=9200, num_shards=1, block_size=200):
+def export_table_to_elasticsearch(families: List[str], ds: hl.MatrixTable, host, index_prefix, index_type, is_vds  = False, port=9200, num_shards=1, block_size=200):
     es = ElasticsearchClient(host, port)
-    es.export_table_to_elasticsearch(
-        ds,
-        index_name=index_name,
-        index_type_name=index_type,
-        block_size=block_size,
-        num_shards=num_shards,
-        delete_index_before_exporting=True,
-        export_globals_to_index_meta=True,
-        verbose=True,
-    )
+    # we want to loop over families
+    for family in families:
+        subtable = ds.select_cols(family_name=family)
+        index_name = index_prefix + f"family_{family}"
+        es.export_table_to_elasticsearch(
+            subtable,
+            index_name=index_name,
+            index_type_name=index_type,
+            block_size=block_size,
+            num_shards=num_shards,
+            delete_index_before_exporting=True,
+            export_globals_to_index_meta=True,
+            verbose=True,
+        )
 
 
 def main():
