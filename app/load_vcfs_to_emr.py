@@ -49,6 +49,30 @@ from hail_elasticsearch_pipelines.bch_refactor.clinvar import (
     load_clinvar, annotate_with_clinvar
 )
 
+from hail_elasticsearch_pipelines.bch_refactor.topmed import (
+    get_topmed, annotate_with_topmed
+)
+
+from hail_elasticsearch_pipelines.bch_refactor.mpc import (
+    get_mpc, annotate_with_mpc
+)
+
+from hail_elasticsearch_pipelines.bch_refactor.exac import (
+    get_exac, annotate_with_exac
+)
+
+from hail_elasticsearch_pipelines.bch_refactor.gene_constraint import (
+    get_gc, annotate_with_gc
+)
+
+from hail_elasticsearch_pipelines.bch_refactor.omim import (
+    get_omim, annotate_with_omim
+)
+
+from hail_elasticsearch_pipelines.bch_refactor.gene_constraint import (
+    get_gc, annotate_with_gc
+)
+
 from hail_elasticsearch_pipelines.bch_refactor.hail_ops import (
     add_vcf_to_hail
 )
@@ -311,6 +335,11 @@ eigen = get_eigen()
 hgmd = load_hgmd_vcf()
 primate = import_primate()
 clinvar = load_clinvar()
+topmed = get_topmed()
+mpc = get_mpc()
+exac = get_exac()
+gc =  get_gc()
+omim = get_omim()
 
 def add_project_dataset_to_elastic_search(
     dataset: SeqrProjectDataSet,
@@ -329,6 +358,11 @@ def add_project_dataset_to_elastic_search(
     vep_mt = annotate_with_cadd(vep_mt, cadd)
     vep_mt = annotate_with_eigen(vep_mt, eigen)
     vep_mt = annotate_with_primate(vep_mt, primate)
+    vep_mt = annotate_with_topmed(vep_mt,topmed)
+    vep_mt = annotate_with_mpc(vep_mt, mpc)
+    vep_mt = annotate_with_gc(vep_mt,gc)
+    vep_mt = annotate_with_omim(vep_mt,omim)
+    vep_mt = annotate_with_exac(vep_mt,exac)
     final = finalize_annotated_table_for_seqr_variants(vep_mt)
 
     export_table_to_elasticsearch(vep_mt.rows(), host, index_name+"vep", index_type, is_vds=True, port=port,num_shards=num_shards, block_size=block_size)
@@ -357,6 +391,8 @@ if __name__ == "__main__":
         vep_mt = annotate_with_cadd(vep_mt, cadd)
         vep_mt = annotate_with_eigen(vep_mt, eigen)
         vep_mt = annotate_with_primate(vep_mt, primate)
+        vep_mt = annotate_with_topmed(vep_mt, topmed)
+        vep_mt = annotate_with_exac(vep_mt, exac)
         final = finalize_annotated_table_for_seqr_variants(vep_mt)
         famids = list(map(lambda x: x.family_id, families))
         index_name = "alan_beggs__" "__wes__" + "GRCh37__" + "VARIANTS__" + time.strftime("%Y%m%d")
