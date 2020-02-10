@@ -10,23 +10,23 @@ error_msg ()
   exit 1
 }
 
-# Usage
-usage()
-{
-echo "Usage: cloudformation.sh [-v | --version <git hash>] [-h | --help]
+# # Usage
+# usage()
+# {
+# echo "Usage: cloudformation.sh [-v | --version <git hash>] [-h | --help]
 
-Options:
--v | --version <git hash>
-    This option takes either the abbreviated (8-12 characters) or the full size hash (40 characters).
-    When provided, the command uses a pre-compiled Hail version for the EMR cluster. If the hash (sha1)
-    version exists in the pre-compiled list, that specific hash will be used.
-    If no version is given or if the hash was not found, Hail will be compiled from scratch using the most
-    up to date version available in the repository (https://github.com/hail-is/hail)
+# Options:
+# -v | --version <git hash>
+#     This option takes either the abbreviated (8-12 characters) or the full size hash (40 characters).
+#     When provided, the command uses a pre-compiled Hail version for the EMR cluster. If the hash (sha1)
+#     version exists in the pre-compiled list, that specific hash will be used.
+#     If no version is given or if the hash was not found, Hail will be compiled from scratch using the most
+#     up to date version available in the repository (https://github.com/hail-is/hail)
 
--h | --help
-	Displays this menu"
-    exit 1
-}
+# -h | --help
+# 	Displays this menu"
+#     exit 1
+# }
 
 # Add hail to the master node
 sudo mkdir -p /opt/hail/src
@@ -72,8 +72,9 @@ sudo  ln -s /usr/lib/jvm/$LATEST_JDK/include /etc/alternatives/jre/include
 
 # Compile with Spark 2.4.0
 echo "Compiling with Wheel..."
-make clean
-make wheel
+sudo python3 -m pip install wheel
+sudo make clean
+sudo make wheel
 HAIL_WHEEL=`ls /opt/hail/src/hail/hail/build/deploy/dist | grep "whl"`
 sudo python3 -m pip install /opt/hail/src/hail/hail/build/deploy/dist/$HAIL_WHEEL
 
@@ -84,7 +85,6 @@ sudo python3 -m pip install /opt/hail/src/hail/hail/build/deploy/dist/$HAIL_WHEE
 
 sudo cp /usr/share/zoneinfo/America/New_York /etc/localtime
 
-# Install user-level python packages
-python3 -m pip install boto3 --user
-python3 -m pip install elasticsearch --user
-python3 -m pip install requests --user
+sudo python3 -m pip install boto3
+sudo python3 -m pip install elasticsearch
+sudo python3 -m pip install requests

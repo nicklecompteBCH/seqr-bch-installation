@@ -41,14 +41,14 @@
                     "EbsConfiguration" : {
                         "EbsBlockDeviceConfigs" : [{
                             "VolumeSpecification" : {
-                            "SizeInGB" : 150,
+                            "SizeInGB" : 75,
                             "VolumeType" : "gp2"}
                         }],
                         "EbsOptimized" : false
                     },
-                    "InstanceCount" :8,
-                    "InstanceType" : "r4.xlarge",
-                    "Market" : "ON_DEMAND",
+                    "InstanceCount" :20,
+                    "InstanceType" : "r5.4xlarge",
+                    "Market" : "SPOT",
                     "Name" : "hail-workers"
                 },
                 "Ec2KeyName" : "nick",
@@ -60,13 +60,13 @@
                     "Configurations" : [],
                     "EbsConfiguration" : {
                         "EbsBlockDeviceConfigs" : [{"VolumeSpecification" : {
-                            "SizeInGB" : 150,
+                            "SizeInGB" : 100,
                             "VolumeType" : "gp2"
                         }}],
                         "EbsOptimized" : false
                     },
                     "InstanceCount" : 1,
-                    "InstanceType" : "c5n.2xlarge",
+                    "InstanceType" : "r5.16xlarge",
                     "Market" : "ON_DEMAND",
                     "Name" : "hail-master"
                 },
@@ -84,22 +84,15 @@
                 {"Key" : "Owner", "Value" : "nicklecompte"}  ],
             "VisibleToAllUsers" : false,
             "BootstrapActions" :
-                [
+            [
+                {
+                    "Name" : "install-vep",
+                    "ScriptBootstrapAction" :
                     {
-                        "Name" : "install-python-3-and-hail",
-                        "ScriptBootstrapAction" :
-                        {
-                            "Path" : "s3://bch-seqr-deployment/install_hail_and_python36.sh"
-                        }
-                    },
-                    {
-                        "Name" : "install-vep",
-                        "ScriptBootstrapAction" :
-                        {
-                            "Path" : "s3://bch-seqr-deployment/install_vep.sh"
-                        }
+                        "Path" : "s3://bch-seqr-deployment/cloudformation_bootstrap.sh"
                     }
-                ]
+                }
+            ]
             }
         }
     }

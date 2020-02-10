@@ -35,6 +35,7 @@
                     "Configurations":[]
                 }
             ],
+            "CustomAmiId" : "ami-013852147816491f5",
             "Instances" : {
                 "CoreInstanceGroup" : {
                     "Configurations" : [],
@@ -46,9 +47,9 @@
                         }],
                         "EbsOptimized" : false
                     },
-                    "InstanceCount" :8,
-                    "InstanceType" : "r4.xlarge",
-                    "Market" : "ON_DEMAND",
+                    "InstanceCount" :2,
+                    "InstanceType" : "r5.16xlarge",
+                    "Market" : "SPOT",
                     "Name" : "hail-workers"
                 },
                 "Ec2KeyName" : "nick",
@@ -66,7 +67,7 @@
                         "EbsOptimized" : false
                     },
                     "InstanceCount" : 1,
-                    "InstanceType" : "c5n.2xlarge",
+                    "InstanceType" : "r5.16xlarge",
                     "Market" : "ON_DEMAND",
                     "Name" : "hail-master"
                 },

@@ -1,19 +1,11 @@
 #!/bin/bash
 
-if [ -d "/vep" ] ; then
-    echo "VEP already installed";
-    exit;
-fi
-
 # install requirement
 sudo python2.7 -m pip install --no-cache-dir -U crcmod
 
 # PERL setup
 sudo wget https://raw.github.com/miyagawa/cpanminus/master/cpanm -O /usr/bin/cpanm
 sudo chmod o+x /usr/bin/cpanm
-
-sudo yum install perl-core
-
 # VEP dependencies
 sudo /usr/bin/cpanm --notest Set::IntervalTree
 sudo /usr/bin/cpanm --notest PerlIO::gzip

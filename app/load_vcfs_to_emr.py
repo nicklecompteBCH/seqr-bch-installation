@@ -108,11 +108,14 @@ def get_hail_cluster():
 def add_vcf_to_hdfs(s3path_to_vcf):
 
     parts = parse_vcf_s3_path(s3path_to_vcf)
+    if hl.utils.hadoop_exists("hdfs:///user/hadoop/" +  parts['filename']):
+        return parts['filename']
     s3buckets = boto3.resource('s3')
     s3bucket = s3buckets.Bucket(parts['bucket'])
     s3bucket.download_file(parts['path'], parts['filename'])
     os.system('hdfs dfs -put ' + parts['filename'])
     print(parts['filename'])
+    os.system('rm ' + parts['filename'])
     return parts['filename']
 
 def add_seqr_sample_to_hadoop(sample: SeqrSample):

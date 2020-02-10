@@ -5,9 +5,8 @@ spark-submit \
 --conf spark.serializer=org.apache.spark.serializer.KryoSerializer \
 --conf spark.kryo.registrator=is.hail.kryo.HailKryoRegistrator \
 --conf spark.speculation=true \
---executor-memory 32G \
---driver-memory 32G \
-—master yarn load_vcfs_to_emr.py -p alan.csv
+--executor-memory 20G \
+--driver-memory 20G —master yarn load_vcfs_to_emr.py -clinvar -p alan.csv
 
 DON”T FORGET TO COMMIT CODE CHANGES
 
