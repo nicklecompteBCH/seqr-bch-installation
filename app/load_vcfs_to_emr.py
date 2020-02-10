@@ -342,7 +342,7 @@ topmed = get_topmed()
 mpc = get_mpc()
 exac = get_exac()
 gc =  get_gc()
-omim = get_omim()
+#omim = get_omim()
 
 def add_project_dataset_to_elastic_search(
     dataset: SeqrProjectDataSet,

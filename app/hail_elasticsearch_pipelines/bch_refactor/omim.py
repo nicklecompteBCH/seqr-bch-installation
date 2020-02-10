@@ -3,8 +3,9 @@ import hail as hl
 
 def get_omim():
 
-    ht = hl.import_table("s3://seqr-resources/omim/genemap2.txt")
-    ht = ht.to_matrix_table(ht['Ensembl Gene ID'],"omim")
+    ht = hl.import_table("s3://seqr-resources/omim/genemap2.txt",delimiter='|')
+    ht.annotate(colname=hl.str("omim"))
+    ht = ht.to_matrix_table('Ensembl Gene ID',"colname")
         #ht = import_vcf("s3://seqr-resources/topmed/bravo-dbsnp-all.removed_chr_prefix.liftunder_GRCh37.vcf.gz","37","topmed")
     return ht
 
