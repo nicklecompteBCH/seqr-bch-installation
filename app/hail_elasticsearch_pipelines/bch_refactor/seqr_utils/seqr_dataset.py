@@ -21,8 +21,8 @@ class BCHSeqrProject(Enum):
     def str_pretty(self):
         if self == BCHSeqrProject.AlanBeggs:
             return "alan_beggs"
-        elif self == BCHSeqrProject.MarkFleming
-            return "mark_fleming":
+        elif self == BCHSeqrProject.MarkFleming:
+            return "mark_fleming"
 
 
 

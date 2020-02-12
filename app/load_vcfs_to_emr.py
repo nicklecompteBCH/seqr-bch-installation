@@ -412,7 +412,7 @@ if __name__ == "__main__":
         final = finalize_annotated_table_for_seqr_variants(vep_mt)
         mt = mt.persist()
         famids = list(map(lambda x: x.family_id, families))
-        index_name = project "__wes__" + "GRCh37__" + "VARIANTS__" + time.strftime("%Y%m%d")
+        index_name = project + "__wes__" + "GRCh37__" + "VARIANTS__" + time.strftime("%Y%m%d")
 
         export_table_to_elasticsearch(famids,final, ELASTICSEARCH_HOST, (index_name+"vep").lower(), "variant", is_vds=True, port=9200,num_shards=12, block_size=200)
 
