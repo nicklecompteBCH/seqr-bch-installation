@@ -8,12 +8,23 @@ class BCHSeqrProject(Enum):
     AlanBeggs = 1
     ChrisWalsh = 2
     TimYu = 3
+    MarkFleming =  4
     Testing = 999
 
     @staticmethod
     def from_string(string):
         if string == "alan_beggs":
             return BCHSeqrProject.AlanBeggs
+        elif string == "mark_fleming":
+            return BCHSeqrProject.MarkFleming
+
+    def str_pretty(self):
+        if self == BCHSeqrProject.AlanBeggs:
+            return "alan_beggs"
+        elif self == BCHSeqrProject.MarkFleming
+            return "mark_fleming":
+
+
 
 class FamilyMemberType(Enum):
     Index = 1

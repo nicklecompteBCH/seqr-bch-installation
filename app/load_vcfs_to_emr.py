@@ -377,6 +377,7 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("-clinvar", "--clinvar", help="Run clinvar instead of loading samples",  action="store_true")
     p.add_argument("-p","--path",help="Filepath of csv from BCH_Connect seqr report.")
+    p.add_argument("-proj","--project")
     args = p.parse_args()
     print(str(hl.utils.hadoop_ls('/')))
     if not args.clinvar:
@@ -384,21 +385,34 @@ if __name__ == "__main__":
 
         path = args.path
         families = bch_connect_report_to_seqr_families(path)
+        project = args.project
         mt = add_families_to_hail(families)
+        mt = mt.persist()
         vep_mt = add_vep_to_vcf(mt)
+        mt = mt.persist()
         vep_mt = annotate_with_genotype_num_alt(vep_mt)
         vep_mt = annotate_with_samples_alt(vep_mt)
+        mt = mt.persist()
         vep_mt = annotate_with_clinvar(vep_mt, clinvar)
+        mt = mt.persist()
         vep_mt = annotate_with_hgmd(vep_mt, hgmd)
+        mt = mt.persist()
         vep_mt = annotate_with_gnomad(vep_mt, gnomad)
+        mt = mt.persist()
         vep_mt = annotate_with_cadd(vep_mt, cadd)
+        mt = mt.persist()
         vep_mt = annotate_with_eigen(vep_mt, eigen)
+        mt  = mt.persist()
         vep_mt = annotate_with_primate(vep_mt, primate)
+        mt = mt.persist()
         vep_mt = annotate_with_topmed(vep_mt, topmed)
+        mt = mt.persist()
         vep_mt = annotate_with_exac(vep_mt, exac)
+        mt = mt.persist()
         final = finalize_annotated_table_for_seqr_variants(vep_mt)
+        mt = mt.persist()
         famids = list(map(lambda x: x.family_id, families))
-        index_name = "alan_beggs__" "__wes__" + "GRCh37__" + "VARIANTS__" + time.strftime("%Y%m%d")
+        index_name = project "__wes__" + "GRCh37__" + "VARIANTS__" + time.strftime("%Y%m%d")
 
         export_table_to_elasticsearch(famids,final, ELASTICSEARCH_HOST, (index_name+"vep").lower(), "variant", is_vds=True, port=9200,num_shards=12, block_size=200)
 
