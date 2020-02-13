@@ -44,6 +44,7 @@ def export_table_to_elasticsearch(ds: hl.MatrixTable,famids, host, index_name, i
     for fid in famids:
         t = ds.filter_cols(ds.family_name == fid)
         ta = t.rows().flatten().drop('locus','allele')
+        ta.persist()
         es.export_table_to_elasticsearch(
             ta,
             index_name=index_name + fid,
