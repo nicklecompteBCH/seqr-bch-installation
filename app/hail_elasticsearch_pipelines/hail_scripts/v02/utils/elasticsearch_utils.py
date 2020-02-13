@@ -36,6 +36,12 @@ def _elasticsearch_mapping_for_type(dtype):
             'position' : {'type': 'integer'}
         }
         return element_mapping
+    if isinstance(dtype, hl.call):
+        element_mapping['type'] = "object"
+        element_mapping['properties'] = {
+            'alleles' : {'type' : 'integer'},
+            'phased' : {'type' : 'boolean'}
+        }
     # tdict, ttuple, tlocus, tinterval, tcall
     raise NotImplementedError(str(dtype))
 
