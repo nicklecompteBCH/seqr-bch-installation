@@ -12,7 +12,7 @@ sudo python2.7 -m pip install --no-cache-dir -U crcmod
 sudo wget https://raw.github.com/miyagawa/cpanminus/master/cpanm -O /usr/bin/cpanm
 sudo chmod o+x /usr/bin/cpanm
 
-sudo yum install perl-core
+sudo yum install -y perl-core
 
 # VEP dependencies
 sudo /usr/bin/cpanm --notest Set::IntervalTree
@@ -37,9 +37,10 @@ hdfs dfs -put vep85-loftee-gcloud.json /hail-common/vep/vep/vep85-loftee-gcloud.
 
 # # Download large files for Loftee into extra EBS mount
 cd /mnt
-wget https://personal.broadinstitute.org/konradk/loftee_data/GRCh37/phylocsf_gerp.sql
-aws s3 cp s3://seqr-resources/GRCh37/loftee/human_ancestor.fa.gz .
-aws s3 cp s3://seqr-resources/GRCh37/loftee/GERP_scores.final.sorted.txt.gz .
+#wget https://personal.broadinstitute.org/konradk/loftee_data/GRCh37/phylocsf_gerp.sql
+sudo aws s3 cp s3://seqr-resources/phylocsf_gerp.sql .
+sudo aws s3 cp s3://seqr-resources/GRCh37/loftee/human_ancestor.fa.gz .
+sudo aws s3 cp s3://seqr-resources/GRCh37/loftee/GERP_scores.final.sorted.txt.gz .
 
 # Copy VEP
 sudo mkdir -p /mnt/vep/homo_sapiens

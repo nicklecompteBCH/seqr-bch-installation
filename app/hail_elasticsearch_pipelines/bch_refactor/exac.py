@@ -7,7 +7,6 @@ def get_exac():
     return ht
 
 def annotate_with_exac(ht : hl.MatrixTable, exac_ht : hl.MatrixTable):
-    exac_ht.describe()
     newht = ht.annotate_rows(
         exac = exac_ht.index_rows(ht.locus,ht.alleles).info
     )

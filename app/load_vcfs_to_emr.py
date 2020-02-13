@@ -237,8 +237,6 @@ def compute_index_name(dataset: SeqrProjectDataSet, sample_type='wes',dataset_ty
     return index_name
 
 def annotate_with_samples_alt(mt: hl.MatrixTable) -> hl.MatrixTable:
-    mt.describe()
-    mt.rows().head(10).show()
     mt = mt.annotate_rows(
         samples_num_alt_1 = (mt.genotypes.filter(lambda s: s.num_alt == 1).map(lambda s: s.sample_id)),
         samples_num_alt_2 = (mt.genotypes.filter(lambda s: s.num_alt == 2).map(lambda s: s.sample_id)),
@@ -247,8 +245,6 @@ def annotate_with_samples_alt(mt: hl.MatrixTable) -> hl.MatrixTable:
     return mt
 
 def annotate_with_genotype_num_alt(mt: hl.MatrixTable) -> hl.MatrixTable:
-    mt.describe()
-    mt.head(10).show()
     if 'AD' in set(mt.entry):
         # GATK-consistent VCF
         mt = mt.annotate_rows(
@@ -329,7 +325,6 @@ def finalize_annotated_table_for_seqr_variants(mt: hl.MatrixTable) -> hl.MatrixT
         variant_id=get_expr_for_variant_id(mt),
         xpos=get_expr_for_xpos(mt.locus)
     )
-    mt.describe()
     return mt
 
 gnomad = read_gnomad_ht(GnomadDataset.Exomes37)
@@ -371,29 +366,40 @@ if __name__ == "__main__":
         project = args.project
         mt = add_families_to_hail(families)
         mt = mt.persist()
-        vep_mt = add_vep_to_vcf(mt)
+        print("Added families")
+        mt = add_vep_to_vcf(mt)
         mt = mt.persist()
-        vep_mt = annotate_with_genotype_num_alt(vep_mt)
-        vep_mt = annotate_with_samples_alt(vep_mt)
+        print("Added vep")
+        mt = annotate_with_genotype_num_alt(mt)
+        mt = annotate_with_samples_alt(mt)
+        mt = finalize_annotated_table_for_seqr_variants(mt)
         mt = mt.persist()
-        vep_mt = annotate_with_clinvar(vep_mt, clinvar)
+        print("Added custom fields")
+        mt = annotate_with_clinvar(mt, clinvar)
         mt = mt.persist()
-        vep_mt = annotate_with_hgmd(vep_mt, hgmd)
+        print("Added clinvar")
+        mt = annotate_with_hgmd(mt, hgmd)
         mt = mt.persist()
-        vep_mt = annotate_with_gnomad(vep_mt, gnomad)
+        print("Added HGMD")
+        mt = annotate_with_gnomad(mt, gnomad)
         mt = mt.persist()
-        vep_mt = annotate_with_cadd(vep_mt, cadd)
+        print("Added Gnomad")
+        mt = annotate_with_cadd(mt, cadd)
         mt = mt.persist()
-        vep_mt = annotate_with_eigen(vep_mt, eigen)
+        print("Added CADD")
+        mt = annotate_with_eigen(mt, eigen)
         mt  = mt.persist()
-        vep_mt = annotate_with_primate(vep_mt, primate)
+        print("Added Eigen")
+        mt = annotate_with_primate(mt, primate)
         mt = mt.persist()
-        vep_mt = annotate_with_topmed(vep_mt, topmed)
+        print("Added primate")
+        mt = annotate_with_topmed(mt, topmed)
         mt = mt.persist()
-        vep_mt = annotate_with_exac(vep_mt, exac)
+        print("Added topmed")
+        mt = annotate_with_exac(mt, exac)
         mt = mt.persist()
-        final = finalize_annotated_table_for_seqr_variants(vep_mt)
-        final = final.persist()
+        print("added exac")
+        final = mt.persist()
         famids = list(map(lambda x: x.family_id, families))
         index_prefix = project + "__wes__" + "GRCh37__" + "VARIANTS__" + time.strftime("%Y%m%d")  #+ sample.family_id
         if args.tsv:
