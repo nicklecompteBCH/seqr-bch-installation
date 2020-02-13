@@ -410,11 +410,10 @@ if __name__ == "__main__":
         vep_mt = annotate_with_exac(vep_mt, exac)
         mt = mt.persist()
         final = finalize_annotated_table_for_seqr_variants(vep_mt)
-        mt = mt.persist()
+        final = final.persist()
         famids = list(map(lambda x: x.family_id, families))
         index_name = project + "__wes__" + "GRCh37__" + "VARIANTS__" + time.strftime("%Y%m%d")
-
-        export_table_to_elasticsearch(famids,final, ELASTICSEARCH_HOST, (index_name+"vep").lower(), "variant", is_vds=True, port=9200,num_shards=12, block_size=200)
+        export_table_to_elasticsearch(famids,final, ELASTICSEARCH_HOST, (index_name+"vep").lower(), "variant", is_vds=True, port=9200,num_shards=6, block_size=1000)
 
     else:
         load_clinvar(export_to_es=True)

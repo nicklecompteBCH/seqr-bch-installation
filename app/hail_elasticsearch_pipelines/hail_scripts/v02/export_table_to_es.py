@@ -44,6 +44,7 @@ def export_table_to_elasticsearch(families: List[str], ds: hl.MatrixTable, host,
     # we want to loop over families
     for family in families:
         subtable = ds.filter_cols(ds.family_name==family)
+        subtable = subtable.persist()
         index_name = index_prefix + f"family_{family}"
         es.export_table_to_elasticsearch(
             subtable.rows(),
