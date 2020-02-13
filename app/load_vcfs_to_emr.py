@@ -345,7 +345,7 @@ gc =  get_gc()
 #omim = get_omim()
 
 def export_table_to_tsv(final : hl.MatrixTable, index_prefix: str):
-    final_t = final.rows() # row fields already annotated by sample
+    final_t = final.rows().flatten().drop('locus','allele') # row fields already annotated by sample
     final_t = final_t.persist()
     filename = '/tmp' + index_prefix + ".tsv.bgz"
     final_export = final_t.export(filename)
@@ -360,6 +360,7 @@ if __name__ == "__main__":
     p.add_argument("-clinvar", "--clinvar", help="Run clinvar instead of loading samples",  action="store_true")
     p.add_argument("-p","--path",help="Filepath of csv from BCH_Connect seqr report.")
     p.add_argument("-proj","--project")
+    p.add_argument("-tsv","--tsv")
     args = p.parse_args()
     print(str(hl.utils.hadoop_ls('/')))
     if not args.clinvar:
@@ -395,8 +396,10 @@ if __name__ == "__main__":
         final = final.persist()
         famids = list(map(lambda x: x.family_id, families))
         index_prefix = project + "__wes__" + "GRCh37__" + "VARIANTS__" + time.strftime("%Y%m%d")  #+ sample.family_id
-        export_table_to_tsv(final, index_prefix)
-        #export_table_to_elasticsearch(final, ELASTICSEARCH_HOST, (index_name+"vep").lower(), "variant", is_vds=True, port=9200,num_shards=1, block_size=100)
+        if args.tsv:
+            export_table_to_tsv(final, index_prefix)
+        else:
+            export_table_to_elasticsearch(final, ELASTICSEARCH_HOST, (index_name+"vep").lower(), "variant", is_vds=True, port=9200,num_shards=1, block_size=100)
 
     else:
         load_clinvar(export_to_es=True)
