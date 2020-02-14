@@ -23,9 +23,14 @@
                     "ConfigurationProperties": {}
                 },
                 {
+                    "Classification" : "emrfs-site",
+                    "ConfigurationProperties" : {
+                        "fs.s3.maxConnections": "1000"
+                    }
+                },
+                {
                     "Classification":"spark",
                     "ConfigurationProperties":{
-                        "maximizeResourceAllocation":"true",
                         "speculation" : "true"
                     }
                 },
@@ -41,13 +46,13 @@
                     "EbsConfiguration" : {
                         "EbsBlockDeviceConfigs" : [{
                             "VolumeSpecification" : {
-                            "SizeInGB" : 75,
+                            "SizeInGB" : 50,
                             "VolumeType" : "gp2"}
                         }],
                         "EbsOptimized" : false
                     },
-                    "InstanceCount" :20,
-                    "InstanceType" : "r5.4xlarge",
+                    "InstanceCount" :100,
+                    "InstanceType" : "r5.xlarge",
                     "Market" : "SPOT",
                     "Name" : "hail-workers"
                 },
@@ -66,13 +71,13 @@
                         "EbsOptimized" : false
                     },
                     "InstanceCount" : 1,
-                    "InstanceType" : "r5.16xlarge",
+                    "InstanceType" : "r5.4xlarge",
                     "Market" : "ON_DEMAND",
                     "Name" : "hail-master"
                 },
                 "TerminationProtected" : false
             },
-            "JobFlowRole" : "EMR_EC2_DefaultRole",
+            "JobFlowRole" : "Seqr_EMR_EC2_Role",
             "LogUri" : "s3n://hail-logging-bch/",
             "Name" : "hail-bch",
             "ReleaseLabel" : "emr-5.23.0",

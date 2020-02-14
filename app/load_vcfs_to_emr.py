@@ -365,7 +365,7 @@ def export_table_to_tsv(final : hl.MatrixTable, index_prefix: str):
     print("Flattening MatrixTable...")
     final_t = final.rows().flatten()#.drop('locus','allele') # row fields already annotated by sample
     print("Coaelescning...")
-    final_t = final_t.naive_coalesce(450)
+    final_t = final_t.naive_coalesce(200)
     print("Persisting Table...")
     final_t = final_t.persist()
     print("Uploading file...")
@@ -389,6 +389,7 @@ if __name__ == "__main__":
         families = bch_connect_report_to_seqr_families(path)
         project = args.project
         mt = add_families_to_hail(families)
+        mt = mt.naive_coalesce(4000)
         mt = mt.persist()
         print("Added families")
 

@@ -44,7 +44,7 @@ def add_vcf_to_hail(sample : SeqrSample,filename,local=False, genome_version="37
         genome_version,
         sample.individual_id,
         force_bgz=True,
-        min_partitions=4500)
+        min_partitions=4000)
     mt = add_global_metadata(
         mt,
         sample.path_to_vcf,

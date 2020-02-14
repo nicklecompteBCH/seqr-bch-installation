@@ -17,3 +17,5 @@ src/*
 *phenotips-standalone-1.2.6*
 *mypy*
 .metals/*
+app/hail_elasticsearch_pipelines/notes/*
+.ionide
