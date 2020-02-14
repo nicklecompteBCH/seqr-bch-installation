@@ -121,13 +121,34 @@ def add_vcf_to_hdfs(s3path_to_vcf):
 def add_seqr_sample_to_hadoop(sample: SeqrSample):
     return add_vcf_to_hdfs(sample.path_to_vcf)
 
+def add_seqr_sample_to_locals3(sample: SeqrSample):
+    parts = parse_vcf_s3_path(sample.path_to_vcf)
+    local_bucket = "seqr-data"
+    local_filename = "vcfs/" + parts['path']
+    s3 = boto3.client('s3')
+    maybe_list = s3.list_objects(
+        Bucket=local_bucket,
+        EncodingType='url',
+        Prefix=local_filename,
+        RequestPayer='requester'
+    )
+    if 'Contents' in maybe_list and maybe_list['Contents']:
+        return local_filename
+    else:
+        copy_source = {
+            'Bucket': parts['bucket'],
+            'Key': parts['path']
+        }
+        s3.copy(copy_source, local_bucket, local_filename)
+        return local_filename
+
 
 def add_families_to_hail(families: List[SeqrFamily]) -> hl.MatrixTable:
     retmr : hl.MatrixTable = None
     for family in families:
         fammar = None
         for sample in family.samples:
-            filename = add_seqr_sample_to_hadoop(sample)
+            filename = add_seqr_sample_to_locals3(sample)
             mt = add_vcf_to_hail(sample, filename)
             if not fammar:
                 fanmar = mt
@@ -449,11 +470,11 @@ if __name__ == "__main__":
         final = mt.persist()
         print("added exac, unpersisting")
         exac = exac.unpersist()
-
+        final = final.unpersist()
 
         print("Preparing for export to elasticsearch")
         famids = list(map(lambda x: x.family_id, families))
-        index_prefix = project + "__wes__" + "GRCh37__" + "VARIANTS__" + time.strftime("%Y%m%d")  #+ sample.family_id
+        index_name = project + "__wes__" + "GRCh37__" + "VARIANTS__" + time.strftime("%Y%m%d")  #+ sample.family_id
         if args.tsv:
             export_table_to_tsv(final, index_prefix)
         else:
