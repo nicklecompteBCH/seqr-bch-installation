@@ -124,7 +124,7 @@ def add_seqr_sample_to_hadoop(sample: SeqrSample):
 def add_seqr_sample_to_locals3(sample: SeqrSample):
     parts = parse_vcf_s3_path(sample.path_to_vcf)
     local_bucket = "seqr-data"
-    local_filename = "vcfs/" + parts['path']
+    local_filename = "vcfs/" + parts['filename']
     s3 = boto3.client('s3')
     maybe_list = s3.list_objects(
         Bucket=local_bucket,
@@ -149,7 +149,7 @@ def add_families_to_hail(families: List[SeqrFamily]) -> hl.MatrixTable:
         fammar = None
         for sample in family.samples:
             filename = add_seqr_sample_to_locals3(sample)
-            mt = add_vcf_to_hail(sample, filename)
+            mt = add_vcf_to_hail(sample, "s3n://seqr-data/" + filename)
             if not fammar:
                 fanmar = mt
             fanmar = fanmar.union_cols(mt)
