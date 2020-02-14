@@ -362,14 +362,16 @@ gc : hl.MatrixTable =  get_gc()
 #omim = get_omim()
 
 def export_table_to_tsv(final : hl.MatrixTable, index_prefix: str):
-    final_t = final.rows().flatten().drop('locus','allele') # row fields already annotated by sample
+    print("Flattening MatrixTable...")
+    final_t = final.rows().flatten()#.drop('locus','allele') # row fields already annotated by sample
+    print("Coaelescning...")
+    final_t = final_t.naive_coalesce(450)
+    print("Persisting Table...")
     final_t = final_t.persist()
-    filename = '/tmp' + index_prefix + ".tsv.bgz"
+    print("Uploading file...")
+    filename = 's3n://seqr-data/' + index_prefix + ".tsv.bgz"
     final_export = final_t.export(filename)
-    s3client = boto3.client('s3')
-    s3s3client.upload_file(filename, "seqr-data", "/tsvs" + index_prefix + ".tsv.bgz")
     print('uploaded file!')
-    os.system('rm ' + filename)
 
 if __name__ == "__main__":
     import argparse
@@ -377,7 +379,7 @@ if __name__ == "__main__":
     p.add_argument("-clinvar", "--clinvar", help="Run clinvar instead of loading samples",  action="store_true")
     p.add_argument("-p","--path",help="Filepath of csv from BCH_Connect seqr report.")
     p.add_argument("-proj","--project")
-    p.add_argument("-tsv","--tsv")
+    p.add_argument("-tsv","--tsv", action="store_true")
     args = p.parse_args()
     print(str(hl.utils.hadoop_ls('/')))
     if not args.clinvar:
@@ -426,23 +428,23 @@ if __name__ == "__main__":
         print("Added Gnomad, unpersisting...")
         gnomad = gnomad.unpersist()
 
-        print("Subdsetting and persisting CADD")
-        cadd = cadd.semi_join(mt.rows())
-        cadd = cadd.persist()
-        print("Adding CADD...")
-        mt = annotate_with_cadd(mt, cadd)
-        mt = mt.persist()
-        print("Added CADD, unpersisting...")
-        cadd = cadd.unpersist()
+        # print("Subdsetting and persisting CADD")
+        # cadd = cadd.semi_join(mt.rows())
+        # cadd = cadd.persist()
+        # print("Adding CADD...")
+        # mt = annotate_with_cadd(mt, cadd)
+        # mt = mt.persist()
+        # print("Added CADD, unpersisting...")
+        # cadd = cadd.unpersist()
 
-        print("Subsetting and persisting eigen...")
-        eigen = eigen.semi_join_rows(mt.rows())
-        eigen = eigen.persist()
-        print("Adding eigen...")
-        mt = annotate_with_eigen(mt, eigen)
-        mt  = mt.persist()
-        print("Added Eigen, unpersisting...")
-        eigen = eigen.unpersist()
+        # print("Subsetting and persisting eigen...")
+        # eigen = eigen.semi_join_rows(mt.rows())
+        # eigen = eigen.persist()
+        # print("Adding eigen...")
+        # mt = annotate_with_eigen(mt, eigen)
+        # mt  = mt.persist()
+        # print("Added Eigen, unpersisting...")
+        # eigen = eigen.unpersist()
 
         print("Subsetting and persisting Primate...")
         primate = primate.semi_join_rows(mt.rows())
@@ -476,7 +478,7 @@ if __name__ == "__main__":
         famids = list(map(lambda x: x.family_id, families))
         index_name = project + "__wes__" + "GRCh37__" + "VARIANTS__" + time.strftime("%Y%m%d")  #+ sample.family_id
         if args.tsv:
-            export_table_to_tsv(final, index_prefix)
+            export_table_to_tsv(final, index_name)
         else:
             export_table_to_elasticsearch(final, ELASTICSEARCH_HOST, (index_name+"vep").lower(), "variant", is_vds=True, port=9200,num_shards=1, block_size=100)
 

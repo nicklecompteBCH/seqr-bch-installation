@@ -38,7 +38,7 @@ def import_vcf(
         vcf_path: Union[str,List[str]],
         genome_version: str,
         sample_name: str,
-        min_partitions: int = None,
+        min_partitions: int = 4500,
         force_bgz: bool = True,
         drop_samples: bool = False,
         skip_invalid_loci: bool = False,
