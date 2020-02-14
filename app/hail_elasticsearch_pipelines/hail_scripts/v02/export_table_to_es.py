@@ -46,7 +46,7 @@ def export_table_to_elasticsearch(ds: hl.MatrixTable, host, index_name, index_ty
     ta = ta.persist()
     es.export_table_to_elasticsearch(
             ta,
-            index_name=index_name + fid,
+            index_name=index_name,
             index_type_name=index_type,
             block_size=block_size,
             num_shards=num_shards,
