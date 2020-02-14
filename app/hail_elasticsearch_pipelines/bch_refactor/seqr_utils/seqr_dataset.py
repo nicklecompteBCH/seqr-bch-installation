@@ -141,24 +141,27 @@ class SeqrFamily:
                 raise ValueError(f"Non-unique family_ids detected in SeqrFamily.from_list_samples: {familyid} and {sample.family_id} ")
             if sample.family_member_type == FamilyMemberType.Index:
                 if indexsample:
+                    othersamples.add(sample)
                     # We want to *return* Exceptions, not raise them, to better handle errors.
-                    raise ValueError(f"Two index samples represented in SeqrFamily.from_list_samples: {indexsample.individual_id} and {sample.individual_id}")
+                    #raise ValueError(f"Two index samples represented in SeqrFamily.from_list_samples: {indexsample.individual_id} and {sample.individual_id}")
                 indexsample = sample
             elif sample.family_member_type == FamilyMemberType.Mother:
                 if mothersample:
-                    raise ValueError(f"Two mother samples represented in SeqrFamily.from_list_samples: {mothersample.individual_id} and {sample.individual_id}")
+                    othersamples.add(sample)
+                    #raise ValueError(f"Two mother samples represented in SeqrFamily.from_list_samples: {mothersample.individual_id} and {sample.individual_id}")
                 mothersample = sample
             elif sample.family_member_type == FamilyMemberType.Father:
                 if fathersample:
-                    raise ValueError(f"Two father samples represented in SeqrFamily.from_list_samples: {fathersample.individual_id} and {sample.individual_id}")
+                    othersamples.add(sample)
+                    #raise ValueError(f"Two father samples represented in SeqrFamily.from_list_samples: {fathersample.individual_id} and {sample.individual_id}")
                 fathersample = sample
             else:
                 if sample in othersamples:
-                    raise ValueError(f"Duplicate samples in SeqrFamily.from_list_samples: {sample.individual_id}")
+                    continue#raise ValueError(f"Duplicate samples in SeqrFamily.from_list_samples: {sample.individual_id}")
                 othersamples.add(sample)
 
-        if not indexsample:
-            raise ValueError(f"No index sample provided in SeqrFamily.from_list_samples for family {familyid}")
+       # if not indexsample:
+       #     raise ValueError(f"No index sample provided in SeqrFamily.from_list_samples for family {familyid}")
 
         return SeqrFamily(
             familyid, project, indexsample,
