@@ -51,8 +51,8 @@
                         }],
                         "EbsOptimized" : false
                     },
-                    "InstanceCount" :100,
-                    "InstanceType" : "r5.xlarge",
+                    "InstanceCount" :8,
+                    "InstanceType" : "r5.4xlarge",
                     "Market" : "SPOT",
                     "Name" : "hail-workers"
                 },

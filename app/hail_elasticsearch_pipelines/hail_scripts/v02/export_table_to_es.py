@@ -50,7 +50,7 @@ def export_table_to_elasticsearch(ds: hl.MatrixTable, host, index_name, index_ty
             index_type_name=index_type,
             block_size=block_size,
             num_shards=num_shards,
-            delete_index_before_exporting=False,
+            delete_index_before_exporting=True,
             export_globals_to_index_meta=True,
             verbose=True,
         )
