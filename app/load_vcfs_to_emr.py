@@ -250,7 +250,7 @@ def annotate_with_genotype_num_alt(mt: hl.MatrixTable) -> hl.MatrixTable:
         mt = mt.annotate_rows(
             genotypes = (hl.agg.collect(hl.struct(
                 num_alt = hl.cond(mt.alleles[1] == '<CNV>', 0, mt.GT.n_alt_alleles()),
-                ab = hl.cond(mt.alleles[1] == '<CNV>', 0.0, hl.cond(hl.eval(hl.fold(lambda i, j : i + j, 0, mt.AD)) != 0 and hl.len(mt.AD) > 1, hl.float(mt.AD[1])/hl.float(hl.eval(hl.fold(lambda i, j : i + j, 0, mt.AD))), 0)),
+                ab = hl.cond(mt.alleles[1] == '<CNV>', 0.0, hl.float(hl.array(mt.AD)[1])/hl.float(hl.fold(lambda i, j : i + j, 0, mt.AD))),
                 gq = mt.GQ,
                 sample_id = mt.s,
                 dp=mt.DP))
@@ -446,7 +446,7 @@ if __name__ == "__main__":
         exac = exac.persist()
         print("Adding Exac...")
         mt = annotate_with_exac(mt, exac)
-        mt = mt.persist()
+        final = mt.persist()
         print("added exac, unpersisting")
         exac = exac.unpersist()
 
