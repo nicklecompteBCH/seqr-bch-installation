@@ -4,6 +4,18 @@ from typing import (
     List, Optional, Set, Iterable
 )
 
+def parse_vcf_s3_path(s3path):
+    parsed = urlparse(s3path)
+    bucket = parsed.netloc
+    path = parsed.path[1:]
+    object_list = path.split('/')
+    filename = object_list[-1]
+    return {
+        "bucket" : bucket,
+        "path" : path,
+        "filename" : filename
+    }
+
 class BCHSeqrProject(Enum):
     AlanBeggs = 1
     ChrisWalsh = 2
@@ -68,6 +80,7 @@ class SeqrSample:
         self.family_member_type = family_member_type
         self.path_to_vcf = path_to_vcf
         self.path_to_bam = path_to_bam
+        self.vcf_filename = parse_vcf_s3_path(path_to_vcf)['filename']
 
     def __hash__(self):
         return hash(self.individual_id + self.family_id + str(self.project))

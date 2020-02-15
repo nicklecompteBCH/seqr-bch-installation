@@ -124,7 +124,7 @@ def add_seqr_sample_to_hadoop(sample: SeqrSample):
 def add_seqr_sample_to_locals3(sample: SeqrSample):
     parts = parse_vcf_s3_path(sample.path_to_vcf)
     local_bucket = "seqr-data"
-    local_filename = "vcfs/" + parts['filename']
+    local_filename = "vcfs/" + str(sample.project) + "/" + parts['filename']
     s3 = boto3.client('s3')
     maybe_list = s3.list_objects(
         Bucket=local_bucket,
