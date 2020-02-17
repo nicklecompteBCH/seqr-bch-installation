@@ -179,7 +179,7 @@ def load_hgmd_vcf():
     mt = import_vcf(
         's3n://seqr-resources/GRCh37/hgmd/hgmd_pro_2018.4_hg19.vcf.gz',
         "37",
-        "hgmd_grch37",
+        "hgmd_grch37",min_partitions=1000
     )
     return mt
 
@@ -420,7 +420,7 @@ if __name__ == "__main__":
         families = bch_connect_report_to_seqr_families(path)
         for family in families:
             num_vcfs = len(family.samples)
-            parition_count = num_vcfs
+            parition_count = num_vcfs*2000
             dataset = args.project
             index_name = dataset + "__wes__" + "GRCh37__" + "VARIANTS__" + time.strftime("%Y%m%d") + "family_" + family.family_id #+ sample.family_id
 
