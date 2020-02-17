@@ -38,13 +38,13 @@ def add_global_metadata(
     return vds
 
 
-def add_vcf_to_hail(sample : SeqrSample,filename,local=False, genome_version="37"):
+def add_vcf_to_hail(sample : SeqrSample,filename,local=False, genome_version="37",partitions : int = None):
     mt = import_vcf(
         filename,
         genome_version,
         sample.individual_id,
         force_bgz=True,
-        min_partitions=1)
+        min_partitions=partitions)
     mt = add_global_metadata(
         mt,
         sample.path_to_vcf,

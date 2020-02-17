@@ -147,7 +147,7 @@ def add_family_to_hail(family:SeqrFamily) -> hl.MatrixTable:
     for sample in family.samples:
         filename = add_seqr_sample_to_locals3(sample)
         mt = add_vcf_to_hail(sample, "s3n://seqr-data/" + filename)
-        if not fammar:
+        if not fanmar:
             fanmar = mt
         fanmar = fanmar.union_cols(mt)
     return fanmar
@@ -358,24 +358,6 @@ def finalize_annotated_table_for_seqr_variants(mt: hl.MatrixTable) -> hl.MatrixT
     )
     return mt
 
-gnomad = read_gnomad_ht(GnomadDataset.Exomes37)
-
-#cadd : hl.Table = get_cadd()
-#eigen : hl.MatrixTable = get_eigen()
-hgmd : hl.MatrixTable = load_hgmd_vcf()
-hgmd = hgmd.persist()
-primate : hl.MatrixTable = import_primate()
-primate = primate.persist()
-clinvar : hl.MatrixTable = load_clinvar()
-clinvar = clinvar.persist()
-topmed : hl.MatrixTable = get_topmed()
-topmed = topmed.persist()
-#mpc : hl.MatrixTable = get_mpc()
-exac : hl.MatrixTable = get_exac()
-exac = exac.persist()
-#gc : hl.MatrixTable =  get_gc()
-#omim = get_omim()
-
 def export_table_to_tsv(final : hl.MatrixTable, index_prefix: str):
     print("Flattening MatrixTable...")
     final_t = final.rows().flatten()#.drop('locus','allele') # row fields already annotated by sample
@@ -399,7 +381,7 @@ def export(t,index_name, tsv):
             "variant",
             is_vds=True,
             port=9200,
-            num_shards=1,
+            num_shards=4,
             block_size=1000
         )
 
@@ -411,26 +393,47 @@ if __name__ == "__main__":
     p.add_argument("-p","--path",help="Filepath of csv from BCH_Connect seqr report.")
     p.add_argument("-proj","--project")
     p.add_argument("-tsv","--tsv", action="store_true")
+    p.add_argument("-parts","--partitions")
     args = p.parse_args()
     print(str(hl.utils.hadoop_ls('/')))
     if not args.clinvar:
         #gnomad.describe()
+        gnomad = read_gnomad_ht(GnomadDataset.Exomes37)
+        gnomad = gnomad.persist() #60GB
+        cadd : hl.Table = get_cadd()
+        cadd = cadd.persist() #80GB
+        eigen : hl.MatrixTable = get_eigen()
+        eigen = eigen.persist() #60GB
+        hgmd : hl.MatrixTable = load_hgmd_vcf()
+        hgmd = hgmd.persist() # 6mb
+        primate : hl.MatrixTable = import_primate()
+        primate = primate.persist() # 600MB
+        clinvar : hl.MatrixTable = load_clinvar()
+        clinvar = clinvar.persist() #50MB
+        topmed : hl.MatrixTable = get_topmed()
+        topmed = topmed.persist() # 8.7GB
+        #mpc : hl.MatrixTable = get_mpc()
+        exac : hl.MatrixTable = get_exac()
+        exac = exac.persist() # 4.6GB
+        #gc : hl.MatrixTable =  get_gc()
+        #omim = get_omim()
+        partition_base = int(args.partition)
 
         path = args.path
         families = bch_connect_report_to_seqr_families(path)
         for family in families:
             num_vcfs = len(family.samples)
-            parition_count = num_vcfs*2000
+            partition_count = num_vcfs*partition_base
             dataset = args.project
             index_name = dataset + "__wes__" + "GRCh37__" + "VARIANTS__" + time.strftime("%Y%m%d") + "family_" + family.family_id #+ sample.family_id
 
             mt = add_family_to_hail(family)
-            mt = mt.repartition(parition_count)
+            mt = mt.repartition(partition_count)
             mt = mt.persist()
             print("Added families")
 
             mt = add_vep_to_vcf(mt)
-            partition_count = parition_count + num_vcfs # assume each annotation adds a VCF's worth of data per VCF
+            #partition_count = parition_count + num_vcfs # assume each annotation adds a VCF's worth of data per VCF
             mt = mt.repartition(partition_count)
             mt = mt.persist()
             print("Added vep")
@@ -441,9 +444,7 @@ if __name__ == "__main__":
 
             mt = annotate_with_genotype_num_alt(mt)
             mt = annotate_with_samples_alt(mt)
-            mt = finalize_annotated_table_for_seqr_variants(mt)
-            partition_count = partition_count + num_vcfs/2 # hope this doesn't overdo it...
-            mt = mt.repartition(partition_count)
+            mt = finalize_annotated_table_for_seqr_variants(mt))
             mt = mt.persist()
             print("Added custom fields")
 
@@ -452,7 +453,6 @@ if __name__ == "__main__":
             clinvars = clinvars.persist()
             print("Adding Clinvar...")
             mt = annotate_with_clinvar(mt, clinvars)
-            mt = mt.repartition(partition_count)
             mt = mt.persist()
             print("Added clinvar, unpersisting...")
             clinvars = clinvars.unpersist()
@@ -462,7 +462,6 @@ if __name__ == "__main__":
             hgmds = hgmds.persist()
             print("Adding HGMD...")
             mt = annotate_with_hgmd(mt, hgmds)
-            mt = mt.repartition(partition_count)
             mt = mt.persist()
             print("Added HGMD, unpersisting")
             hgmds = hgmds.unpersist()
@@ -471,8 +470,6 @@ if __name__ == "__main__":
             gnomads = gnomad.semi_join_rows(mt.rows())
             gnomads = gnomads.persist()
             mt = annotate_with_gnomad(mt, gnomads)
-
-            mt = mt.repartition(partition_count)
             mt = mt.persist()
             print("Added Gnomad, unpersisting...")
             gnomads = gnomads.unpersist()

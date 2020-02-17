@@ -1,4 +1,5 @@
 from enum import Enum
+from urllib.parse import urlparse
 
 from typing import (
     List, Optional, Set, Iterable

@@ -103,11 +103,12 @@ class GnomadDataset(Enum):
 
 def read_gnomad_ht(
     gnomad_version: GnomadDataset,
-    subset: Union[LocusInterval, None] = None
+    subset: Union[LocusInterval, None] = None,
+    partitions: int = None
 ) -> hl.MatrixTable:
     #gnomad_s3_path = gnomad_version.get_bch_s3_path()
     #hdfs_path = add_ht_to_hdfs("GRCh37/gnomad/","seqr-resources","gnomad")
-    gnomad_hailtable = hl.import_vcf(GNOMAD_HT_PATHS['exomes_37'])
+    gnomad_hailtable = hl.import_vcf(GNOMAD_HT_PATHS['exomes_37'],min_partitions=partitions)
     if subset:
         locus_expr = hl.parse_locus_interval(subset.to_hail_expr())
         gnomad_hailtable = gnomad_hailtable.filter(hl.is_defined(gnomad_hailtable[locus_expr]))
