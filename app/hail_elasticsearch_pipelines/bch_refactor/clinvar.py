@@ -13,7 +13,7 @@ from hail_elasticsearch_pipelines.hail_scripts.v02.utils.clinvar import CLINVAR_
 from hail_elasticsearch_pipelines.hail_scripts.v02.utils.computed_fields.variant_id import *
 import hail as hl
 
-def load_clinvar(export_to_es=False):
+def load_clinvar(es_host = None):
     index_name = "clinvar_grch37" #"clinvar_grch{}".format(args.genome_version)
     mt = download_and_import_latest_clinvar_vcf("37")
     mt = hl.vep(mt, "s3://seqr-resources/vep85-loftee-gcloud.json", name="vep", block_size=1000)
@@ -71,11 +71,11 @@ def load_clinvar(export_to_es=False):
     hl.summarize_variants(mt)
 
         # Drop key columns for export
-    if export_to_es:
+    if es_host:
         rows = mt.rows()
         rows = rows.order_by(rows.variant_id).drop("locus", "alleles")
         print("\n=== Exporting ClinVar to Elasticsearch ===")
-        es = ElasticsearchClient(ELASTICSEARCH_HOST, "9200")
+        es = ElasticsearchClient(es_host, "9200")
         es.export_table_to_elasticsearch(
             rows,
             index_name=index_name,
