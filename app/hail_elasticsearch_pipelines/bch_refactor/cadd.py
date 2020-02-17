@@ -36,6 +36,7 @@ def get_cadd(partitions : int = None,namenode : str = ""):
     ht = snvs_ht.union(indel_ht)
     if partitions:
         ht = ht.repartition(partitions)
+    ht = hl.split_multi_hts(ht)
     return ht
 
 def annotate_with_cadd(ht : hl.MatrixTable, cadd_ht : hl.Table):

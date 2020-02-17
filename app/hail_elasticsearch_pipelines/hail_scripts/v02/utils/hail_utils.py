@@ -38,8 +38,8 @@ def import_vcf(
         vcf_path: Union[str,List[str]],
         genome_version: str,
         sample_name: str,
-        min_partitions: int = 1,
-        force_bgz: bool = True,
+        min_partitions: int = 50, # Exomes VCFs can be split to 500kb chunks
+        force_bgz: bool = True,   # for annotation but they are pretty tiny.
         drop_samples: bool = False,
         skip_invalid_loci: bool = False,
         split_multi_alleles: bool = True):
