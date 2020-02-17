@@ -381,7 +381,7 @@ def export(t,index_name, tsv):
             "variant",
             is_vds=True,
             port=9200,
-            num_shards=4,
+            num_shards=2,
             block_size=1000
         )
 
@@ -399,7 +399,7 @@ if __name__ == "__main__":
     print(str(hl.utils.hadoop_ls('/')))
     if not args.clinvar:
         #gnomad.describe()
-        partition_base = int(args.partition)
+        partition_base = int(args.partitions)
         nn = args.namenode
         gnomad = read_gnomad_ht(GnomadDataset.Exomes37,partitions=partition_base,namenode = nn)
         gnomad = gnomad.persist() #60GB
@@ -477,41 +477,41 @@ if __name__ == "__main__":
             print("Added Gnomad, unpersisting...")
             gnomads = gnomads.unpersist()
 
-            print("Subdsetting and persisting CADD")
-            cadds = cadd.semi_join(mt.rows())
-            cadds = cadd.persist()
-            print("Adding CADD...")
-            mt = annotate_with_cadd(mt, cadds)
-            mt = mt.persist()
-            print("Added CADD, unpersisting...")
-            cadd = cadds.unpersist()
+            # print("Subdsetting and persisting CADD")
+            # cadds = cadd.semi_join(mt.rows())
+            # cadds = cadd.persist()
+            # print("Adding CADD...")
+            # mt = annotate_with_cadd(mt, cadds)
+            # mt = mt.persist()
+            # print("Added CADD, unpersisting...")
+            # cadd = cadds.unpersist()
 
-            print("Subsetting and persisting eigen...")
-            eigens = eigen.semi_join_rows(mt.rows())
-            eigens = eigens.persist()
-            print("Adding eigen...")
-            mt = annotate_with_eigen(mt, eigens)
-            mt  = mt.persist()
-            print("Added Eigen, unpersisting...")
-            eigens = eigens.unpersist()
+            # print("Subsetting and persisting eigen...")
+            # eigens = eigen.semi_join_rows(mt.rows())
+            # eigens = eigens.persist()
+            # print("Adding eigen...")
+            # mt = annotate_with_eigen(mt, eigens)
+            # mt  = mt.persist()
+            # print("Added Eigen, unpersisting...")
+            # eigens = eigens.unpersist()
 
-            print("Subsetting and persisting Primate...")
-            primates = primate.semi_join_rows(mt.rows())
-            primates = primates.persist()
-            print("Adding primate...")
-            mt = annotate_with_primate(mt, primates)
-            mt = mt.persist()
-            print("Added primate, unpersisting")
-            primates = primates.unpersist()
+            # print("Subsetting and persisting Primate...")
+            # primates = primate.semi_join_rows(mt.rows())
+            # primates = primates.persist()
+            # print("Adding primate...")
+            # mt = annotate_with_primate(mt, primates)
+            # mt = mt.persist()
+            # print("Added primate, unpersisting")
+            # primates = primates.unpersist()
 
-            print("Subsetting and persisting TopMed...")
-            topmeds = topmed.semi_join_rows(mt.rows())
-            topmeds = topmeds.persist()
-            print("Adding topmed")
-            mt = annotate_with_topmed(mt, topmeds)
-            mt = mt.persist()
-            print("Added topmed, unpersisting...")
-            topmeds = topmeds.unpersist()
+            # print("Subsetting and persisting TopMed...")
+            # topmeds = topmed.semi_join_rows(mt.rows())
+            # topmeds = topmeds.persist()
+            # print("Adding topmed")
+            # mt = annotate_with_topmed(mt, topmeds)
+            # mt = mt.persist()
+            # print("Added topmed, unpersisting...")
+            # topmeds = topmeds.unpersist()
 
             print("Subsetting and persisting ExAc...")
             exacs = exac.semi_join_rows(mt.rows())
@@ -524,8 +524,9 @@ if __name__ == "__main__":
             #final = final.unpersist()
 
             print("Preparing for export")
+            final = final.repartition(40000) # let's try this out....
             famids = list(map(lambda x: x.family_id, families))
-            export(t,index_name, args.tsv)
+            export(final,index_name, args.tsv)
 
     else:
         load_clinvar(es_host=ELASTICSEARCH_HOST)
