@@ -394,12 +394,14 @@ if __name__ == "__main__":
     p.add_argument("-proj","--project")
     p.add_argument("-tsv","--tsv", action="store_true")
     p.add_argument("-parts","--partitions")
+    p.add_argument("-nn","--namenode")
     args = p.parse_args()
     print(str(hl.utils.hadoop_ls('/')))
     if not args.clinvar:
         #gnomad.describe()
         partition_base = int(args.partition)
-        gnomad = read_gnomad_ht(GnomadDataset.Exomes37,partitions=partition_base)
+        nn = args.namenode
+        gnomad = read_gnomad_ht(GnomadDataset.Exomes37,partitions=partition_base,namenode = nn)
         gnomad = gnomad.persist() #60GB
         cadd : hl.Table = get_cadd(partitions=partition_base)
         cadd = cadd.persist() #80GB

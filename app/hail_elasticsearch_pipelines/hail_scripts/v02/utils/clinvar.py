@@ -39,7 +39,7 @@ CLINVAR_GOLD_STARS_LOOKUP = hl.dict(
 )
 
 
-def download_and_import_latest_clinvar_vcf(genome_version: str, partitions : int = None) -> hl.MatrixTable:
+def download_and_import_latest_clinvar_vcf(genome_version: str, partitions : int = None,namenode : str) -> hl.MatrixTable:
     """Downloads the latest clinvar VCF from the NCBI FTP server, copies it to HDFS and returns the hdfs file path
     as well the clinvar release date that's specified in the VCF header.
 
@@ -51,7 +51,7 @@ def download_and_import_latest_clinvar_vcf(genome_version: str, partitions : int
         raise ValueError("Invalid genome_version: " + str(genome_version))
 
     clinvar_url = CLINVAR_FTP_PATH.format(genome_version=genome_version)
-    clinvar_vcf_hdfs_path = "s3://seqr-resources/GRCh37/clinvar/clinvar.GRCh37.vcf.gz"
+    clinvar_vcf_hdfs_path = "hdfs://" + namenode + "/user/hadoop/data/clinvar.GRCh37.vcf.gz"
 
     #subprocess.run(["wget", clinvar_url, "-O", local_tmp_file_path], check=True)
     #subprocess.run(["hdfs", "dfs", "-put", "-f", f"file://{local_tmp_file_path}", clinvar_vcf_hdfs_path], check=True)

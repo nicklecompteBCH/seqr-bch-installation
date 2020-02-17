@@ -68,12 +68,12 @@ GNOMAD_SEQR_VDS_PATHS_oh_one = {
     "exomes_37": "s3://seqr-resources/GRCh37/gnomad/gnomad.exomes.r2.0.2.sites.grch37.split.vds",
     "exomes_38": "s3://seqr-resources/GRCh38/gnomad/gnomad.exomes.r2.0.2.sites.liftover_grch38.split.vds",
 
-    "genomes_37": "s3://seqr-resources/GRCh37/gnomad/gnomad.genomes.r2.0.2.sites.grch37.split.vds",
+    "genomes_37": #"s3://seqr-resources/GRCh37/gnomad/gnomad.genomes.r2.0.2.sites.grch37.split.vds",
     "genomes_38": "s3://seqr-resources/GRCh38/gnomad/gnomad.genomes.r2.0.2.sites.liftover_grch38.split.vds",
 }
 
 GNOMAD_HT_PATHS = {
-    "exomes_37": "s3://seqr-resources/gnomad/37/exomes/gnomad.exomes.r.2.1.1.sites.vcf.bgz", #"s3://seqr-resources/GRCh37/gnomad/gnomad.exomes.r2.0.2.sites.grch37.split.vds",
+    "exomes_37": "gnomad.exomes.r.2.1.1.sites.vcf.bgz", #"s3://seqr-resources/GRCh37/gnomad/gnomad.exomes.r2.0.2.sites.grch37.split.vds",
 }
 
 def read_gnomad_vds_oh_one(hail_context, genome_version, exomes_or_genomes, subset=None):
@@ -104,11 +104,12 @@ class GnomadDataset(Enum):
 def read_gnomad_ht(
     gnomad_version: GnomadDataset,
     subset: Union[LocusInterval, None] = None,
-    partitions: int = None
+    partitions: int = None,
+    namenode : str = ""
 ) -> hl.MatrixTable:
     #gnomad_s3_path = gnomad_version.get_bch_s3_path()
     #hdfs_path = add_ht_to_hdfs("GRCh37/gnomad/","seqr-resources","gnomad")
-    gnomad_hailtable = hl.import_vcf(GNOMAD_HT_PATHS['exomes_37'],min_partitions=partitions)
+    gnomad_hailtable = hl.import_vcf("hdfs://" + namenode + "/user/hadoop/data/" + GNOMAD_HT_PATHS['exomes_37'],min_partitions=partitions)
     if subset:
         locus_expr = hl.parse_locus_interval(subset.to_hail_expr())
         gnomad_hailtable = gnomad_hailtable.filter(hl.is_defined(gnomad_hailtable[locus_expr]))

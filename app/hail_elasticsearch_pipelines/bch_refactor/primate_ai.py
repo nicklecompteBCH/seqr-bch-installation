@@ -3,7 +3,7 @@ from hail_elasticsearch_pipelines.hail_scripts.v02.utils.hail_utils import write
 
 def import_primate(partitions : int = None):
 
-    ht = import_vcf("s3n://seqr-resources/GRCh37/primate_ai/PrimateAI_scores_v0.2.vcf.gz","37","primate_ai",min_partitions=partitions)
+    ht = import_vcf("hdfs://" + namenode + "/user/hadoop/data/PrimateAI_scores_v0.2.vcf.gz","37","primate_ai",min_partitions=partitions)
     return ht
 
 def annotate_with_primate(ht : hl.MatrixTable, primate_ht : hl.MatrixTable):
