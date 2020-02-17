@@ -401,10 +401,17 @@ if __name__ == "__main__":
         #gnomad.describe()
         partition_base = int(args.partitions)
         nn = args.namenode
-        gnomad = read_gnomad_ht(GnomadDataset.Exomes37,partitions=partition_base,namenode = nn)
+        # gnomAD has loaded fine but just in case - 2x partitions for it
+        gnomad = read_gnomad_ht(GnomadDataset.Exomes37,partitions=2*partition_base,namenode = nn)
         gnomad = gnomad.persist() #60GB
-        cadd : hl.Table = get_cadd(partitions=partition_base,namenode = nn)
+
+
+        # CADD seems hairy for whatever reason
+        # do partition_base * 10
+        cadd : hl.Table = get_cadd(partitions=partition_base*10,namenode = nn)
         cadd = cadd.persist() #80GB
+        # Eigen is also hairy
+        # It may bee that these are
         eigen : hl.MatrixTable = get_eigen(partitions=partition_base,namenode = nn)
         eigen = eigen.persist() #60GB
         hgmd : hl.MatrixTable = load_hgmd_vcf(partitions=partition_base,namenode=nn)
