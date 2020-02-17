@@ -174,10 +174,10 @@ def add_vep_to_vcf(mt):
     mt = run_vep(mt, GENOME_VERSION)
     return mt
 
-def load_hgmd_vcf(partitions : int = None):
+def load_hgmd_vcf(partitions : int = None,namenode:str):
 
     mt = import_vcf(
-        's3n://seqr-resources/GRCh37/hgmd/hgmd_pro_2018.4_hg19.vcf.gz',
+        'hdfs://' + namenode + 'user/hadoop/hgmd_pro_2018.4_hg19.vcf.gz',
         "37",
         "hgmd_grch37",min_partitions=partitions
     )
@@ -403,7 +403,7 @@ if __name__ == "__main__":
         nn = args.namenode
         gnomad = read_gnomad_ht(GnomadDataset.Exomes37,partitions=partition_base,namenode = nn)
         gnomad = gnomad.persist() #60GB
-        cadd : hl.Table = get_cadd(partitions=partition_base)
+        cadd : hl.Table = get_cadd(partitions=partition_base,namenode = nn)
         cadd = cadd.persist() #80GB
         eigen : hl.MatrixTable = get_eigen(partitions=partition_base)
         eigen = eigen.persist() #60GB
