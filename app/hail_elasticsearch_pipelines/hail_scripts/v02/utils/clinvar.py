@@ -57,7 +57,7 @@ def download_and_import_latest_clinvar_vcf(genome_version: str) -> hl.MatrixTabl
     #subprocess.run(["hdfs", "dfs", "-put", "-f", f"file://{local_tmp_file_path}", clinvar_vcf_hdfs_path], check=True)
 
     #clinvar_release_date = _parse_clinvar_release_date(local_tmp_file_path)
-    mt = import_vcf(clinvar_vcf_hdfs_path, genome_version, "clinvar37",drop_samples=True, min_partitions=2000, skip_invalid_loci=True)
+    mt = import_vcf(clinvar_vcf_hdfs_path, genome_version, "clinvar37",drop_samples=True, min_partitions=1, skip_invalid_loci=True)
     #mt = mt.annotate_globals(version=clinvar_release_date)
 
     return mt

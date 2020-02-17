@@ -150,6 +150,7 @@ def add_families_to_hail(families: List[SeqrFamily]) -> hl.MatrixTable:
         for sample in family.samples:
             filename = add_seqr_sample_to_locals3(sample)
             mt = add_vcf_to_hail(sample, "s3n://seqr-data/" + filename)
+            mt = mt.repartition(1)
             if not fammar:
                 fanmar = mt
             fanmar = fanmar.union_cols(mt)
@@ -356,9 +357,9 @@ hgmd : hl.MatrixTable = load_hgmd_vcf()
 primate : hl.MatrixTable = import_primate()
 clinvar : hl.MatrixTable = load_clinvar()
 topmed : hl.MatrixTable = get_topmed()
-mpc : hl.MatrixTable = get_mpc()
+#mpc : hl.MatrixTable = get_mpc()
 exac : hl.MatrixTable = get_exac()
-gc : hl.MatrixTable =  get_gc()
+#gc : hl.MatrixTable =  get_gc()
 #omim = get_omim()
 
 def export_table_to_tsv(final : hl.MatrixTable, index_prefix: str):
@@ -372,6 +373,22 @@ def export_table_to_tsv(final : hl.MatrixTable, index_prefix: str):
     filename = 's3n://seqr-data/' + index_prefix + ".tsv.bgz"
     final_export = final_t.export(filename)
     print('uploaded file!')
+
+def export(t,index_name, tsv):
+    if tsv:
+        export_table_to_tsv(t, index_name)
+    else:
+        export_table_to_elasticsearch(
+            t,
+            ELASTICSEARCH_HOST,
+            index_name,
+            "variant",
+            is_vds=True,
+            port=9200,
+            num_shards=1,
+            block_size=1000
+        )
+
 
 if __name__ == "__main__":
     import argparse
@@ -387,19 +404,31 @@ if __name__ == "__main__":
 
         path = args.path
         families = bch_connect_report_to_seqr_families(path)
-        project = args.project
+        num_vcfs = len(families)
+        parition_count = num_vcfs
+        dataset = args.project
+        index_name = dataset + "__wes__" + "GRCh37__" + "VARIANTS__" + time.strftime("%Y%m%d")  #+ sample.family_id
+
         mt = add_families_to_hail(families)
-        mt = mt.naive_coalesce(4000)
+        mt = mt.repartition(parition_count)
         mt = mt.persist()
         print("Added families")
 
         mt = add_vep_to_vcf(mt)
+        partition_count = parition_count + num_vcfs # assume each annotation adds a VCF's worth of data per VCF
+        mt = mt.repartion()
         mt = mt.persist()
         print("Added vep")
+        print("Creating index in Elasticsearch and uplaoding VEP-annoated variant...")
+
+
+
 
         mt = annotate_with_genotype_num_alt(mt)
         mt = annotate_with_samples_alt(mt)
         mt = finalize_annotated_table_for_seqr_variants(mt)
+        partition_count = parition_count + num_vcfs/2 # hope this doesn't overdo it...
+        mt = mt.repartition(parition_count)
         mt = mt.persist()
         print("Added custom fields")
 
@@ -408,6 +437,7 @@ if __name__ == "__main__":
         clinvar = clinvar.persist()
         print("Adding Clinvar...")
         mt = annotate_with_clinvar(mt, clinvar)
+        mt = mt.repartition(parition_count)
         mt = mt.persist()
         print("Added clinvar, unpersisting...")
         clinvar = clinvar.unpersist()
@@ -417,6 +447,7 @@ if __name__ == "__main__":
         hgmd = hgmd.persist()
         print("Adding HGMD...")
         mt = annotate_with_hgmd(mt, hgmd)
+        mt = mt.repartition(parition_count)
         mt = mt.persist()
         print("Added HGMD, unpersisting")
         hgmd = hgmd.unpersist()
@@ -425,33 +456,38 @@ if __name__ == "__main__":
         gnomad = gnomad.semi_join_rows(mt.rows())
         gnomad = gnomad.persist()
         mt = annotate_with_gnomad(mt, gnomad)
+
+        mt = mt.repartition(parition_count)
         mt = mt.persist()
         print("Added Gnomad, unpersisting...")
         gnomad = gnomad.unpersist()
 
-        # print("Subdsetting and persisting CADD")
-        # cadd = cadd.semi_join(mt.rows())
-        # cadd = cadd.persist()
-        # print("Adding CADD...")
-        # mt = annotate_with_cadd(mt, cadd)
-        # mt = mt.persist()
-        # print("Added CADD, unpersisting...")
-        # cadd = cadd.unpersist()
+        print("Subdsetting and persisting CADD")
+        cadd = cadd.semi_join(mt.rows())
+        cadd = cadd.persist()
+        print("Adding CADD...")
+        mt = annotate_with_cadd(mt, cadd)
+        mt = mt.repartition(parition_count)
+        mt = mt.persist()
+        print("Added CADD, unpersisting...")
+        cadd = cadd.unpersist()
 
-        # print("Subsetting and persisting eigen...")
-        # eigen = eigen.semi_join_rows(mt.rows())
-        # eigen = eigen.persist()
-        # print("Adding eigen...")
-        # mt = annotate_with_eigen(mt, eigen)
-        # mt  = mt.persist()
-        # print("Added Eigen, unpersisting...")
-        # eigen = eigen.unpersist()
+        print("Subsetting and persisting eigen...")
+        eigen = eigen.semi_join_rows(mt.rows())
+        eigen = eigen.persist()
+        print("Adding eigen...")
+        mt = annotate_with_eigen(mt, eigen)
+        mt = mt.repartition(parition_count)
+        mt  = mt.persist()
+        print("Added Eigen, unpersisting...")
+        eigen = eigen.unpersist()
 
         print("Subsetting and persisting Primate...")
         primate = primate.semi_join_rows(mt.rows())
         primate = primate.persist()
         print("Adding primate...")
         mt = annotate_with_primate(mt, primate)
+        mt = mt.repartition(parition_count)
         mt = mt.persist()
         print("Added primate, unpersisting")
         primate = primate.unpersist()
@@ -461,6 +497,7 @@ if __name__ == "__main__":
         topmed = topmed.persist()
         print("Adding topmed")
         mt = annotate_with_topmed(mt, topmed)
+        mt = mt.repartition(parition_count)
         mt = mt.persist()
         print("Added topmed, unpersisting...")
         topmed = topmed.unpersist()
@@ -470,18 +507,15 @@ if __name__ == "__main__":
         exac = exac.persist()
         print("Adding Exac...")
         mt = annotate_with_exac(mt, exac)
+        mt = mt.repartition(parition_count)
         final = mt.persist()
         print("added exac, unpersisting")
         exac = exac.unpersist()
-        final = final.unpersist()
+        #final = final.unpersist()
 
-        print("Preparing for export to elasticsearch")
+        print("Preparing for export")
         famids = list(map(lambda x: x.family_id, families))
-        index_name = project + "__wes__" + "GRCh37__" + "VARIANTS__" + time.strftime("%Y%m%d")  #+ sample.family_id
-        if args.tsv:
-            export_table_to_tsv(final, index_name)
-        else:
-            export_table_to_elasticsearch(final, ELASTICSEARCH_HOST, (index_name+"vep").lower(), "variant", is_vds=True, port=9200,num_shards=1, block_size=100)
+        export(t,index_name, args.tsv)
 
     else:
         load_clinvar(export_to_es=True)
