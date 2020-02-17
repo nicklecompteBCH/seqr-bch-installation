@@ -174,12 +174,12 @@ def add_vep_to_vcf(mt):
     mt = run_vep(mt, GENOME_VERSION)
     return mt
 
-def load_hgmd_vcf():
+def load_hgmd_vcf(partitions : int = None):
 
     mt = import_vcf(
         's3n://seqr-resources/GRCh37/hgmd/hgmd_pro_2018.4_hg19.vcf.gz',
         "37",
-        "hgmd_grch37",min_partitions=1000
+        "hgmd_grch37",min_partitions=partitions
     )
     return mt
 
@@ -398,26 +398,27 @@ if __name__ == "__main__":
     print(str(hl.utils.hadoop_ls('/')))
     if not args.clinvar:
         #gnomad.describe()
-        gnomad = read_gnomad_ht(GnomadDataset.Exomes37)
+        partition_base = int(args.partition)
+        gnomad = read_gnomad_ht(GnomadDataset.Exomes37,partitions=partition_base)
         gnomad = gnomad.persist() #60GB
-        cadd : hl.Table = get_cadd()
+        cadd : hl.Table = get_cadd(partitions=partition_base)
         cadd = cadd.persist() #80GB
-        eigen : hl.MatrixTable = get_eigen()
+        eigen : hl.MatrixTable = get_eigen(partitions=partition_base)
         eigen = eigen.persist() #60GB
-        hgmd : hl.MatrixTable = load_hgmd_vcf()
+        hgmd : hl.MatrixTable = load_hgmd_vcf(partitions=partition_base)
         hgmd = hgmd.persist() # 6mb
-        primate : hl.MatrixTable = import_primate()
+        primate : hl.MatrixTable = import_primate(partitions=partition_base)
         primate = primate.persist() # 600MB
-        clinvar : hl.MatrixTable = load_clinvar()
+        clinvar : hl.MatrixTable = load_clinvar(partitions=partition_base)
         clinvar = clinvar.persist() #50MB
-        topmed : hl.MatrixTable = get_topmed()
+        topmed : hl.MatrixTable = get_topmed(partitions=partition_base)
         topmed = topmed.persist() # 8.7GB
         #mpc : hl.MatrixTable = get_mpc()
-        exac : hl.MatrixTable = get_exac()
+        exac : hl.MatrixTable = get_exac(partitions=partition_base)
         exac = exac.persist() # 4.6GB
         #gc : hl.MatrixTable =  get_gc()
         #omim = get_omim()
-        partition_base = int(args.partition)
+
 
         path = args.path
         families = bch_connect_report_to_seqr_families(path)
@@ -444,7 +445,7 @@ if __name__ == "__main__":
 
             mt = annotate_with_genotype_num_alt(mt)
             mt = annotate_with_samples_alt(mt)
-            mt = finalize_annotated_table_for_seqr_variants(mt))
+            mt = finalize_annotated_table_for_seqr_variants(mt)
             mt = mt.persist()
             print("Added custom fields")
 

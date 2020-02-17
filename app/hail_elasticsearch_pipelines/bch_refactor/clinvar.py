@@ -13,9 +13,9 @@ from hail_elasticsearch_pipelines.hail_scripts.v02.utils.clinvar import CLINVAR_
 from hail_elasticsearch_pipelines.hail_scripts.v02.utils.computed_fields.variant_id import *
 import hail as hl
 
-def load_clinvar(es_host = None):
+def load_clinvar(es_host = None, partitions : int = None):
     index_name = "clinvar_grch37" #"clinvar_grch{}".format(args.genome_version)
-    mt = download_and_import_latest_clinvar_vcf("37")
+    mt = download_and_import_latest_clinvar_vcf("37", partitions=partitions)
     mt = hl.vep(mt, "s3://seqr-resources/vep85-loftee-gcloud.json", name="vep", block_size=1000)
     mt = mt.annotate_rows(
         sortedTranscriptConsequences=get_expr_for_vep_sorted_transcript_consequences_array(vep_root=mt.vep)

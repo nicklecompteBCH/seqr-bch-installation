@@ -28,12 +28,14 @@ def import_cadd_table(path: str, genome_version: str="37", partitions : int = No
 
     return cadd_union_ht
 
-def get_cadd():
+def get_cadd(partitions : int = None):
 
-    snvs_ht = import_cadd_table(f"s3n://seqr-resources/GRCh37/CADD/whole_genome_SNVs.v1.4.tsv.bgz")
-    indel_ht = import_cadd_table(f"s3n://seqr-resources/GRCh37/CADD/InDels.v1.4.tsv.bgz")
+    snvs_ht = import_cadd_table(f"s3n://seqr-resources/GRCh37/CADD/whole_genome_SNVs.v1.4.tsv.bgz",partitions=partitions)
+    indel_ht = import_cadd_table(f"s3n://seqr-resources/GRCh37/CADD/InDels.v1.4.tsv.bgz",partitions=partitions)
 
     ht = snvs_ht.union(indel_ht)
+    if partitions:
+        ht = ht.repartition(partitions)
     return ht
 
 def annotate_with_cadd(ht : hl.MatrixTable, cadd_ht : hl.Table):
