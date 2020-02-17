@@ -1,7 +1,7 @@
 import hail as hl
 from hail_elasticsearch_pipelines.hail_scripts.v02.utils.hail_utils import import_vcf
 
-def get_topmed(partitions : int = None):
+def get_topmed(partitions : int = None,namenode:str = ""):
 
     ht = import_vcf("hdfs://" + namenode + "/user/hadoop/data//bravo-dbsnp-all.removed_chr_prefix.liftunder_GRCh37.vcf.gz","37","topmed",min_partitions=partitions)
     return ht

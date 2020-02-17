@@ -174,7 +174,7 @@ def add_vep_to_vcf(mt):
     mt = run_vep(mt, GENOME_VERSION)
     return mt
 
-def load_hgmd_vcf(partitions : int = None,namenode:str):
+def load_hgmd_vcf(partitions : int = None,namenode:str=""):
 
     mt = import_vcf(
         'hdfs://' + namenode + 'user/hadoop/hgmd_pro_2018.4_hg19.vcf.gz',
@@ -405,18 +405,18 @@ if __name__ == "__main__":
         gnomad = gnomad.persist() #60GB
         cadd : hl.Table = get_cadd(partitions=partition_base,namenode = nn)
         cadd = cadd.persist() #80GB
-        eigen : hl.MatrixTable = get_eigen(partitions=partition_base)
+        eigen : hl.MatrixTable = get_eigen(partitions=partition_base,namenode = nn)
         eigen = eigen.persist() #60GB
-        hgmd : hl.MatrixTable = load_hgmd_vcf(partitions=partition_base)
+        hgmd : hl.MatrixTable = load_hgmd_vcf(partitions=partition_base,namenode=nn)
         hgmd = hgmd.persist() # 6mb
-        primate : hl.MatrixTable = import_primate(partitions=partition_base)
+        primate : hl.MatrixTable = import_primate(partitions=partition_base,namenode = nn)
         primate = primate.persist() # 600MB
-        clinvar : hl.MatrixTable = load_clinvar(partitions=partition_base)
+        clinvar : hl.MatrixTable = load_clinvar(partitions=partition_base,namenode = nn)
         clinvar = clinvar.persist() #50MB
-        topmed : hl.MatrixTable = get_topmed(partitions=partition_base)
+        topmed : hl.MatrixTable = get_topmed(partitions=partition_base,namenode = nn)
         topmed = topmed.persist() # 8.7GB
         #mpc : hl.MatrixTable = get_mpc()
-        exac : hl.MatrixTable = get_exac(partitions=partition_base)
+        exac : hl.MatrixTable = get_exac(partitions=partition_base,namenode = nn)
         exac = exac.persist() # 4.6GB
         #gc : hl.MatrixTable =  get_gc()
         #omim = get_omim()
