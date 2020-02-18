@@ -156,17 +156,14 @@ def add_family_to_hail(family:SeqrFamily) -> hl.MatrixTable:
 def add_families_to_hail(families: List[SeqrFamily]) -> hl.MatrixTable:
     retmr : hl.MatrixTable = None
     for family in families:
-        fammar = None
-        for sample in family.samples:
-            filename = add_seqr_sample_to_locals3(sample)
-            mt = add_vcf_to_hail(sample, "s3n://seqr-data/" + filename)
-            mt = mt.repartition(1)
-            if not fammar:
-                fanmar = mt
-            fanmar = fanmar.union_cols(mt)
+        mt = add_family_to_hail(family)
         if not retmr:
-            retmr = fanmar # I hate python :/
-        retmr = retmr.union_cols(fanmar)
+            if len(families) == 1:
+                return mt
+            else:
+                retmr = mt # I hate python :/
+        else:
+            retmr = retmr.union_cols(mt)
     return retmr
 
 
@@ -412,31 +409,30 @@ if __name__ == "__main__":
 
         # CADD seems hairy for whatever reason
         # do partition_base * 10
-        #cadd : hl.Table = get_cadd(partitions=partition_base,namenode = nn)
+        #cadd : hl.Table =
         # Eigen is also hairy
         # It may bee that these are
-        #eigen : hl.MatrixTable = get_eigen(partitions=partition_base,namenode = nn)
+        #eigen : hl.MatrixTable =
         #hgmd : hl.MatrixTable = load_hgmd_vcf(partitions=partition_base,namenode=nn)
-        #primate : hl.MatrixTable = import_primate(partitions=partition_base,namenode = nn)
-        clinvar : hl.MatrixTable = load_clinvar(partitions=partition_base,namenode = nn)
-        #topmed : hl.MatrixTable = get_topmed(partitions=partition_base,namenode = nn)
+        #primate : hl.MatrixTable =
+        #clinvar : hl.MatrixTable =
+        #topmed : hl.MatrixTable =
         #mpc : hl.MatrixTable = get_mpc()
-        #exac : hl.MatrixTable = get_exac(partitions=partition_base,namenode = nn)
+        #exac : hl.MatrixTable =
         #gc : hl.MatrixTable =  get_gc()
         #omim = get_omim()
 
 
         path = args.path
         families = bch_connect_report_to_seqr_families(path)
-        family = families[0]
         num_vcfs = len(family.samples)
         partition_count = num_vcfs*partition_base
         dataset = args.project
-        index_name = dataset + "__wes__" + "GRCh37__" + "VARIANTS__" + time.strftime("%Y%m%d") + "family_" + family.family_id #+ sample.family_id
+        index_name = dataset + "__wes__" + "GRCh37__" + "VARIANTS__" + time.strftime("%Y%m%d")
         index_name = index_name.lower()
         if args.index_prefix:
             index_name = args.index_prefix + index_name
-        mt = add_family_to_hail(family)
+        mt = add_families_to_hail(families)
         mt = mt.persist()
         print("Added families")
 
@@ -465,34 +461,33 @@ if __name__ == "__main__":
         mt = mt.persist()
 
         print("Subsetting and persisting Clinvar...")
-        clinvars = clinvar.semi_join_rows(mt.rows())
-        clinvars = clinvar.repartition(partition_count)
-        clinvars = clinvars.persist()
+        clinvar = load_clinvar(partitions=partition_base,namenode = nn).semi_join_rows(mt.rows())
+        clinvar = clinvar.persist()
         print("Adding Clinvar...")
-        mt = annotate_with_clinvar(mt, clinvars)
+        mt = annotate_with_clinvar(mt, clinvar)
         mt = mt.persist()
         print("Added clinvar, unpersisting...")
-        clinvars = clinvars.unpersist()
+        clinvar = clinvar.unpersist()
         print("Exporting partial results to elasticsearch")
         export(mt,index_name,args.tsv,args.tsves,ELASTICSEARCH_UPSERT)
         print("Dropping all non-essential fields")
-        mt = mt.select_rows(mt.locus,mt.alleles,mt.variant_id)
+        mt = mt.select_rows(mt.variant_id)
         mt = mt.persist()
 
 
-        # print("Subsetting and perrsisting HGMD...")
-        # hgmds = hgmd.semi_join_rows(mt.rows())
-        # hgmds = hgmds.persist()
-        # print("Adding HGMD...")
-        # mt = annotate_with_hgmd(mt, hgmds)
-        # mt = mt.persist()
-        # print("Added HGMD, unpersisting")
-        # hgmds = hgmds.unpersist()
-        # print("Exporting partial results to elasticsearch")
-        # export(mt,index_name,args.tsv,args.tsves,ELASTICSEARCH_UPSERT)
-        # print("Dropping all non-essential fields")
-        # mt = mt.select_rows(mt.locus,mt.alleles,mt.variant_id)
-        # mt = mt.persist()
+        print("Subsetting and perrsisting HGMD...")
+        hgmds = hgmd.semi_join_rows(mt.rows())
+        hgmds = hgmds.persist()
+        print("Adding HGMD...")
+        mt = annotate_with_hgmd(mt, hgmds)
+        mt = mt.persist()
+        print("Added HGMD, unpersisting")
+        hgmds = hgmds.unpersist()
+        print("Exporting partial results to elasticsearch")
+        export(mt,index_name,args.tsv,args.tsves,ELASTICSEARCH_UPSERT)
+        print("Dropping all non-essential fields")
+        mt = mt.select_rows(mt.variant_id)
+        mt = mt.persist()
 
         print("Subsetting and persisting Gnomad...")
         gnomad = gnomad.semi_join_rows(mt.rows())
@@ -505,71 +500,79 @@ if __name__ == "__main__":
         print("Exporting partial results to elasticsearch")
         export(mt,index_name,args.tsv,args.tsves,ELASTICSEARCH_UPSERT)
         print("Dropping all non-essential fields")
-        mt = mt.select_rows(mt.locus,mt.alleles,mt.variant_id)
+        mt = mt.select_rows(mt.variant_id)
         mt = mt.persist()
 
+        print("Subsetting and persisting eigen...")
+        eigen = get_eigen(partitions=partition_base,namenode = nn).semi_join_rows(mt.rows())
+        eigen = eigen.persist()
+        print("Adding eigen...")
+        mt = annotate_with_eigen(mt, eigen)
+        mt  = mt.persist()
+        print("Added Eigen, unpersisting...")
+        eigen = eigen.unpersist()
+        print("Exporting partial results to elasticsearch")
+        export(mt,index_name,args.tsv,args.tsves,ELASTICSEARCH_UPSERT)
+        print("Dropping all non-essential fields")
+        mt = mt.select_rows(mt.variant_id)
+        mt = mt.persist()
 
-        # print("Subdsetting and persisting CADD")
-        # cadds = cadd.semi_join(mt.rows())
-        # cadds = cadd.persist()
-        # print("Adding CADD...")
-        # mt = annotate_with_cadd(mt, cadds)
-        # mt = mt.persist()
-        # print("Added CADD, unpersisting...")
-        # cadd = cadds.unpersist()
-        # print("Repartitioning...")
-        # mt = mt.repartition(partition_count)
-        # mt = mt.persist()
-        # print("Exporting partial results to elasticsearch")
-        # export(mt,index_name,args.tsv,args.tsves,ELASTICSEARCH_UPSERT)
-        # print("Dropping all non-essential fields")
-        # mt = mt.select_rows(mt.locus,mt.alleles,mt.variant_id)
-        # mt = mt.persist()
+        print("Subsetting and persisting Primate...")
+        primate = import_primate(partitions=partition_base,namenode = nn).semi_join_rows(mt.rows())
+        primate = primate.persist()
+        print("Adding primate...")
+        mt = annotate_with_primate(mt, primate)
+        mt = mt.persist()
+        print("Added primate, unpersisting")
+        primate = primate.unpersist()
+        print("Exporting partial results to elasticsearch")
+        export(mt,index_name,args.tsv,args.tsves,ELASTICSEARCH_UPSERT)
+        print("Dropping all non-essential fields")
+        mt = mt.select_rows(mt.variant_id)
+        mt = mt.persist()
 
+        print("Subsetting and persisting TopMed...")
+        topmed = get_topmed(partitions=partition_base,namenode = nn).semi_join_rows(mt.rows())
+        topmed = topmed.persist()
+        print("Adding topmed")
+        mt = annotate_with_topmed(mt, topmed)
+        mt = mt.persist()
+        print("Added topmed, unpersisting...")
+        topmed = topmed.unpersist()
+        print("Exporting partial results to elasticsearch")
+        export(mt,index_name,args.tsv,args.tsves,ELASTICSEARCH_UPSERT)
+        print("Dropping all non-essential fields")
+        mt = mt.select_rows(mt.variant_id)
+        mt = mt.persist()
 
-        # print("Subsetting and persisting eigen...")
-        # eigens = eigen.semi_join_rows(mt.rows())
-        # eigens = eigens.persist()
-        # print("Adding eigen...")
-        # mt = annotate_with_eigen(mt, eigens)
-        # mt  = mt.persist()
-        # print("Added Eigen, unpersisting...")
-        # eigens = eigens.unpersist()
-        # print("Repartitioning...")
-        # mt = mt.repartition(partition_count)
-        # mt = mt.persist()
+        print("Subsetting and persisting ExAc...")
+        exac = get_exac(partitions=partition_base,namenode = nn).semi_join_rows(mt.rows())
+        exac = exac.persist()
+        print("Adding Exac...")
+        mt = annotate_with_exac(mt, exac)
+        mt = mt.persist()
+        print("added exac, unpersisting")
+        exac = exac.unpersist()
+        print("Exporting partial results to elasticsearch")
+        export(mt,index_name,args.tsv,args.tsves,ELASTICSEARCH_UPSERT)
+        print("Dropping all non-essential fields")
+        mt = mt.select_rows(mt.variant_id)
+        mt = mt.persist()
 
-        # print("Subsetting and persisting Primate...")
-        # primates = primate.semi_join_rows(mt.rows())
-        # primates = primates.persist()
-        # print("Adding primate...")
-        # mt = annotate_with_primate(mt, primates)
-        # mt = mt.persist()
-        # print("Added primate, unpersisting")
-        # primates = primates.unpersist()
-        # print("Repartitioning...")
-        # mt = mt.repartition(partition_count)
-        # mt = mt.persist()
+        print("Subdsetting and persisting CADD")
+        cadd = get_cadd(partitions=partition_base,namenode = nn).semi_join(mt.rows())
+        cadd = cadd.persist()
+        print("Adding CADD...")
+        mt = annotate_with_cadd(mt, cadd)
+        mt = mt.persist()
+        print("Added CADD, unpersisting...")
+        cadd = cadd.unpersist()
+        print("Exporting partial results to elasticsearch")
+        export(mt,index_name,args.tsv,args.tsves,ELASTICSEARCH_UPSERT)
+        print("Dropping all non-essential fields")
+        mt = mt.select_rows(mt.variant_id)
+        mt = mt.persist()
 
-        # print("Subsetting and persisting TopMed...")
-        # topmeds = topmed.semi_join_rows(mt.rows())
-        # topmeds = topmeds.persist()
-        # print("Adding topmed")
-        # mt = annotate_with_topmed(mt, topmeds)
-        # mt = mt.persist()
-        # print("Added topmed, unpersisting...")
-        # topmeds = topmeds.unpersist()
-        # print("Repartitioning...")
-        # mt = mt.repartition(partition_count)
-        # mt = mt.persist()
-
-        # print("Subsetting and persisting ExAc...")
-        # exacs = exac.semi_join_rows(mt.rows())
-        # exacs = exacs.persist()
-        # print("Adding Exac...")
-        # mt = annotate_with_exac(mt, exacs)
-        # print("Repartitioning...")
-        # mt = mt.repartition(partition_count)
 
         # print("added exac, unpersisting")
         # exacs = exacs.unpersist()
