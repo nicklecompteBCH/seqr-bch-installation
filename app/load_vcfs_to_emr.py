@@ -437,7 +437,10 @@ if __name__ == "__main__":
         #partition_count = parition_count + num_vcfs # assume each annotation adds a VCF's worth of data per VCF
         mt = mt.persist()
         print("Added vep")
-        print("Creating index in Elasticsearch and uplaoding VEP-annoated variant...")
+        partition_count = 2*partition_count # VEP adds "twice" as much info (ish)
+        print("Repartitioning")
+        mt = mt.repartition(partition_count)
+        mt = mt.persist()
 
         mt = annotate_with_genotype_num_alt(mt)
         mt = annotate_with_samples_alt(mt)
