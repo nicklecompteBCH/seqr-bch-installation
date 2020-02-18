@@ -4,7 +4,7 @@ import hail as hl
 
 from typing import List
 
-from hail_elasticsearch_pipelines.hail_scripts.v02.utils.elasticsearch_client import ElasticsearchClient
+from hail_elasticsearch_pipelines.hail_scripts.v02.utils.elasticsearch_client import ElasticsearchClient, ELASTICSEARCH_INDEX, ELASTICSEARCH_UPDATE, ELASTICSEARCH_UPSERT
 
 """
 From the hail docs:
@@ -39,7 +39,8 @@ info (tstruct) – All INFO fields defined in the VCF header can be found in the
 """
 
 
-def export_table_to_elasticsearch(ds: hl.MatrixTable, host, index_name, index_type, is_vds  = False, port=9200, num_shards=1, block_size=200):
+
+def export_table_to_elasticsearch(ds: hl.MatrixTable, host, index_name, index_type,op,mapid="variant_id", is_vds  = False, port=9200, num_shards=1, block_size=200,write_op=ELASTICSEARCH_INDEX):
     es = ElasticsearchClient(host, port)
     ta = ds.rows().flatten()#.drop('locus','allele')
     #ta = ta.naive_coalesce(450)
@@ -53,6 +54,8 @@ def export_table_to_elasticsearch(ds: hl.MatrixTable, host, index_name, index_ty
             delete_index_before_exporting=False,
             export_globals_to_index_meta=True,
             verbose=True,
+            elasticsearch_mapping_id=mapid,
+            elasticsearch_write_operation=op
         )
 
 

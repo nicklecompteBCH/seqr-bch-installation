@@ -12,6 +12,7 @@ from enum import Enum
 
 from hail_elasticsearch_pipelines.hail_scripts.v02.utils.hail_utils import import_vcf, run_vep
 from hail_elasticsearch_pipelines.hail_scripts.v02.export_table_to_es import export_table_to_elasticsearch
+from hail_elasticsearch_pipelines.hail_scripts.v02.utils.elasticsearch_client import ELASTICSEARCH_UPSERT, ELASTICSEARCH_UPDATE, ELASTICSEARCH_INDEX
 from hail_elasticsearch_pipelines.hail_scripts.v02.utils.computed_fields.variant_id import *
 from hail_elasticsearch_pipelines.hail_scripts.v02.utils.computed_fields.vep import (
     get_expr_for_vep_gene_id_to_consequence_map,
@@ -370,7 +371,7 @@ def export_table_to_tsv(final : hl.MatrixTable, index_prefix: str):
     final_export = final_t.export(filename)
     print('uploaded file!')
 
-def export(t,index_name, tsv:bool,tsves:bool):
+def export(t,index_name, tsv:bool,tsves:bool,op=ELASTICSEARCH_INDEX):
     # First export VCF to S3:
     if tsv or tsves:
         export_table_to_tsv(t, index_name)
@@ -380,6 +381,7 @@ def export(t,index_name, tsv:bool,tsves:bool):
             ELASTICSEARCH_HOST,
             index_name,
             "variant",
+            op,
             is_vds=True,
             port=9200,
             num_shards=2,
@@ -438,6 +440,30 @@ if __name__ == "__main__":
         mt = mt.persist()
         print("Added families")
 
+        print("Adding vep")
+        mt = add_vep_to_vcf(mt)
+        #partition_count = parition_count + num_vcfs # assume each annotation adds a VCF's worth of data per VCF
+        mt = mt.persist()
+        print("Added vep")
+        partition_count = 2*partition_count # VEP adds "twice" as much info (ish)
+        print("Repartitioning")
+        mt = mt.repartition(partition_count)
+        mt = mt.persist()
+
+        mt = annotate_with_genotype_num_alt(mt)
+        mt = annotate_with_samples_alt(mt)
+        mt = finalize_annotated_table_for_seqr_variants(mt)
+        mt = mt.persist()
+        print("Added custom fields")
+        print("Repartitioning...")
+        mt = mt.repartition(partition_count)
+
+        print("Exporting partial results to elasticsearch")
+        export(mt,index_name,args.tsv,args.tsves,ELASTICSEARCH_INDEX)
+        print("Dropping all non-essential fields")
+        mt = mt.select_rows(mt.locus,mt.alleles,mt.variant_id)
+        mt = mt.persist()
+
         print("Subsetting and persisting Clinvar...")
         clinvars = clinvar.semi_join_rows(mt.rows())
         clinvars = clinvar.repartition(partition_count)
@@ -447,9 +473,12 @@ if __name__ == "__main__":
         mt = mt.persist()
         print("Added clinvar, unpersisting...")
         clinvars = clinvars.unpersist()
-        print("Repartitioning...")
-        mt = mt.repartition(partition_count)
+        print("Exporting partial results to elasticsearch")
+        export(mt,index_name,args.tsv,args.tsves,ELASTICSEARCH_UPSERT)
+        print("Dropping all non-essential fields")
+        mt = mt.select_rows(mt.locus,mt.alleles,mt.variant_id)
         mt = mt.persist()
+
 
         # print("Subsetting and perrsisting HGMD...")
         # hgmds = hgmd.semi_join_rows(mt.rows())
@@ -459,20 +488,24 @@ if __name__ == "__main__":
         # mt = mt.persist()
         # print("Added HGMD, unpersisting")
         # hgmds = hgmds.unpersist()
-        # print("Repartitioning...")
-        # mt = mt.repartition(partition_count)
+        # print("Exporting partial results to elasticsearch")
+        # export(mt,index_name,args.tsv,args.tsves,ELASTICSEARCH_UPSERT)
+        # print("Dropping all non-essential fields")
+        # mt = mt.select_rows(mt.locus,mt.alleles,mt.variant_id)
         # mt = mt.persist()
 
         print("Subsetting and persisting Gnomad...")
-        gnomads = gnomad.semi_join_rows(mt.rows())
-        gnmods = gnomads.repartition(partition_count)
-        gnomads = gnomads.persist()
-        mt = annotate_with_gnomad(mt, gnomads)
+        gnomad = gnomad.semi_join_rows(mt.rows())
+
+        gnomad = gnomad.persist()
+        mt = annotate_with_gnomad(mt, gnomad)
         mt = mt.persist()
         print("Added Gnomad, unpersisting...")
-        gnomads = gnomads.unpersist()
-        print("Repartitioning...")
-        mt = mt.repartition(partition_count)
+        gnomad = gnomad.unpersist()
+        print("Exporting partial results to elasticsearch")
+        export(mt,index_name,args.tsv,args.tsves,ELASTICSEARCH_UPSERT)
+        print("Dropping all non-essential fields")
+        mt = mt.select_rows(mt.locus,mt.alleles,mt.variant_id)
         mt = mt.persist()
 
 
@@ -487,6 +520,12 @@ if __name__ == "__main__":
         # print("Repartitioning...")
         # mt = mt.repartition(partition_count)
         # mt = mt.persist()
+        # print("Exporting partial results to elasticsearch")
+        # export(mt,index_name,args.tsv,args.tsves,ELASTICSEARCH_UPSERT)
+        # print("Dropping all non-essential fields")
+        # mt = mt.select_rows(mt.locus,mt.alleles,mt.variant_id)
+        # mt = mt.persist()
+
 
         # print("Subsetting and persisting eigen...")
         # eigens = eigen.semi_join_rows(mt.rows())
@@ -535,31 +574,14 @@ if __name__ == "__main__":
         # print("added exac, unpersisting")
         # exacs = exacs.unpersist()
         #final = final.unpersist()
-        print("Adding vep")
-        mt = add_vep_to_vcf(mt)
-        #partition_count = parition_count + num_vcfs # assume each annotation adds a VCF's worth of data per VCF
-        mt = mt.persist()
-        print("Added vep")
-        partition_count = 2*partition_count # VEP adds "twice" as much info (ish)
-        print("Repartitioning")
-        mt = mt.repartition(partition_count)
-        mt = mt.persist()
-
-        mt = annotate_with_genotype_num_alt(mt)
-        mt = annotate_with_samples_alt(mt)
-        mt = finalize_annotated_table_for_seqr_variants(mt)
-        mt = mt.persist()
-        print("Added custom fields")
-        print("Repartitioning...")
-        mt = mt.repartition(partition_count)
-        final = mt.persist()
-        #mt = mt.persist()
+        # final = mt.persist()
+        # #mt = mt.persist()
 
 
-        print("Preparing for export")
-        #final = final.repartition(40000) # let's try this out....
-        #famids = list(map(lambda x: x.family_id, families))
-        export(final,index_name, args.tsv,args.tsves)
+        # print("Preparing for export")
+        # #final = final.repartition(40000) # let's try this out....
+        # #famids = list(map(lambda x: x.family_id, families))
+        # export(final,index_name, args.tsv,args.tsves)
 
     else:
         load_clinvar(es_host=ELASTICSEARCH_HOST)
