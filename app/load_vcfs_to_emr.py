@@ -149,11 +149,15 @@ def add_family_to_hail(family:SeqrFamily) -> hl.MatrixTable:
         filename = add_seqr_sample_to_locals3(sample)
         mt = add_vcf_to_hail(sample, "s3n://seqr-data/" + filename)
         if not fanmar:
-            fanmar = mt
-        fanmar = fanmar.union_cols(mt)
+            if len(family.samples) == 1:
+                return mt
+            else:
+                fanmar = mt
+        else:
+            fanmar = fanmar.union_cols(mt)
     return fanmar
 
-def add_families_to_hail(families: List[SeqrFamily]) -> hl.MatrixTable:
+def add_families_to_hail(families: List[SeqrFamily],parts:int) -> hl.MatrixTable:
     retmr : hl.MatrixTable = None
     for family in families:
         mt = add_family_to_hail(family)
@@ -162,8 +166,11 @@ def add_families_to_hail(families: List[SeqrFamily]) -> hl.MatrixTable:
                 return mt
             else:
                 retmr = mt # I hate python :/
+                retmr = retmr.persist()
         else:
             retmr = retmr.union_cols(mt)
+            retmr = retmr.naive_coalesce(parts)
+            retmr = retmr.persist()
     return retmr
 
 
@@ -425,14 +432,13 @@ if __name__ == "__main__":
 
         path = args.path
         families = bch_connect_report_to_seqr_families(path)
-        num_vcfs = len(family.samples)
-        partition_count = num_vcfs*partition_base
+        partition_count = partition_base
         dataset = args.project
         index_name = dataset + "__wes__" + "GRCh37__" + "VARIANTS__" + time.strftime("%Y%m%d")
         index_name = index_name.lower()
         if args.index_prefix:
             index_name = args.index_prefix + index_name
-        mt = add_families_to_hail(families)
+        mt = add_families_to_hail(families,partition_count)
         mt = mt.persist()
         print("Added families")
 
@@ -442,22 +448,17 @@ if __name__ == "__main__":
         mt = mt.persist()
         print("Added vep")
         partition_count = 2*partition_count # VEP adds "twice" as much info (ish)
-        print("Repartitioning")
-        mt = mt.repartition(partition_count)
-        mt = mt.persist()
+
 
         mt = annotate_with_genotype_num_alt(mt)
         mt = annotate_with_samples_alt(mt)
         mt = finalize_annotated_table_for_seqr_variants(mt)
         mt = mt.persist()
-        print("Added custom fields")
-        print("Repartitioning...")
-        mt = mt.repartition(partition_count)
 
         print("Exporting partial results to elasticsearch")
         export(mt,index_name,args.tsv,args.tsves,ELASTICSEARCH_INDEX)
         print("Dropping all non-essential fields")
-        mt = mt.select_rows(mt.locus,mt.alleles,mt.variant_id)
+        mt = mt.select_rows(mt.variant_id)
         mt = mt.persist()
 
         print("Subsetting and persisting Clinvar...")
