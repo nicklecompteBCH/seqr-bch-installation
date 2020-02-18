@@ -433,24 +433,6 @@ if __name__ == "__main__":
         mt = mt.persist()
         print("Added families")
 
-        mt = add_vep_to_vcf(mt)
-        #partition_count = parition_count + num_vcfs # assume each annotation adds a VCF's worth of data per VCF
-        mt = mt.persist()
-        print("Added vep")
-        partition_count = 2*partition_count # VEP adds "twice" as much info (ish)
-        print("Repartitioning")
-        mt = mt.repartition(partition_count)
-        mt = mt.persist()
-
-        mt = annotate_with_genotype_num_alt(mt)
-        mt = annotate_with_samples_alt(mt)
-        mt = finalize_annotated_table_for_seqr_variants(mt)
-        mt = mt.persist()
-        print("Added custom fields")
-        print("Repartitioning...")
-        mt = mt.repartition(partition_count)
-        mt = mt.persist()
-
         print("Subsetting and persisting Clinvar...")
         clinvars = clinvar.semi_join_rows(mt.rows())
         clinvars = clinvars.persist()
@@ -461,7 +443,7 @@ if __name__ == "__main__":
         clinvars = clinvars.unpersist()
         print("Repartitioning...")
         mt = mt.repartition(partition_count)
-        # mt = mt.persist()
+        mt = mt.persist()
 
         # print("Subsetting and perrsisting HGMD...")
         # hgmds = hgmd.semi_join_rows(mt.rows())
@@ -542,13 +524,33 @@ if __name__ == "__main__":
         # mt = annotate_with_exac(mt, exacs)
         # print("Repartitioning...")
         # mt = mt.repartition(partition_count)
-        final = mt.persist()
+
         # print("added exac, unpersisting")
         # exacs = exacs.unpersist()
         #final = final.unpersist()
+        print("Adding vep")
+        mt = add_vep_to_vcf(mt)
+        #partition_count = parition_count + num_vcfs # assume each annotation adds a VCF's worth of data per VCF
+        mt = mt.persist()
+        print("Added vep")
+        partition_count = 2*partition_count # VEP adds "twice" as much info (ish)
+        print("Repartitioning")
+        mt = mt.repartition(partition_count)
+        mt = mt.persist()
+
+        mt = annotate_with_genotype_num_alt(mt)
+        mt = annotate_with_samples_alt(mt)
+        mt = finalize_annotated_table_for_seqr_variants(mt)
+        mt = mt.persist()
+        print("Added custom fields")
+        print("Repartitioning...")
+        mt = mt.repartition(partition_count)
+        final = mt.persist()
+        #mt = mt.persist()
+
 
         print("Preparing for export")
-        final = final.repartition(40000) # let's try this out....
+        #final = final.repartition(40000) # let's try this out....
         #famids = list(map(lambda x: x.family_id, families))
         export(final,index_name, args.tsv)
 
