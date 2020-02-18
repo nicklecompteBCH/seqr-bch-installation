@@ -10,7 +10,7 @@ def import_primate(partitions : int = None,namenode : str = ""):
         min_partitions=partitions,
         force_bgz=True
     )
-        return ht
+    return ht
 
 def annotate_with_primate(ht : hl.MatrixTable, primate_ht : hl.MatrixTable):
     newht = ht.annotate_rows(

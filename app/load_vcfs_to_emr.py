@@ -402,36 +402,28 @@ if __name__ == "__main__":
         partition_base = int(args.partitions)
         nn = args.namenode
         # gnomAD has loaded fine but just in case - 2x partitions for it
-        gnomad = read_gnomad_ht(GnomadDataset.Exomes37,partitions=2*partition_base,namenode = nn)
-        gnomad = gnomad.persist() #60GB
+        #gnomad = read_gnomad_ht(GnomadDataset.Exomes37,partitions=2*partition_base,namenode = nn)
 
 
         # CADD seems hairy for whatever reason
         # do partition_base * 10
-        cadd : hl.Table = get_cadd(partitions=partition_base*10,namenode = nn)
-        cadd = cadd.persist() #80GB
+        #cadd : hl.Table = get_cadd(partitions=partition_base*10,namenode = nn)
         # Eigen is also hairy
         # It may bee that these are
-        eigen : hl.MatrixTable = get_eigen(partitions=partition_base,namenode = nn)
-        eigen = eigen.persist() #60GB
-        hgmd : hl.MatrixTable = load_hgmd_vcf(partitions=partition_base,namenode=nn)
-        hgmd = hgmd.persist() # 6mb
-        primate : hl.MatrixTable = import_primate(partitions=partition_base,namenode = nn)
-        primate = primate.persist() # 600MB
+        #eigen : hl.MatrixTable = get_eigen(partitions=partition_base,namenode = nn)
+        #hgmd : hl.MatrixTable = load_hgmd_vcf(partitions=partition_base,namenode=nn)
+        #primate : hl.MatrixTable = import_primate(partitions=partition_base,namenode = nn)
         clinvar : hl.MatrixTable = load_clinvar(partitions=partition_base,namenode = nn)
-        clinvar = clinvar.persist() #50MB
-        topmed : hl.MatrixTable = get_topmed(partitions=partition_base,namenode = nn)
-        topmed = topmed.persist() # 8.7GB
+        #topmed : hl.MatrixTable = get_topmed(partitions=partition_base,namenode = nn)
         #mpc : hl.MatrixTable = get_mpc()
-        exac : hl.MatrixTable = get_exac(partitions=partition_base,namenode = nn)
-        exac = exac.persist() # 4.6GB
+        #exac : hl.MatrixTable = get_exac(partitions=partition_base,namenode = nn)
         #gc : hl.MatrixTable =  get_gc()
         #omim = get_omim()
 
 
         path = args.path
         families = bch_connect_report_to_seqr_families(path)
-        family = families[0]:
+        family = families[0]
         num_vcfs = len(family.samples)
         partition_count = num_vcfs*partition_base
         dataset = args.project
@@ -447,14 +439,14 @@ if __name__ == "__main__":
         print("Added vep")
         print("Creating index in Elasticsearch and uplaoding VEP-annoated variant...")
 
-
-
-
         mt = annotate_with_genotype_num_alt(mt)
         mt = annotate_with_samples_alt(mt)
         mt = finalize_annotated_table_for_seqr_variants(mt)
         mt = mt.persist()
         print("Added custom fields")
+        print("Repartitioning...")
+        mt = mt.repartition(partition_count)
+        mt = mt.persist()
 
         print("Subsetting and persisting Clinvar...")
         clinvars = clinvar.semi_join_rows(mt.rows())
@@ -464,23 +456,33 @@ if __name__ == "__main__":
         mt = mt.persist()
         print("Added clinvar, unpersisting...")
         clinvars = clinvars.unpersist()
+        print("Repartitioning...")
+        mt = mt.repartition(partition_count)
+        # mt = mt.persist()
 
-        print("Subsetting and perrsisting HGMD...")
-        hgmds = hgmd.semi_join_rows(mt.rows())
-        hgmds = hgmds.persist()
-        print("Adding HGMD...")
-        mt = annotate_with_hgmd(mt, hgmds)
-        mt = mt.persist()
-        print("Added HGMD, unpersisting")
-        hgmds = hgmds.unpersist()
+        # print("Subsetting and perrsisting HGMD...")
+        # hgmds = hgmd.semi_join_rows(mt.rows())
+        # hgmds = hgmds.persist()
+        # print("Adding HGMD...")
+        # mt = annotate_with_hgmd(mt, hgmds)
+        # mt = mt.persist()
+        # print("Added HGMD, unpersisting")
+        # hgmds = hgmds.unpersist()
+        # print("Repartitioning...")
+        # mt = mt.repartition(partition_count)
+        # mt = mt.persist()
 
-        print("Subsetting and persisting Gnomad...")
-        gnomads = gnomad.semi_join_rows(mt.rows())
-        gnomads = gnomads.persist()
-        mt = annotate_with_gnomad(mt, gnomads)
-        mt = mt.persist()
-        print("Added Gnomad, unpersisting...")
-        gnomads = gnomads.unpersist()
+        # print("Subsetting and persisting Gnomad...")
+        # gnomads = gnomad.semi_join_rows(mt.rows())
+        # gnomads = gnomads.persist()
+        # mt = annotate_with_gnomad(mt, gnomads)
+        # mt = mt.persist()
+        # print("Added Gnomad, unpersisting...")
+        # gnomads = gnomads.unpersist()
+        # print("Repartitioning...")
+        # mt = mt.repartition(partition_count)
+        # mt = mt.persist()
+
 
         # print("Subdsetting and persisting CADD")
         # cadds = cadd.semi_join(mt.rows())
@@ -490,6 +492,9 @@ if __name__ == "__main__":
         # mt = mt.persist()
         # print("Added CADD, unpersisting...")
         # cadd = cadds.unpersist()
+        # print("Repartitioning...")
+        # mt = mt.repartition(partition_count)
+        # mt = mt.persist()
 
         # print("Subsetting and persisting eigen...")
         # eigens = eigen.semi_join_rows(mt.rows())
@@ -499,6 +504,9 @@ if __name__ == "__main__":
         # mt  = mt.persist()
         # print("Added Eigen, unpersisting...")
         # eigens = eigens.unpersist()
+        # print("Repartitioning...")
+        # mt = mt.repartition(partition_count)
+        # mt = mt.persist()
 
         # print("Subsetting and persisting Primate...")
         # primates = primate.semi_join_rows(mt.rows())
@@ -508,6 +516,9 @@ if __name__ == "__main__":
         # mt = mt.persist()
         # print("Added primate, unpersisting")
         # primates = primates.unpersist()
+        # print("Repartitioning...")
+        # mt = mt.repartition(partition_count)
+        # mt = mt.persist()
 
         # print("Subsetting and persisting TopMed...")
         # topmeds = topmed.semi_join_rows(mt.rows())
@@ -517,20 +528,25 @@ if __name__ == "__main__":
         # mt = mt.persist()
         # print("Added topmed, unpersisting...")
         # topmeds = topmeds.unpersist()
+        # print("Repartitioning...")
+        # mt = mt.repartition(partition_count)
+        # mt = mt.persist()
 
-        print("Subsetting and persisting ExAc...")
-        exacs = exac.semi_join_rows(mt.rows())
-        exacs = exacs.persist()
-        print("Adding Exac...")
-        mt = annotate_with_exac(mt, exacs)
+        # print("Subsetting and persisting ExAc...")
+        # exacs = exac.semi_join_rows(mt.rows())
+        # exacs = exacs.persist()
+        # print("Adding Exac...")
+        # mt = annotate_with_exac(mt, exacs)
+        # print("Repartitioning...")
+        # mt = mt.repartition(partition_count)
         final = mt.persist()
-        print("added exac, unpersisting")
-        exacs = exacs.unpersist()
+        # print("added exac, unpersisting")
+        # exacs = exacs.unpersist()
         #final = final.unpersist()
 
         print("Preparing for export")
         final = final.repartition(40000) # let's try this out....
-        famids = list(map(lambda x: x.family_id, families))
+        #famids = list(map(lambda x: x.family_id, families))
         export(final,index_name, args.tsv)
 
     else:
