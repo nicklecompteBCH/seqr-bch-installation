@@ -395,6 +395,7 @@ if __name__ == "__main__":
     p.add_argument("-tsv","--tsv", action="store_true")
     p.add_argument("-parts","--partitions")
     p.add_argument("-nn","--namenode")
+    p.add_argument("-ip","--index_prefix")
     args = p.parse_args()
     print(str(hl.utils.hadoop_ls('/')))
     if not args.clinvar:
@@ -429,6 +430,8 @@ if __name__ == "__main__":
         dataset = args.project
         index_name = dataset + "__wes__" + "GRCh37__" + "VARIANTS__" + time.strftime("%Y%m%d") + "family_" + family.family_id #+ sample.family_id
         index_name = index_name.lower()
+        if args.index_prefix:
+            index_name = args.index_prefix + index_name
         mt = add_family_to_hail(family)
         mt = mt.persist()
         print("Added families")
