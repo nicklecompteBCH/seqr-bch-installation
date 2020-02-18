@@ -402,12 +402,12 @@ if __name__ == "__main__":
         partition_base = int(args.partitions)
         nn = args.namenode
         # gnomAD has loaded fine but just in case - 2x partitions for it
-        #gnomad = read_gnomad_ht(GnomadDataset.Exomes37,partitions=2*partition_base,namenode = nn)
+        #gnomad = read_gnomad_ht(GnomadDataset.Exomes37,partitions=partition_base,namenode = nn)
 
 
         # CADD seems hairy for whatever reason
         # do partition_base * 10
-        #cadd : hl.Table = get_cadd(partitions=partition_base*10,namenode = nn)
+        #cadd : hl.Table = get_cadd(partitions=partition_base,namenode = nn)
         # Eigen is also hairy
         # It may bee that these are
         #eigen : hl.MatrixTable = get_eigen(partitions=partition_base,namenode = nn)
@@ -435,6 +435,7 @@ if __name__ == "__main__":
 
         print("Subsetting and persisting Clinvar...")
         clinvars = clinvar.semi_join_rows(mt.rows())
+        clinvars = clinvar.repartition(partition_count)
         clinvars = clinvars.persist()
         print("Adding Clinvar...")
         mt = annotate_with_clinvar(mt, clinvars)
@@ -457,16 +458,17 @@ if __name__ == "__main__":
         # mt = mt.repartition(partition_count)
         # mt = mt.persist()
 
-        # print("Subsetting and persisting Gnomad...")
-        # gnomads = gnomad.semi_join_rows(mt.rows())
-        # gnomads = gnomads.persist()
-        # mt = annotate_with_gnomad(mt, gnomads)
-        # mt = mt.persist()
-        # print("Added Gnomad, unpersisting...")
-        # gnomads = gnomads.unpersist()
-        # print("Repartitioning...")
-        # mt = mt.repartition(partition_count)
-        # mt = mt.persist()
+        print("Subsetting and persisting Gnomad...")
+        gnomads = gnomad.semi_join_rows(mt.rows())
+        gnmods = gnomads.repartition(partition_count)
+        gnomads = gnomads.persist()
+        mt = annotate_with_gnomad(mt, gnomads)
+        mt = mt.persist()
+        print("Added Gnomad, unpersisting...")
+        gnomads = gnomads.unpersist()
+        print("Repartitioning...")
+        mt = mt.repartition(partition_count)
+        mt = mt.persist()
 
 
         # print("Subdsetting and persisting CADD")
