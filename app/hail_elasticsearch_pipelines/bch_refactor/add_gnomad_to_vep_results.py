@@ -68,7 +68,7 @@ GNOMAD_SEQR_VDS_PATHS_oh_one = {
     "exomes_37": "s3://seqr-resources/GRCh37/gnomad/gnomad.exomes.r2.0.2.sites.grch37.split.vds",
     "exomes_38": "s3://seqr-resources/GRCh38/gnomad/gnomad.exomes.r2.0.2.sites.liftover_grch38.split.vds",
 
-    "genomes_37": #"s3://seqr-resources/GRCh37/gnomad/gnomad.genomes.r2.0.2.sites.grch37.split.vds",
+    "genomes_37": "",#"s3://seqr-resources/GRCh37/gnomad/gnomad.genomes.r2.0.2.sites.grch37.split.vds",
     "genomes_38": "s3://seqr-resources/GRCh38/gnomad/gnomad.genomes.r2.0.2.sites.liftover_grch38.split.vds",
 }
 

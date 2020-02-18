@@ -177,9 +177,9 @@ def add_vep_to_vcf(mt):
 def load_hgmd_vcf(partitions : int = None,namenode:str=""):
 
     mt = import_vcf(
-        'hdfs://' + namenode + 'user/hadoop/hgmd_pro_2018.4_hg19.vcf.gz',
+        'hdfs://' + namenode + '/user/hadoop/data/hgmd_pro_2018.4_hg19.vcf.gz',
         "37",
-        "hgmd_grch37",min_partitions=partitions
+        "hgmd_grch37",min_partitions=partitions, force_bgz=True
     )
     return mt
 
@@ -431,109 +431,107 @@ if __name__ == "__main__":
 
         path = args.path
         families = bch_connect_report_to_seqr_families(path)
-        for family in families:
-            num_vcfs = len(family.samples)
-            partition_count = num_vcfs*partition_base
-            dataset = args.project
-            index_name = dataset + "__wes__" + "GRCh37__" + "VARIANTS__" + time.strftime("%Y%m%d") + "family_" + family.family_id #+ sample.family_id
+        family = families[0]:
+        num_vcfs = len(family.samples)
+        partition_count = num_vcfs*partition_base
+        dataset = args.project
+        index_name = dataset + "__wes__" + "GRCh37__" + "VARIANTS__" + time.strftime("%Y%m%d") + "family_" + family.family_id #+ sample.family_id
+        index_name = index_name.lower()
+        mt = add_family_to_hail(family)
+        mt = mt.persist()
+        print("Added families")
 
-            mt = add_family_to_hail(family)
-            mt = mt.repartition(partition_count)
-            mt = mt.persist()
-            print("Added families")
-
-            mt = add_vep_to_vcf(mt)
-            #partition_count = parition_count + num_vcfs # assume each annotation adds a VCF's worth of data per VCF
-            mt = mt.repartition(partition_count)
-            mt = mt.persist()
-            print("Added vep")
-            print("Creating index in Elasticsearch and uplaoding VEP-annoated variant...")
+        mt = add_vep_to_vcf(mt)
+        #partition_count = parition_count + num_vcfs # assume each annotation adds a VCF's worth of data per VCF
+        mt = mt.persist()
+        print("Added vep")
+        print("Creating index in Elasticsearch and uplaoding VEP-annoated variant...")
 
 
 
 
-            mt = annotate_with_genotype_num_alt(mt)
-            mt = annotate_with_samples_alt(mt)
-            mt = finalize_annotated_table_for_seqr_variants(mt)
-            mt = mt.persist()
-            print("Added custom fields")
+        mt = annotate_with_genotype_num_alt(mt)
+        mt = annotate_with_samples_alt(mt)
+        mt = finalize_annotated_table_for_seqr_variants(mt)
+        mt = mt.persist()
+        print("Added custom fields")
 
-            print("Subsetting and persisting Clinvar...")
-            clinvars = clinvar.semi_join_rows(mt.rows())
-            clinvars = clinvars.persist()
-            print("Adding Clinvar...")
-            mt = annotate_with_clinvar(mt, clinvars)
-            mt = mt.persist()
-            print("Added clinvar, unpersisting...")
-            clinvars = clinvars.unpersist()
+        print("Subsetting and persisting Clinvar...")
+        clinvars = clinvar.semi_join_rows(mt.rows())
+        clinvars = clinvars.persist()
+        print("Adding Clinvar...")
+        mt = annotate_with_clinvar(mt, clinvars)
+        mt = mt.persist()
+        print("Added clinvar, unpersisting...")
+        clinvars = clinvars.unpersist()
 
-            print("Subsetting and perrsisting HGMD...")
-            hgmds = hgmd.semi_join_rows(mt.rows())
-            hgmds = hgmds.persist()
-            print("Adding HGMD...")
-            mt = annotate_with_hgmd(mt, hgmds)
-            mt = mt.persist()
-            print("Added HGMD, unpersisting")
-            hgmds = hgmds.unpersist()
+        print("Subsetting and perrsisting HGMD...")
+        hgmds = hgmd.semi_join_rows(mt.rows())
+        hgmds = hgmds.persist()
+        print("Adding HGMD...")
+        mt = annotate_with_hgmd(mt, hgmds)
+        mt = mt.persist()
+        print("Added HGMD, unpersisting")
+        hgmds = hgmds.unpersist()
 
-            print("Subsetting and persisting Gnomad...")
-            gnomads = gnomad.semi_join_rows(mt.rows())
-            gnomads = gnomads.persist()
-            mt = annotate_with_gnomad(mt, gnomads)
-            mt = mt.persist()
-            print("Added Gnomad, unpersisting...")
-            gnomads = gnomads.unpersist()
+        print("Subsetting and persisting Gnomad...")
+        gnomads = gnomad.semi_join_rows(mt.rows())
+        gnomads = gnomads.persist()
+        mt = annotate_with_gnomad(mt, gnomads)
+        mt = mt.persist()
+        print("Added Gnomad, unpersisting...")
+        gnomads = gnomads.unpersist()
 
-            # print("Subdsetting and persisting CADD")
-            # cadds = cadd.semi_join(mt.rows())
-            # cadds = cadd.persist()
-            # print("Adding CADD...")
-            # mt = annotate_with_cadd(mt, cadds)
-            # mt = mt.persist()
-            # print("Added CADD, unpersisting...")
-            # cadd = cadds.unpersist()
+        # print("Subdsetting and persisting CADD")
+        # cadds = cadd.semi_join(mt.rows())
+        # cadds = cadd.persist()
+        # print("Adding CADD...")
+        # mt = annotate_with_cadd(mt, cadds)
+        # mt = mt.persist()
+        # print("Added CADD, unpersisting...")
+        # cadd = cadds.unpersist()
 
-            # print("Subsetting and persisting eigen...")
-            # eigens = eigen.semi_join_rows(mt.rows())
-            # eigens = eigens.persist()
-            # print("Adding eigen...")
-            # mt = annotate_with_eigen(mt, eigens)
-            # mt  = mt.persist()
-            # print("Added Eigen, unpersisting...")
-            # eigens = eigens.unpersist()
+        # print("Subsetting and persisting eigen...")
+        # eigens = eigen.semi_join_rows(mt.rows())
+        # eigens = eigens.persist()
+        # print("Adding eigen...")
+        # mt = annotate_with_eigen(mt, eigens)
+        # mt  = mt.persist()
+        # print("Added Eigen, unpersisting...")
+        # eigens = eigens.unpersist()
 
-            # print("Subsetting and persisting Primate...")
-            # primates = primate.semi_join_rows(mt.rows())
-            # primates = primates.persist()
-            # print("Adding primate...")
-            # mt = annotate_with_primate(mt, primates)
-            # mt = mt.persist()
-            # print("Added primate, unpersisting")
-            # primates = primates.unpersist()
+        # print("Subsetting and persisting Primate...")
+        # primates = primate.semi_join_rows(mt.rows())
+        # primates = primates.persist()
+        # print("Adding primate...")
+        # mt = annotate_with_primate(mt, primates)
+        # mt = mt.persist()
+        # print("Added primate, unpersisting")
+        # primates = primates.unpersist()
 
-            # print("Subsetting and persisting TopMed...")
-            # topmeds = topmed.semi_join_rows(mt.rows())
-            # topmeds = topmeds.persist()
-            # print("Adding topmed")
-            # mt = annotate_with_topmed(mt, topmeds)
-            # mt = mt.persist()
-            # print("Added topmed, unpersisting...")
-            # topmeds = topmeds.unpersist()
+        # print("Subsetting and persisting TopMed...")
+        # topmeds = topmed.semi_join_rows(mt.rows())
+        # topmeds = topmeds.persist()
+        # print("Adding topmed")
+        # mt = annotate_with_topmed(mt, topmeds)
+        # mt = mt.persist()
+        # print("Added topmed, unpersisting...")
+        # topmeds = topmeds.unpersist()
 
-            print("Subsetting and persisting ExAc...")
-            exacs = exac.semi_join_rows(mt.rows())
-            exacs = exacs.persist()
-            print("Adding Exac...")
-            mt = annotate_with_exac(mt, exacs)
-            final = mt.persist()
-            print("added exac, unpersisting")
-            exacs = exacs.unpersist()
-            #final = final.unpersist()
+        print("Subsetting and persisting ExAc...")
+        exacs = exac.semi_join_rows(mt.rows())
+        exacs = exacs.persist()
+        print("Adding Exac...")
+        mt = annotate_with_exac(mt, exacs)
+        final = mt.persist()
+        print("added exac, unpersisting")
+        exacs = exacs.unpersist()
+        #final = final.unpersist()
 
-            print("Preparing for export")
-            final = final.repartition(40000) # let's try this out....
-            famids = list(map(lambda x: x.family_id, families))
-            export(final,index_name, args.tsv)
+        print("Preparing for export")
+        final = final.repartition(40000) # let's try this out....
+        famids = list(map(lambda x: x.family_id, families))
+        export(final,index_name, args.tsv)
 
     else:
         load_clinvar(es_host=ELASTICSEARCH_HOST)
