@@ -402,8 +402,8 @@ if __name__ == "__main__":
         #gnomad.describe()
         partition_base = int(args.partitions)
         nn = args.namenode
-        # gnomAD has loaded fine but just in case - 2x partitions for it
-        #gnomad = read_gnomad_ht(GnomadDataset.Exomes37,partitions=partition_base,namenode = nn)
+
+        gnomad = read_gnomad_ht(GnomadDataset.Exomes37,partitions=partition_base,namenode = nn)
 
 
         # CADD seems hairy for whatever reason
