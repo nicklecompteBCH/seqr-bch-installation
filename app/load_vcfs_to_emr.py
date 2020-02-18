@@ -370,10 +370,11 @@ def export_table_to_tsv(final : hl.MatrixTable, index_prefix: str):
     final_export = final_t.export(filename)
     print('uploaded file!')
 
-def export(t,index_name, tsv):
-    if tsv:
+def export(t,index_name, tsv:bool,tsves:bool):
+    # First export VCF to S3:
+    if tsv or tsves:
         export_table_to_tsv(t, index_name)
-    else:
+    if (not tsv) or tsves:
         export_table_to_elasticsearch(
             t,
             ELASTICSEARCH_HOST,
@@ -393,6 +394,7 @@ if __name__ == "__main__":
     p.add_argument("-p","--path",help="Filepath of csv from BCH_Connect seqr report.")
     p.add_argument("-proj","--project")
     p.add_argument("-tsv","--tsv", action="store_true")
+    p.add_argument("-te","--tsves",action="store_true")
     p.add_argument("-parts","--partitions")
     p.add_argument("-nn","--namenode")
     p.add_argument("-ip","--index_prefix")
@@ -557,7 +559,7 @@ if __name__ == "__main__":
         print("Preparing for export")
         #final = final.repartition(40000) # let's try this out....
         #famids = list(map(lambda x: x.family_id, families))
-        export(final,index_name, args.tsv)
+        export(final,index_name, args.tsv,args.tsves)
 
     else:
         load_clinvar(es_host=ELASTICSEARCH_HOST)
