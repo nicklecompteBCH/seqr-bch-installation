@@ -436,7 +436,7 @@ if __name__ == "__main__":
         for family in families:
             partition_count = partition_base
             dataset = args.project
-            index_name = dataset + "__wes__" + "GRCh37__" + "VARIANTS__" + time.strftime("%Y%m%d")
+            index_name = dataset + "_" + family.family_id + "__wes__" + "GRCh37__" + "VARIANTS__" + time.strftime("%Y%m%d")
             index_name = index_name.lower()
             if args.index_prefix:
                 index_name = args.index_prefix + index_name
