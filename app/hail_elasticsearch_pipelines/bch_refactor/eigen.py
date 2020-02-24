@@ -4,7 +4,7 @@ from hail_elasticsearch_pipelines.hail_scripts.v02.utils.hail_utils import impor
 def get_eigen(partitions : int = None,namenode : str = ""):
 
     ht = import_vcf(
-        "hdfs://" + namenode + "/user/hadoop/data/EIGEN_coding_noncoding.grch37.vcf.gz",
+        "hdfs://" + namenode + "/user/hdfs/data/EIGEN_coding_noncoding.grch37.vcf.gz",
         "37",
         "eigen",
         min_partitions=partitions,

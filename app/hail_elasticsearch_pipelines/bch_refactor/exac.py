@@ -4,7 +4,7 @@ from hail_elasticsearch_pipelines.hail_scripts.v02.utils.hail_utils import impor
 def get_exac(partitions : int = None,namenode : str = ""):
 
     ht = import_vcf(
-        "hdfs://" + namenode + "/user/hadoop/data/ExAC.r1.sites.vep.vcf.gz",
+        "hdfs://" + namenode + "/user/hdfs/data/ExAC.r1.sites.vep.vcf.gz",
         "37",
         "exac",
         min_partitions=partitions,

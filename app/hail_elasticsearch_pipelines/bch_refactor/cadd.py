@@ -30,8 +30,8 @@ def import_cadd_table(path: str, genome_version: str="37", partitions : int = No
 
 def get_cadd(partitions : int = None,namenode : str = ""):
 
-    snvs_ht = import_cadd_table("hdfs://" + namenode  + "/user/hadoop/data/whole_genome_SNVs.v1.4.tsv.bgz",partitions=partitions)
-    indel_ht = import_cadd_table("hdfs://" + namenode + "/user/hadoop/data/InDels.v1.4.tsv.bgz",partitions=partitions)
+    snvs_ht = import_cadd_table("hdfs://" + namenode  + "/user/hdfs/data/whole_genome_SNVs.v1.4.tsv.bgz",partitions=partitions)
+    indel_ht = import_cadd_table("hdfs://" + namenode + "/user/hdfs/data/InDels.v1.4.tsv.bgz",partitions=partitions)
 
     ht = snvs_ht.union(indel_ht)
     if partitions:

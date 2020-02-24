@@ -109,7 +109,7 @@ def read_gnomad_ht(
 ) -> hl.MatrixTable:
     #gnomad_s3_path = gnomad_version.get_bch_s3_path()
     #hdfs_path = add_ht_to_hdfs("GRCh37/gnomad/","seqr-resources","gnomad")
-    gnomad_hailtable = hl.import_vcf("hdfs://" + namenode + "/user/hadoop/data/" + GNOMAD_HT_PATHS['exomes_37'],min_partitions=partitions)
+    gnomad_hailtable = hl.import_vcf("hdfs://" + namenode + "/user/hdfs/data/" + GNOMAD_HT_PATHS['exomes_37'],min_partitions=partitions)
     if subset:
         locus_expr = hl.parse_locus_interval(subset.to_hail_expr())
         gnomad_hailtable = gnomad_hailtable.filter(hl.is_defined(gnomad_hailtable[locus_expr]))

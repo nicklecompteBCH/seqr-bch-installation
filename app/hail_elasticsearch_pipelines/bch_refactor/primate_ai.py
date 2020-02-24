@@ -4,7 +4,7 @@ from hail_elasticsearch_pipelines.hail_scripts.v02.utils.hail_utils import write
 def import_primate(partitions : int = None,namenode : str = ""):
 
     ht = import_vcf(
-        "hdfs://" + namenode + "/user/hadoop/data/PrimateAI_scores_v0.2.vcf.gz",
+        "hdfs://" + namenode + "/user/hdfs/data/PrimateAI_scores_v0.2.vcf.gz",
         "37",
         "primate_ai",
         min_partitions=partitions,
