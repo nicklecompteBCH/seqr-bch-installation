@@ -28,7 +28,7 @@ class ElasticsearchClient(BaseElasticsearchClient):
         num_shards :int = 10,
         delete_index_before_exporting :bool = True,
         elasticsearch_write_operation :str = ELASTICSEARCH_INDEX,
-        ignore_elasticsearch_write_errors :bool = False,
+        ignore_elasticsearch_write_errors :bool = True,
         elasticsearch_mapping_id=None,
         field_name_to_elasticsearch_type_map=None,
         disable_doc_values_for_fields=(),

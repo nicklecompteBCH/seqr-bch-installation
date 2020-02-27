@@ -9,6 +9,6 @@ def get_mpc():
 def annotate_with_mpc(ht : hl.MatrixTable, mpc : hl.MatrixTable):
     mpc.describe()
     newht = ht.annotate_rows(
-        MPC = mpc.index_rows(ht.locus,ht.alleles).MPC
+        MPC = mpc.index_rows(ht.locus,ht.alleles).info.MPC
     )
     return newht
