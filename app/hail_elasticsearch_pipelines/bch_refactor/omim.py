@@ -12,6 +12,6 @@ def get_omim():
 def annotate_with_omim(ht : hl.MatrixTable, omim : hl.MatrixTable):
     omim.describe()
     newht = ht.annotate_rows(
-        omim = omim.index_rows(ht.mainTranscript.gene_id)['Mim']
+        omim = omim.index_rows(ht.vep.transcript_consequences[0].gene_id)['MIM']
     )
     return newht
