@@ -473,12 +473,14 @@ if __name__ == "__main__":
             cadd = hl.read_table('hdfs:///user/hdfs/data/cadd_snv.mt').semi_join(mt.rows())
             print("Adding CADD...")
             mt = annotate_with_cadd(mt, cadd)
+            mt = mt.repartition(72)
             mt.write(filename + "_caddsnv.mt",overwrite=True)
             mt = hl.read_matrix_table(filename + "_caddsnv.mt")
 
             print("Subsetting and persisting Gnomad...")
             gnomad =  hl.read_matrix_table('hdfs:///user/hdfs/data/gnomad.mt').semi_join_rows(mt.rows())
             mt = annotate_with_gnomad(mt, gnomad)
+            mt = mt.repartition(72)
             mt.write(filename + "_gnomad.mt",overwrite=True)
             mt = hl.read_matrix_table(filename + "_gnomad.mt")
 
@@ -486,6 +488,7 @@ if __name__ == "__main__":
             eigen =  hl.read_matrix_table('hdfs:///user/hdfs/data/eigen.mt').semi_join_rows(mt.rows())
             print("Adding eigen...")
             mt = annotate_with_eigen(mt, eigen)
+            mt = mt.repartition(72)
             mt = mt.write(filename + "_eigen.mt",overwrite=True)
             mt = hl.read_matrix_table(filename + "_eigen.mt")
 
@@ -493,6 +496,7 @@ if __name__ == "__main__":
             primate =  hl.read_matrix_table('hdfs:///user/hdfs/data/primate.mt').semi_join_rows(mt.rows())
             print("Adding primate...")
             mt = annotate_with_primate(mt, primate)
+            mt = mt.repartition(72)
             mt = mt.write(filename + "_primate.mt",overwrite=True)
             mt = hl.read_matrix_table(filename + "_primate.mt")
 
@@ -500,6 +504,7 @@ if __name__ == "__main__":
             topmed =  hl.read_matrix_table('hdfs:///user/hdfs/data/topmed.mt').semi_join_rows(mt.rows())
             print("Adding topmed")
             mt = annotate_with_topmed(mt, topmed)
+            mt = mt.repartition(72)
             mt = mt.write(filename + "_topmed.mt",overwrite=True)
             mt = hl.read_matrix_table(filename + "_topmed.mt")
 
@@ -508,6 +513,7 @@ if __name__ == "__main__":
             exac =  hl.read_matrix_table('hdfs:///user/hdfs/data/exac.mt').semi_join_rows(mt.rows())
             print("Adding Exac...")
             mt = annotate_with_exac(mt, exac)
+            mt = mt.repartition(72)
             mt = mt.write(filename + "_exac.mt",overwrite=True)
             mt = hl.read_matrix_table(filename + "_exac.mt")
 
@@ -516,6 +522,7 @@ if __name__ == "__main__":
             mpc =  hl.read_matrix_table('hdfs:///user/hdfs/data/mpc.mt').semi_join_rows(mt.rows())
             print("Adding MPC...")
             mt = annotate_with_mpc(mt, mpc)
+            mt = mt.repartition(72)
             mt = mt.write(filename + "_mpc.mt",overwrite=True)
             mt = hl.read_matrix_table(filename + "_mpc.mt")
 
@@ -524,6 +531,7 @@ if __name__ == "__main__":
             okg =  hl.read_matrix_table('hdfs:///user/hdfs/data/onekg.mt').semi_join_rows(mt.rows())
             print("Adding 1kg...")
             mt = annotate_with_onekg(mt, okg)
+            mt = mt.repartition(72)
             mt = mt.write(filename + "_okg.mt",overwrite=True)
             mt = hl.read_matrix_table(filename + "_okg.mt")
 
@@ -533,7 +541,7 @@ if __name__ == "__main__":
             print("Adding Omim...")
             mt = annotate_with_omim(mt, omim)
 
-            final = mt.persist()
+            final = mt
             #mt = mt.persist()
 
 
