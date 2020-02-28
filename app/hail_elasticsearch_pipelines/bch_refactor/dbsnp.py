@@ -5,7 +5,7 @@ from hail_elasticsearch_pipelines.hail_scripts.v02.utils.hail_utils import impor
 
 def annotate_with_dbsnp(ht : hl.MatrixTable, dbsnpt : hl.Table):
     newht = ht.annotate_rows(
-        dbsnp = dbsnpt.index(ht.locus,ht.allele)
+        dbsnp = dbsnpt.index(ht.locus,ht.alleles)
     )
     return newht
 
