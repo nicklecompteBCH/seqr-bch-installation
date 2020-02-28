@@ -154,7 +154,7 @@ def add_family_to_hail(family:SeqrFamily,partition_count:int) -> hl.MatrixTable:
     for sample in family.samples:
         filename = add_seqr_sample_to_locals3(sample)
         mt = add_vcf_to_hail(sample, "hdfs:///user/hdfs/" + filename)
-        if not fanmar::
+        if not fanmar:
             if len(family.samples) == 1:
                 return mt
             else:
@@ -370,6 +370,11 @@ def finalize_annotated_table_for_seqr_variants(mt: hl.MatrixTable) -> hl.MatrixT
         xpos=get_expr_for_xpos(mt.locus)
     )
     return mt
+
+def add_sorted_transcript_consequences(mt: hl.MatrixTable):
+    newmt = mt.annotate_rows(
+        sortedTranscriptConsequences
+    )
 
 def export_table_to_tsv(final : hl.MatrixTable, index_prefix: str):
     print("Flattening MatrixTable...")
