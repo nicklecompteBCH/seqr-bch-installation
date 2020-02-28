@@ -347,7 +347,7 @@ def finalize_annotated_table_for_seqr_variants(mt: hl.MatrixTable) -> hl.MatrixT
         chrom=get_expr_for_contig(mt.locus),
         #clinvar_clinical_significance=clinvar_mt.index_rows(mt.row_key).clinical_significance,
         domains=get_expr_for_vep_protein_domains_set(vep_transcript_consequences_root=mt.vep.transcript_consequences),
-        geneIds=hl.set(mt.vep.transcript_consequences.map(lambda c: c.gene_id))
+        geneIds=hl.set(mt.vep.transcript_consequences.map(lambda c: c.gene_id)),
         #gene_ids=clinvar_mt.index_rows(mt.locus,mt.alleles).gene_ids,
         # gene_id_to_consequence_json=get_expr_for_vep_gene_id_to_consequence_map(
         #     vep_sorted_transcript_consequences_root=mt.sortedTranscriptConsequences,
