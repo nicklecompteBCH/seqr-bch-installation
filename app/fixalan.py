@@ -406,7 +406,7 @@ def export(t,index_name, tsv:bool,tsves:bool,op=ELASTICSEARCH_INDEX):
         )
 
 def table_exists(path):
-    (hl.utils.hadoop_is_dir(filename) or hl.utils.hadoop_is_file(filename)# exists clinvar:
+    (hl.utils.hadoop_is_dir(filename) or hl.utils.hadoop_is_file(filename))# exists clinvar:
 
 if __name__ == "__main__":
     import argparse
@@ -425,9 +425,6 @@ if __name__ == "__main__":
         #gnomad.describe()
         partition_base = int(args.partitions)
         nn = args.namenode
-
-        gnomad = read_gnomad_ht(GnomadDataset.Exomes37,partitions=partition_base,namenode = nn)
-
 
         # CADD seems hairy for whatever reason
         # do partition_base * 10
