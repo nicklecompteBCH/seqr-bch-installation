@@ -457,8 +457,8 @@ if __name__ == "__main__":
             print("Added families")
 
             print("Subsetting and persisting DBSNP...")
-            gnomad =  hl.read_table('hdfs:///user/hdfs/data/dbsnp.ht').semi_join(mt.rows())
-            mt = annotate_with_gnomad(mt, gnomad)
+            dbsnp =  hl.read_table('hdfs:///user/hdfs/data/dbsnp.ht').semi_join(mt.rows())
+            mt = annotate_with_dbsnp(mt, dbsnp)
             mt.write(filename + "_dbsnp.mt",overwrite=True)
             mt = hl.read_matrix_table(filename + "_dbsnp.mt")
 
