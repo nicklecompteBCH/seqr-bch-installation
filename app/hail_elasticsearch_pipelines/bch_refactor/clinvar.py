@@ -101,11 +101,11 @@ CLINVAR_GOLD_STARS_LOOKUP = {
 
 }
 
-def annotate_with_clinvar(mt: hl.MatrixTable, clinvar_mt: hl.MatrixTable) -> hl.MatrixTable:
+def annotate_with_clinvar(mt: hl.MatrixTable, clinvar_mt: hl.Table) -> hl.MatrixTable:
     #joined_mt = clinvar_mt.semi_join_rows(mt)
     mt = mt.annotate_rows(
-        allele_id = clinvar_mt.index_rows(mt.row_key).allele_id,
-        clinvar_clinical_significance = clinvar_mt.index_rows(mt.row_key).clinvar_clinical_significance,
-        gold_stars = clinvar_mt.index_rows(mt.row_key).gold_stars
+        allele_id = clinvar_mt.index(mt.row_key).allele_id,
+        clinvar_clinical_significance = clinvar_mt.index(mt.row_key).clinvar_clinical_significance,
+        gold_stars = clinvar_mt.index(mt.row_key).gold_stars
     )
     return mt

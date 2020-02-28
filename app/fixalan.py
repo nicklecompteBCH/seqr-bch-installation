@@ -452,7 +452,7 @@ if __name__ == "__main__":
             filename = 'hdfs:///user/hdfs/out/' + dataset + family.family_id
             if args.index_prefix:
                 index_name = args.index_prefix + index_name
-            mt = hl.read_matrix_table(filename + '_hgmd.mt')
+            mt = hl.read_matrix_table(filename + 'vep.mt')
             mt = mt.persist()
             print("Added families")
 

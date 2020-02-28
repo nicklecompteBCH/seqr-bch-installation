@@ -148,7 +148,7 @@ def add_family_to_hail(family:SeqrFamily,partition_count:int) -> hl.MatrixTable:
     for sample in family.samples:
         filename = add_seqr_sample_to_locals3(sample)
         mt = add_vcf_to_hail(sample, "hdfs:///user/hdfs/" + filename)
-        if not fanmar::
+        if not fanmar:
             if len(family.samples) == 1:
                 return mt
             else:
@@ -180,21 +180,12 @@ def add_vep_to_vcf(mt):
     mt = run_vep(mt, GENOME_VERSION)
     return mt
 
-def load_hgmd_vcf(partitions : int = None,namenode:str=""):
-
-    mt = import_vcf(
-        'hdfs://' + namenode + '/user/hadoop/data/hgmd_pro_2018.4_hg19.vcf.gz',
-        "37",
-        "hgmd_grch37",min_partitions=partitions, force_bgz=True
-    )
-    return mt
-
 
 def annotate_with_hgmd(mt: hl.MatrixTable, hgmd_mt: hl.MatrixTable) -> hl.MatrixTable:
     mt = mt.annotate_rows(
         hgmd=hl.struct(
-            accession=hgmd_mt.index_rows(mt.row_key).rsid,
-            hgmdclass = hgmd_mt.index_rows(mt.row_key).info.CLASS
+            accession=hgmd_mt.index(mt.row_key).rsid,
+            hgmdclass = hgmd_mt.index(mt.row_key).info.CLASS
         )
     )
     return mt
@@ -341,7 +332,7 @@ def finalize_annotated_table_for_seqr_variants(mt: hl.MatrixTable) -> hl.MatrixT
         chrom=get_expr_for_contig(mt.locus),
         #clinvar_clinical_significance=clinvar_mt.index_rows(mt.row_key).clinical_significance,
         domains=get_expr_for_vep_protein_domains_set(vep_transcript_consequences_root=mt.vep.transcript_consequences),
-        #gene_ids=clinvar_mt.index_rows(mt.locus,mt.alleles).gene_ids,
+        geneIds=hl.set(mt.vep.transcript_consequences.map(lambda c: c.gene_id)),
         # gene_id_to_consequence_json=get_expr_for_vep_gene_id_to_consequence_map(
         #     vep_sorted_transcript_consequences_root=mt.sortedTranscriptConsequences,
         #     gene_ids=clinvar_mt.gene_ids
@@ -394,7 +385,7 @@ def export(t,index_name, tsv:bool,tsves:bool,op=ELASTICSEARCH_INDEX):
         )
 
 def table_exists(path):
-    (hl.utils.hadoop_is_dir(filename) or hl.utils.hadoop_is_file(filename)# exists clinvar:
+    (hl.utils.hadoop_is_dir(filename) or hl.utils.hadoop_is_file(filename))# exists clinvar:
 
 if __name__ == "__main__":
     import argparse
@@ -450,82 +441,127 @@ if __name__ == "__main__":
             print("Adding vep")
             mt = add_vep_to_vcf(mt)
             #partition_count = parition_count + num_vcfs # assume each annotation adds a VCF's worth of data per VCF
-            mt = mt.persist()
-            print("Added vep")
-            partition_count = 2*partition_count # VEP adds "twice" as much info (ish)
+            print("Added vep, writing partial results")
+            mt = mt.repartition(partition_count)
+            mt.write(filename + "_vep.mt")
+            mt = hl.read_matrix_table(filename + "_vep.mt")
 
 
             mt = annotate_with_genotype_num_alt(mt)
             mt = annotate_with_samples_alt(mt)
             mt = finalize_annotated_table_for_seqr_variants(mt)
-            mt = mt.persist()
+            mt.write(filename + "_fields.mt")
+            mt = hl.read_matrix_table(filename + "_fields.mt")
 
-            print("Exporting partial results to elasticsearch")
-            export(mt,index_name,args.tsv,args.tsves,ELASTICSEARCH_INDEX)
-            print("Dropping all non-essential fields")
-            mt = mt.select_rows(mt.variant_id)
-            mt = mt.persist()
-
-            if not table_exists(filename + "_clinvar.mt"):
-                print("Subsetting and persisting Clinvar...")
-                clinvar = hl.read_matrix_table('hdfs:///user/hdfs/out/clinvar.mt').semi_join_rows(mt.rows())
-                clinvar = clinvar.persist()
-                print("Adding Clinvar...")
-                mt = annotate_with_clinvar(mt, clinvar)
-                mt.write(filename + "_clinvar.mt",overwrite=True)
+            print("Subsetting and persisting Clinvar...")
+            clinvar = hl.read_matrix_table('hdfs:///user/hdfs/out/clinvar.mt').semi_join_rows(mt.rows())
+            clinvar = clinvar.persist()
+            print("Adding Clinvar...")
+            mt = annotate_with_clinvar(mt, clinvar)
+            mt.write(filename + "_clinvar.mt",overwrite=True)
             mt = hl.read_matrix_table(filename + "_clinvar.mt")
 
-            if not table_exists(filename + "_hgmd.mt"):
-                print("Subsetting and perrsisting HGMD...")
-                hgmds = hl.read_matrix_table('hdfs:///user/hdfs/out/hgmd.mt').semi_join_rows(mt.rows())
-                print("Adding HGMD...")
-                mt = annotate_with_hgmd(mt, hgmds)
-                mt.write(filename + "_hgmd.mt",overwrite=True)
-            mt = hl.read_matrix_table(filename + "_hgmd.mt")
+            # print("Adding SpliceAI")
+            # sp = hl.read_matrix_table('hdfs:///user/hdfs/data/splice_ai.mt').semi_join_rows(mt.rows())
+            # mt = mt.annotate_rows(
+            #     spliceai = sp.index_rows(mt.locus,mt.alleles)
+            # )
+            # mt.write(filename + "_splice.mt",overwrite=True)
+            # mt = hl.read_matrix_table(filename + "_splice.mt")
 
-            if not table_exists(filename + "_gnomad.mt"):
-                print("Subsetting and persisting Gnomad...")
-                gnomad =  hl.import_matrix_table('hdfs:///user/hdfs/data/gnomad.mt').semi_join_rows(mt.rows())
-                mt = annotate_with_gnomad(mt, gnomad)
-                mt.write(filename + "_gnomad.mt",overwrite=True)
+            print("Subsetting and persisting DBSNP...")
+            dbsnp =  hl.read_table('hdfs:///user/hdfs/data/dbsnp.ht').semi_join(mt.rows())
+            mt = annotate_with_dbsnp(mt, dbsnp)
+            mt.write(filename + "_dbsnp.mt",overwrite=True)
+            mt = hl.read_matrix_table(filename + "_dbsnp.mt")
+
+            print("Subdsetting and persisting CADD indels")
+            cadd = hl.read_table('hdfs:///user/hdfs/data/cadd_indels.mt').semi_join(mt.rows())
+            print("Adding CADD...")
+            mt = annotate_with_cadd(mt, cadd)
+            mt.write(filename + "_caddind.mt",overwrite=True)
+            mt = hl.read_matrix_table(filename + "_caddind.mt")
+
+            # print("Subdsetting and persisting CADD SNV")
+            # cadd = hl.read_table('hdfs:///user/hdfs/data/cadd_snv.mt').semi_join(mt.rows())
+            # print("Adding CADD...")
+            # mt = annotate_with_cadd(mt, cadd)
+            # mt = mt.repartition(72)
+            # mt.write(filename + "_caddsnv.mt",overwrite=True)
+            # mt = hl.read_matrix_table(filename + "_caddsnv.mt")
+
+            print("Subsetting and persisting Gnomad...")
+            gnomad =  hl.read_matrix_table('hdfs:///user/hdfs/data/gnomad.mt').semi_join_rows(mt.rows())
+            mt = annotate_with_gnomad(mt, gnomad)
+            mt = mt.repartition(72)
+            mt.write(filename + "_gnomad.mt",overwrite=True)
             mt = hl.read_matrix_table(filename + "_gnomad.mt")
 
-            if not table_exists(filename + "_eigen.mt"):
-                print("Subsetting and persisting eigen...")
-                eigen =  hl.import_matrix_table('hdfs:///user/hdfs/data/eigen.mt').semi_join_rows(mt.rows())
-                print("Adding eigen...")
-                mt = annotate_with_eigen(mt, eigen)
-                mt = mt.write(filename + "_eigen.mt",overwrite=True)
-            mt = hl.read_matrix_table(filename + "_eigen.mt")
+            # print("Subsetting and persisting eigen...")
+            # eigen =  hl.read_matrix_table('hdfs:///user/hdfs/data/eigen.mt').semi_join_rows(mt.rows())
+            # print("Adding eigen...")
+            # mt = annotate_with_eigen(mt, eigen)
+            # mt = mt.repartition(72)
+            # mt = mt.write(filename + "_eigen.mt",overwrite=True)
+            # mt = hl.read_matrix_table(filename + "_eigen.mt")
 
-            if not table_exists(filename + "_primate.mt"):
-                print("Subsetting and persisting Primate...")
-                primate =  hl.import_matrix_table('hdfs:///user/hdfs/data/primate.mt').semi_join_rows(mt.rows())
-                print("Adding primate...")
-                mt = annotate_with_primate(mt, primate)
-                mt = mt.write(filename + "_primate.mt",overwrite=True)
+            print("Subsetting and persisting Primate...")
+            primate =  hl.read_matrix_table('hdfs:///user/hdfs/data/primate.mt').semi_join_rows(mt.rows())
+            print("Adding primate...")
+            mt = annotate_with_primate(mt, primate)
+            mt = mt.repartition(72)
+            mt = mt.write(filename + "_primate.mt",overwrite=True)
             mt = hl.read_matrix_table(filename + "_primate.mt")
 
             print("Subsetting and persisting TopMed...")
-            topmed =  hl.import_matrix_table('hdfs:///user/hdfs/data/topmed.mt').semi_join_rows(mt.rows())
+            topmed =  hl.read_matrix_table('hdfs:///user/hdfs/data/topmed.mt').semi_join_rows(mt.rows())
             print("Adding topmed")
             mt = annotate_with_topmed(mt, topmed)
-            mt = mt.persist()
+            mt = mt.repartition(72)
+            mt = mt.write(filename + "_topmed.mt",overwrite=True)
+            mt = hl.read_matrix_table(filename + "_topmed.mt")
+
 
             print("Subsetting and persisting ExAc...")
-            exac =  hl.import_matrix_table('hdfs:///user/hdfs/data/exac.mt').semi_join_rows(mt.rows())
-            exac = exac.persist()
+            exac =  hl.read_matrix_table('hdfs:///user/hdfs/data/exac.mt').semi_join_rows(mt.rows())
             print("Adding Exac...")
             mt = annotate_with_exac(mt, exac)
-            mt = mt.persist()
+            mt = mt.repartition(72)
+            mt = mt.write(filename + "_exac.mt",overwrite=True)
+            mt = hl.read_matrix_table(filename + "_exac.mt")
 
-            print("Subdsetting and persisting CADD")
-            cadd = hl.import_matrix_table('hdfs:///user/hdfs/data/cadd.mt').semi_join(mt.rows())
-            cadd = cadd.persist()
-            print("Adding CADD...")
-            mt = annotate_with_cadd(mt, cadd)
-            final = mt.persist()
+
+            print("Subsetting and persisting MPC...")
+            mpc =  hl.read_matrix_table('hdfs:///user/hdfs/data/mpc.mt').semi_join_rows(mt.rows())
+            print("Adding MPC...")
+            mt = annotate_with_mpc(mt, mpc)
+            mt = mt.repartition(72)
+            mt = mt.write(filename + "_mpc.mt",overwrite=True)
+            mt = hl.read_matrix_table(filename + "_mpc.mt")
+
+
+            print("Subsetting and persisting 1kg...")
+            okg =  hl.read_matrix_table('hdfs:///user/hdfs/data/onekg.mt').semi_join_rows(mt.rows())
+            print("Adding 1kg...")
+            mt = annotate_with_onekg(mt, okg)
+            mt = mt.repartition(72)
+            mt = mt.write(filename + "_okg.mt",overwrite=True)
+            mt = hl.read_matrix_table(filename + "_okg.mt")
+
+
+            print("Subsetting and persisting Omim...")
+            omim =  hl.read_matrix_table('hdfs:///user/hdfs/data/omim.mt')
+            print("Adding Omim...")
+            mt = annotate_with_omim(mt, omim)
+
+            final = mt
             #mt = mt.persist()
+
+
+            print("Preparing for export")
+            #final = final.repartition(40000) # let's try this out....
+            #famids = list(map(lambda x: x.family_id, families))
+            export(final,index_name, args.tsv,args.tsves
 
 
             print("Preparing for export")

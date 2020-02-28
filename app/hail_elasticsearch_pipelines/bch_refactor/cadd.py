@@ -33,6 +33,13 @@ def get_cadd(partitions : int = None,namenode : str = ""):
     snvs_ht = import_cadd_table("hdfs://" + namenode  + "/user/hdfs/data/whole_genome_SNVs.v1.4.tsv.bgz",partitions=partitions)
     indel_ht = import_cadd_table("hdfs://" + namenode + "/user/hdfs/data/InDels.v1.4.tsv.bgz",partitions=partitions)
 
+    snvs_ht = import_cadd_table("hdfs:///user/hdfs/data/whole_genome_SNVs.v1.4.tsv.bgz",partitions=72)
+    snvs_ht = snvs_ht.split_multi_hts(snvs_ht)
+    snvs_ht.write('hdfs:///user/hdfs/data/caddsnvs.mt')
+
+    indel_ht = import_cadd_table("hdfs:///user/hdfs/data/InDels.v1.4.tsv.bgz",partitions=72)
+
+
     ht = snvs_ht.union(indel_ht)
     if partitions:
         ht = ht.repartition(partitions)
