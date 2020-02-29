@@ -26,7 +26,7 @@ from hail_elasticsearch_pipelines.hail_scripts.v02.utils.computed_fields.vep imp
 )
 from hail_elasticsearch_pipelines.hail_scripts.v02.utils.elasticsearch_client import ElasticsearchClient
 from hail_elasticsearch_pipelines.hail_scripts.v02.utils.clinvar import CLINVAR_GOLD_STARS_LOOKUP, download_and_import_latest_clinvar_vcf
-
+from hail_elasticsearch_pipelines.bch_refactor.add_derived_fields import annotate_mt_with_derived_fields
 from hail_elasticsearch_pipelines.bch_refactor.seqr_utils.seqr_dataset import *
 import csv
 import hail as hl
@@ -454,7 +454,7 @@ if __name__ == "__main__":
                 print("Adding computed fields")
                 mt = annotate_with_genotype_num_alt(mt)
                 mt = annotate_with_samples_alt(mt)
-                mt = finalize_annotated_table_for_seqr_variants(mt)
+                mt = annotate_mt_with_derived_fields(mt)
                 mt.write(filename + "_fields.mt")
                 mt = hl.read_matrix_table(filename + "_fields.mt")
 
