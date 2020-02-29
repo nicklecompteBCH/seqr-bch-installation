@@ -530,7 +530,7 @@ if __name__ == "__main__":
                 mt = annotate_with_cadd(mt, cadd)
                 mt = mt.repartition(partition_count)
                 mt.write(filename + "_caddsnv.mt",overwrite=True)
-                mt = hl.read_matrix_table(filename + "_caddsnv.mt")`
+                mt = hl.read_matrix_table(filename + "_caddsnv.mt")
 
             if hl.utils.hadoop_is_file(filename + "_gnomad.mt/metadata.json.gz"):
                 mt = hl.read_matrix_table(filename + "_gnomad.mt")
