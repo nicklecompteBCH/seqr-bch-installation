@@ -27,7 +27,7 @@ def annotate_mt_with_derived_fields(mt: hl.MatrixTable) -> hl.MatrixTable:
     )
 
 
-    mt = mt.annnotate_rows(
+    mt = mt.annotate_rows(
             main_transcript=get_expr_for_worst_transcript_consequence_annotations_struct(
                     vep_sorted_transcript_consequences_root=mt.sortedTranscriptConsequences
                 ),
