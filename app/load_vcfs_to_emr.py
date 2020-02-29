@@ -493,7 +493,7 @@ if __name__ == "__main__":
                 mt = hl.read_matrix_table(filename + "_splice.ht")
             else:
                 print("Adding SpliceAI")
-                sp = hl.read_matrix_table('hdfs:///user/hdfs/data/splice_ai.mt').semi_join_rows(mt.rows())
+                sp = hl.read_matrix_table('hdfs:///user/hdfs/data/spliceai.mt').semi_join_rows(mt.rows())
                 mt = mt.annotate_rows(
                     splice_ai_delta_score = sp.index_rows(mt.locus,mt.alleles).info.DS_AG
                 )
