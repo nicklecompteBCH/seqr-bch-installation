@@ -54,7 +54,7 @@ def annotate_with_gnomad(
     Defaults correspond to gnomAD values.
     """
     return mt.annotate_rows(
-        gnomad = hl.struct(
+        gnomad_exomes = hl.struct(
             AC = gnomad_ht.index_rows(mt.locus,mt.alleles).info.AC[0],
             AF = gnomad_ht.index_rows(mt.locus,mt.alleles).info.AF[0],
             AN = gnomad_ht.index_rows(mt.locus,mt.alleles).info.AN,

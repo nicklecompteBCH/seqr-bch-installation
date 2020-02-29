@@ -4,6 +4,6 @@ from hail_elasticsearch_pipelines.hail_scripts.v02.utils.hail_utils import impor
 
 def annotate_with_onekg(ht : hl.MatrixTable, onekg : hl.MatrixTable):
     newht = ht.annotate_rows(
-        **{'1kg' : onekg.index_rows(ht.locus,ht.alleles).info}
+        **{'g1k' : onekg.index_rows(ht.locus,ht.alleles).info}
     )
     return newht

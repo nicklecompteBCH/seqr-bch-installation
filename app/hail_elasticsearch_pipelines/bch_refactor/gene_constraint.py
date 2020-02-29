@@ -9,9 +9,9 @@ def get_gc():
         #ht = import_vcf("s3://seqr-resources/topmed/bravo-dbsnp-all.removed_chr_prefix.liftunder_GRCh37.vcf.gz","37","topmed")
     return ht
 
-def annotate_with_gc(ht : hl.MatrixTable, gc : hl.MatrixTable):
-    gc.describe()
+def annotate_with_gc(ht : hl.MatrixTable, gc : hl.Table):
     newht = ht.annotate_rows(
-        gene_constraint = gc.index_rows(ht.mainTranscript.transcript_id)
+        gene_constraint_mis_z = gc.index(ht.mainTranscript.transcript_id).mis_z,
+        gene_constraint_pLI_rank=gc.index(ht.mainTranscript.transcript_id).pLI
     )
     return newht
