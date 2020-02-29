@@ -189,7 +189,6 @@ def annotate_with_hgmd(mt: hl.MatrixTable, hgmd_mt: hl.MatrixTable) -> hl.Matrix
         hgmd_accession=hgmd_mt.index(mt.row_key).rsid,
         hgmd_class = hgmd_mt.index(mt.row_key).info.CLASS
         )
-    )
     return mt
 
 
