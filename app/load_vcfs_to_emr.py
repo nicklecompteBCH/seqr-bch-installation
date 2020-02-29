@@ -479,8 +479,8 @@ if __name__ == "__main__":
                 mt.write(filename + "_clinvar.mt",overwrite=True)
                 mt = hl.read_matrix_table(filename + "_clinvar.mt")
 
-            if hl.utils.hadoop_is_file(filename + "_hgmd.ht/metadata.json.gz"):
-                mt = hl.read_matrix_table(filename + "_hgmd.ht")
+            if hl.utils.hadoop_is_file(filename + "_hgmd.mt/metadata.json.gz"):
+                mt = hl.read_matrix_table(filename + "_hgmd.mt")
             else:
                 print("Subsetting and persisting HGMD...")
                 hgmd = hl.read_table('hdfs:///user/hdfs/data/hgmd.ht').semi_join(mt.rows())
@@ -489,8 +489,8 @@ if __name__ == "__main__":
                 mt.write(filename + "_hgmd.mt",overwrite=True)
                 mt = hl.read_matrix_table(filename + "_hgmd.mt")
 
-            if hl.utils.hadoop_is_file(filename + "_splice.ht/metadata.json.gz"):
-                mt = hl.read_matrix_table(filename + "_splice.ht")
+            if hl.utils.hadoop_is_file(filename + "_splice.mt/metadata.json.gz"):
+                mt = hl.read_matrix_table(filename + "_splice.mt")
             else:
                 print("Adding SpliceAI")
                 sp = hl.read_matrix_table('hdfs:///user/hdfs/data/spliceai.mt').semi_join_rows(mt.rows())
@@ -587,7 +587,7 @@ if __name__ == "__main__":
                 mt = hl.read_matrix_table(filename + "_exac.mt")
 
             if hl.utils.hadoop_is_file(filename + "_mpc.mt/metadata.json.gz"):
-                mt = hl.read_matrix_table(filename + "_npc.mt")
+                mt = hl.read_matrix_table(filename + "_mpc.mt")
             else:
                 print("Subsetting and persisting MPC...")
                 mpc =  hl.read_matrix_table('hdfs:///user/hdfs/data/mpc.mt').semi_join_rows(mt.rows())
