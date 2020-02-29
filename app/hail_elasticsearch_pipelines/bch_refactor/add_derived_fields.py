@@ -33,8 +33,9 @@ def annotate_mt_with_derived_fields(mt: hl.MatrixTable) -> hl.MatrixTable:
                 ),
             gene_ids=get_expr_for_vep_gene_ids_set(
                 vep_transcript_consequences_root=mt.sortedTranscriptConsequences
-            ),
+            )
     )
+    return mt
 
 
 # def step1_compute_derived_fields_v01(hc, vds, args):
