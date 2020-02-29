@@ -455,7 +455,7 @@ if __name__ == "__main__":
                 mt = annotate_with_genotype_num_alt(mt)
                 mt = annotate_with_samples_alt(mt)
                 mt = annotate_mt_with_derived_fields(mt)
-                mt.write(filename + "_fields.mt")
+                mt.write(filename + "_fields.mt",overwrite=True)
                 mt = hl.read_matrix_table(filename + "_fields.mt")
 
             if hl.utils.hadoop_is_file(filename + "_gc.mt/metadata.json.gz"):
