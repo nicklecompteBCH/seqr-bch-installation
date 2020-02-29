@@ -100,5 +100,5 @@ def get_expr_for_xpos_end(locus: hl.expr.LocusExpression) -> hl.expr.Int64Expres
     This represents chrom:pos more compactly and allows for easier sorting.
     """
     contig_number = get_expr_for_contig_number(locus)
-    length = hl.contig_length(contig_number, reference_genome='GRCh37')
+    length = hl.contig_length(locus.contig, reference_genome='GRCh37')
     return hl.int64(contig_number) * 1_000_000_000 + locus.position + (hl.expr.functions.int64(length) )
