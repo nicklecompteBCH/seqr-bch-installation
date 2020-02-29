@@ -11,7 +11,7 @@ def annotate_mt_with_derived_fields(mt: hl.MatrixTable) -> hl.MatrixTable:
 
     mt = mt.annotate_rows(
         docId = get_expr_for_variant_id(mt,512),
-        variantId = get_expr_for_variant_id(mt),
+        variant_id = get_expr_for_variant_id(mt),
         variant_type = get_expr_for_variant_type(mt),
         contig = get_expr_for_contig(mt.locus),
         pos = get_expr_for_start_pos(mt),
