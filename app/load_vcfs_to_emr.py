@@ -462,7 +462,7 @@ if __name__ == "__main__":
                 mt = hl.read_matrix_table(filename + "_gc.mt")
             else:
                 print("Adding gene constraint")
-                gc = hl.read_table('hdfs:///user/hdfs/data/gc.ht').semi_join(mt.rows())
+                gc = hl.read_table('hdfs:///user/hdfs/data/gc.ht')#.semi_join(mt.rows())
                 mt = annotate_with_gc(mt,gc)
                 mt.write(filename + "_gc.mt")
                 mt = hl.read_matrix_table(filename + "_gc.mt")
