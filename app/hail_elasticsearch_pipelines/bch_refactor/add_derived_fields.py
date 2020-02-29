@@ -9,7 +9,7 @@ from hail_elasticsearch_pipelines.hail_scripts.v02.utils.computed_fields.vep imp
 
 def annotate_mt_with_derived_fields(mt: hl.MatrixTable) -> hl.MatrixTable:
 
-    mt = mt.annotate_entries(
+    mt = mt.annotate_rows(
         docId = get_expr_for_variant_id(mt,512),
         variantId = get_expr_for_variant_id(mt),
         variant_type = get_expr_for_variant_type(mt),
@@ -23,12 +23,17 @@ def annotate_mt_with_derived_fields(mt: hl.MatrixTable) -> hl.MatrixTable:
         xstart = get_expr_for_xpos(mt.locus),
         xstop = get_expr_for_xpos_end(mt.locus),
         sortedTranscriptConsequences=get_expr_for_vep_sorted_transcript_consequences_array(vep_root=mt.vep),
-        main_transcript=get_expr_for_worst_transcript_consequence_annotations_struct(
-            vep_sorted_transcript_consequences_root=mt.sortedTranscriptConsequences),
-        gene_ids=get_expr_for_vep_gene_ids_set(
-            vep_transcript_consequences_root=mt.sortedTranscriptConsequences
-        ),
         FAF=get_expr_for_filtering_allele_frequency()
+    )
+
+
+    mt = mt.annnotate_rows(
+            main_transcript=get_expr_for_worst_transcript_consequence_annotations_struct(
+                    vep_sorted_transcript_consequences_root=mt.sortedTranscriptConsequences
+                ),
+            gene_ids=get_expr_for_vep_gene_ids_set(
+                vep_transcript_consequences_root=mt.sortedTranscriptConsequences
+            ),
     )
 
 
