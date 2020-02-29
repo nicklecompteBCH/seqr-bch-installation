@@ -617,11 +617,11 @@ if __name__ == "__main__":
             final = mt
             #mt = mt.persist(
 
-
             print("Preparing for export")
+            final.write(filename + "_final.mt")
             #final = final.repartition(40000) # let's try this out....
             #famids = list(map(lambda x: x.family_id, families))
-            export(final,index_name, args.tsv,args.tsves)
+            #export(final,index_name, args.tsv,args.tsves)
 
     else:
         load_clinvar(es_host=ELASTICSEARCH_HOST)
