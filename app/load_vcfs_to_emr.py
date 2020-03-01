@@ -137,9 +137,9 @@ def add_seqr_sample_to_locals3(sample: SeqrSample):
         RequestPayer='requester'
     )
     if 'Contents' in maybe_list and maybe_list['Contents']:
-        if not hl.hadoop_is_file("hdfs:///user/hdfs/" + filename):
-            os.system('aws s3 cp s3://seqr-data' + filename + ' .')
-            os.system('hdfs dfs -put ' + parts['filename'] + filename)
+        if not hl.hadoop_is_file("hdfs:///user/hdfs/" + local_filename):
+            os.system('aws s3 cp s3://seqr-data' + local_filename + ' .')
+            os.system('hdfs dfs -put ' + parts['filename'] + local_filename)
             os.system('rm ' + + parts['filename'])
         return local_filename
     else:
