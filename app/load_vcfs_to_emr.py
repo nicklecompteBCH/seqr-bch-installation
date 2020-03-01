@@ -140,6 +140,7 @@ def add_seqr_sample_to_locals3(sample: SeqrSample):
         if not hl.hadoop_is_file("hdfs:///user/hdfs/" + filename):
             os.system('aws s3 cp s3://seqr-data' + filename + ' .')
             os.system('hdfs dfs -put ' + parts['filename'] + filename)
+            os.system('rm ' + + parts['filename'])
         return local_filename
     else:
         copy_source = {
@@ -150,6 +151,7 @@ def add_seqr_sample_to_locals3(sample: SeqrSample):
         if not hl.hadoop_is_file("hdfs:///user/hdfs/" + filename):
             os.system('aws s3 cp s3://seqr-data' + filename + ' .')
             os.system('hdfs dfs -put ' + parts['filename'] + filename)
+            os.system('rm ' + + parts['filename'])
         return local_filename
 
 def add_family_to_hail(family:SeqrFamily,partition_count:int) -> hl.MatrixTable:
