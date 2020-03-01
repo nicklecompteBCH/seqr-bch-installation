@@ -439,6 +439,7 @@ if __name__ == "__main__":
             index_name = dataset + "_" + family.family_id + "__wes__" + "GRCh37__" + "VARIANTS__" + time.strftime("%Y%m%d")
             index_name = index_name.lower()
             filename = 'hdfs:///user/hdfs/out/' + dataset + family.family_id
+            finalname = 'hdfs:///user/hdfs/final/' + dataset + family.family_id + ".mt"
             mt = None
             if args.index_prefix:
                 index_name = args.index_prefix + index_name
@@ -453,8 +454,7 @@ if __name__ == "__main__":
                 #partition_count = parition_count + num_vcfs # assume each annotation adds a VCF's worth of data per VCF
                 print("Added vep, writing partial results")
                 mt = mt.repartition(partition_count)
-                mt.write(filename + "_vep.mt")
-                mt = hl.read_matrix_table(filename + "_vep.mt")
+                mt = mt.checkpoint(filename + "_vep.mt",overwrite=True)
 
             if hl.utils.hadoop_is_file(filename + "_fields.mt/metadata.json.gz"):
                 mt = hl.read_matrix_table(filename + "_fields.mt")
@@ -463,8 +463,7 @@ if __name__ == "__main__":
                 mt = annotate_with_genotype_num_alt(mt)
                 mt = annotate_with_samples_alt(mt)
                 mt = annotate_mt_with_derived_fields(mt)
-                mt.write(filename + "_fields.mt",overwrite=True)
-                mt = hl.read_matrix_table(filename + "_fields.mt")
+                mt = mt.checkpoint(filename + "_fields.mt",overwrite=True)
 
             if hl.utils.hadoop_is_file(filename + "_gc.mt/metadata.json.gz"):
                 mt = hl.read_matrix_table(filename + "_gc.mt")
@@ -472,8 +471,7 @@ if __name__ == "__main__":
                 print("Adding gene constraint")
                 gc = hl.read_table('hdfs:///user/hdfs/data/gc.ht')#.semi_join(mt.rows())
                 mt = annotate_with_gc(mt,gc)
-                mt.write(filename + "_gc.mt")
-                mt = hl.read_matrix_table(filename + "_gc.mt")
+                mt = mt.checkpoint(filename + "_gc.mt",overwrite=True)
 
 
             if hl.utils.hadoop_is_file(filename + "_clinvar.mt/metadata.json.gz"):
@@ -484,8 +482,7 @@ if __name__ == "__main__":
                 clinvar = clinvar.rows()
                 print("Adding Clinvar...")
                 mt = annotate_with_clinvar(mt, clinvar)
-                mt.write(filename + "_clinvar.mt",overwrite=True)
-                mt = hl.read_matrix_table(filename + "_clinvar.mt")
+                mt = mt.checkpoint(filename + "_clinvar.mt",overwrite=True)
 
             if hl.utils.hadoop_is_file(filename + "_hgmd.mt/metadata.json.gz"):
                 mt = hl.read_matrix_table(filename + "_hgmd.mt")
@@ -494,8 +491,7 @@ if __name__ == "__main__":
                 hgmd = hl.read_table('hdfs:///user/hdfs/data/hgmd.ht').semi_join(mt.rows())
                 print("Adding HGMD...")
                 mt = annotate_with_hgmd(mt, hgmd)
-                mt.write(filename + "_hgmd.mt",overwrite=True)
-                mt = hl.read_matrix_table(filename + "_hgmd.mt")
+                mt = mt.checkpoint(filename + "_hgmd.mt",overwrite=True)
 
             if hl.utils.hadoop_is_file(filename + "_splice.mt/metadata.json.gz"):
                 mt = hl.read_matrix_table(filename + "_splice.mt")
@@ -505,8 +501,7 @@ if __name__ == "__main__":
                 mt = mt.annotate_rows(
                     splice_ai_delta_score = sp.index_rows(mt.locus,mt.alleles).info.DS_AG
                 )
-                mt.write(filename + "_splice.mt",overwrite=True)
-                mt = hl.read_matrix_table(filename + "_splice.mt")
+                mt = mt.checkpoint(filename + "_splice.mt",overwrite=True)
 
             if hl.utils.hadoop_is_file(filename + "_dbsnp.mt/metadata.json.gz"):
                 mt = hl.read_matrix_table(filename + "_dbsnp.mt")
@@ -515,8 +510,7 @@ if __name__ == "__main__":
                 dbsnp =  hl.read_table('hdfs:///user/hdfs/data/dbsnp.ht').semi_join(mt.rows())
                 mt = annotate_with_dbsnp(mt, dbsnp)
                 mt = mt.repartition(partition_count)
-                mt.write(filename + "_dbsnp.mt",overwrite=True)
-                mt = hl.read_matrix_table(filename + "_dbsnp.mt")
+                mt = mt.checkpoint(filename + "_dbsnp.mt",overwrite=True)
 
             if hl.utils.hadoop_is_file(filename + "_caddind.mt/metadata.json.gz"):
                 mt = hl.read_matrix_table(filename + "_caddind.mt")
@@ -526,8 +520,7 @@ if __name__ == "__main__":
                 print("Adding CADD...")
                 mt = annotate_with_cadd(mt, cadd)
                 mt = mt.repartition(partition_count)
-                mt.write(filename + "_caddind.mt",overwrite=True)
-                mt = hl.read_matrix_table(filename + "_caddind.mt")
+                mt = mt.checkpoint(filename + "_caddind.mt",overwrite=True)
 
             if hl.utils.hadoop_is_file(filename + "_caddsnv.mt/metadata.json.gz"):
                 mt = hl.read_matrix_table(filename + "_caddsnv.mt")
@@ -537,8 +530,7 @@ if __name__ == "__main__":
                 print("Adding CADD...")
                 mt = annotate_with_cadd(mt, cadd)
                 mt = mt.repartition(partition_count)
-                mt.write(filename + "_caddsnv.mt",overwrite=True)
-                mt = hl.read_matrix_table(filename + "_caddsnv.mt")
+                mt = mt.checkpoint(filename + "_caddsnv.mt",overwrite=True)
 
             if hl.utils.hadoop_is_file(filename + "_gnomad.mt/metadata.json.gz"):
                 mt = hl.read_matrix_table(filename + "_gnomad.mt")
@@ -547,8 +539,7 @@ if __name__ == "__main__":
                 gnomad =  hl.read_matrix_table('hdfs:///user/hdfs/data/gnomad.mt').semi_join_rows(mt.rows())
                 mt = annotate_with_gnomad(mt, gnomad)
                 mt = mt.repartition(partition_count)
-                mt.write(filename + "_gnomad.mt",overwrite=True)
-                mt = hl.read_matrix_table(filename + "_gnomad.mt")
+                mt = mt.checkpoint(filename + "_gnomad.mt",overwrite=True)
 
             if hl.utils.hadoop_is_file(filename + "_gnomad.mt/metadata.json.gz"):
                 mt = hl.read_matrix_table(filename + "_gnomad.mt")
@@ -558,8 +549,7 @@ if __name__ == "__main__":
                 print("Adding eigen...")
                 mt = annotate_with_eigen(mt, eigen)
                 mt = mt.repartition(partition_count)
-                mt = mt.write(filename + "_eigen.mt",overwrite=True)
-                mt = hl.read_matrix_table(filename + "_eigen.mt")
+                mt = mt.checkpoint(filename + "_eigen.mt",overwrite=True)
 
             if hl.utils.hadoop_is_file(filename + "_primate.mt/metadata.json.gz"):
                 mt = hl.read_matrix_table(filename + "_primate.mt")
@@ -569,8 +559,7 @@ if __name__ == "__main__":
                 print("Adding primate...")
                 mt = annotate_with_primate(mt, primate)
                 mt = mt.repartition(partition_count)
-                mt = mt.write(filename + "_primate.mt",overwrite=True)
-                mt = hl.read_matrix_table(filename + "_primate.mt")
+                mt = mt.checkpoint(filename + "_primate.mt",overwrite=True)
 
             if hl.utils.hadoop_is_file(filename + "_topmed.mt/metadata.json.gz"):
                 mt = hl.read_matrix_table(filename + "_topmed.mt")
@@ -580,8 +569,7 @@ if __name__ == "__main__":
                 print("Adding topmed")
                 mt = annotate_with_topmed(mt, topmed)
                 mt = mt.repartition(partition_count)
-                mt = mt.write(filename + "_topmed.mt",overwrite=True)
-                mt = hl.read_matrix_table(filename + "_topmed.mt")
+                mt = mt.checkpoint(filename + "_topmed.mt",overwrite=True)
 
             if hl.utils.hadoop_is_file(filename + "_exac.mt/metadata.json.gz"):
                 mt = hl.read_matrix_table(filename + "_exac.mt")
@@ -591,8 +579,7 @@ if __name__ == "__main__":
                 print("Adding Exac...")
                 mt = annotate_with_exac(mt, exac)
                 mt = mt.repartition(partition_count)
-                mt = mt.write(filename + "_exac.mt",overwrite=True)
-                mt = hl.read_matrix_table(filename + "_exac.mt")
+                mt = mt.checkpoint(filename + "_exac.mt",overwrite=True)
 
             if hl.utils.hadoop_is_file(filename + "_mpc.mt/metadata.json.gz"):
                 mt = hl.read_matrix_table(filename + "_mpc.mt")
@@ -602,8 +589,7 @@ if __name__ == "__main__":
                 print("Adding MPC...")
                 mt = annotate_with_mpc(mt, mpc)
                 mt = mt.repartition(partition_count)
-                mt = mt.write(filename + "_mpc.mt",overwrite=True)
-                mt = hl.read_matrix_table(filename + "_mpc.mt")
+                mt = mt.checkpoint(filename + "_mpc.mt",overwrite=True)
 
             if hl.utils.hadoop_is_file(filename + "_okg.mt/metadata.json.gz"):
                 mt = hl.read_matrix_table(filename + "_okg.mt")
@@ -613,9 +599,7 @@ if __name__ == "__main__":
                 print("Adding 1kg...")
                 mt = annotate_with_onekg(mt, okg)
                 mt = mt.repartition(partition_count)
-                mt = mt.write(filename + "_okg.mt",overwrite=True)
-                mt = hl.read_matrix_table(filename + "_okg.mt")
-
+                mt = mt.checkpoint(filename + "_okg.mt",overwrite=True)
 
             print("Subsetting and persisting Omim...")
             omim =  hl.read_matrix_table('hdfs:///user/hdfs/data/omim.mt')
@@ -626,7 +610,7 @@ if __name__ == "__main__":
             #mt = mt.persist(
 
             print("Preparing for export")
-            final.write(filename + "_final.mt")
+            final.write(finalname)
             vcf_filename = dataset + "_" + family.family_id + "__wes__"+".vcf"
             hl.export_vcf(final,'/tmp/'+vcf_filename)
             os.system('aws s3 cp ' + '/tmp/'+vcf_filename + ' s3://seqr-data/vcfs/annotated/' + vcf_filename)
