@@ -619,6 +619,11 @@ if __name__ == "__main__":
 
             print("Preparing for export")
             final.write(filename + "_final.mt")
+            vcf_filename = dataset + "_" + family.family_id + "__wes__"+".vcf"
+            hl.export_vcf(final,'/tmp/'+vcf_filename)
+            os.system('hdfs dfs -put ' + '/tmp/'+vcf_filename + ' finalvcfs/' + vcf_filename)
+            os.system('rm ' + '/tmp/'+vcf_filename)
+            print("Done with family " + family.family_id)
             #final = final.repartition(40000) # let's try this out....
             #famids = list(map(lambda x: x.family_id, families))
             #export(final,index_name, args.tsv,args.tsves)
