@@ -148,9 +148,9 @@ def add_seqr_sample_to_locals3(sample: SeqrSample):
             'Key': parts['path']
         }
         s3.copy(copy_source, local_bucket, local_filename)
-        if not hl.hadoop_is_file("hdfs:///user/hdfs/" + filename):
-            os.system('aws s3 cp s3://seqr-data' + filename + ' .')
-            os.system('hdfs dfs -put ' + parts['filename'] + filename)
+        if not hl.hadoop_is_file("hdfs:///user/hdfs/" + local_filename):
+            os.system('aws s3 cp s3://seqr-data' + local_filename + ' .')
+            os.system('hdfs dfs -put ' + parts['filename'] + ' ' + local_filename)
             os.system('rm ' + + parts['filename'])
         return local_filename
 
@@ -298,7 +298,7 @@ def annotate_with_genotype_num_alt(mt: hl.MatrixTable) -> hl.MatrixTable:
         mt = mt.annotate_rows(
             genotypes = hl.agg.collect(hl.struct(
                     num_alt=hl.cond(mt.alleles[1] == '<CNV>', 0, mt.GT.n_alt_alleles()),
-                    ab=hl.cond(mt.alleles[1] == '<CNV>', 0.0, hl.float(mt.AO[0])/hl.float(mt.DP)),
+                    ab=hl.cond(mt.alleles[1] == '<CNV>' or mt.DP == 0, 0.0, hl.float(mt.AO[0])/hl.float(mt.DP)),
                     dp = mt.DP,  gq = mt.GQ, sample_id = mt.s))) #hl.cond(mt.GT=="0/0",0,hl.cond(mt.GT=="1/0",1,hl.cond(mt.GT=="0/1",1,hl.cond((mt.GT=="1/1",2,hl.cond(mt.GT=="1/2",2,hl.cond(mt.GT=="2/1",2,hl.cond(mt.GT=="2/2",2,-1))))))))
     else:
         raise ValueError("unrecognized vcf")
@@ -465,7 +465,8 @@ if __name__ == "__main__":
                 mt = annotate_with_genotype_num_alt(mt)
                 mt = annotate_with_samples_alt(mt)
                 mt = annotate_mt_with_derived_fields(mt)
-                mt = mt.checkpoint(filename + "_fields.mt",overwrite=True)
+                mt.write(filename + "_fields.mt",overwrite=True))
+                mt = hl.read_matrix_table(filename + "_fields.mt",overwrite=True)
 
             if hl.utils.hadoop_is_file(filename + "_gc.mt/metadata.json.gz"):
                 mt = hl.read_matrix_table(filename + "_gc.mt")
