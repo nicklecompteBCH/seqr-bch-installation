@@ -440,6 +440,8 @@ if __name__ == "__main__":
             index_name = index_name.lower()
             filename = 'hdfs:///user/hdfs/out/' + dataset + family.family_id
             finalname = 'hdfs:///user/hdfs/final/' + dataset + family.family_id + ".mt"
+            if hl.utils.hadoop_is_file(finalname + "/metadata.json.gz"):
+                continue
             mt = None
             if args.index_prefix:
                 index_name = args.index_prefix + index_name
