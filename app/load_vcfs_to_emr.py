@@ -158,7 +158,7 @@ def add_family_to_hail(family:SeqrFamily,partition_count:int) -> hl.MatrixTable:
     fanmar : hl.MatrixTable = None
     for sample in family.samples:
         filename = add_seqr_sample_to_locals3(sample)
-        mt = add_vcf_to_hail(sample, "hdfs:///user/hdfs/" + filename)
+        mt = add_vcf_to_hail(sample, "hdfs:///user/hdfs/" + filename,partitions=partition_count)
         if not fanmar:
             if len(family.samples) == 1:
                 return mt
