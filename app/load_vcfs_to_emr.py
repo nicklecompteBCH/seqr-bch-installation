@@ -127,32 +127,12 @@ def add_seqr_sample_to_hadoop(sample: SeqrSample):
 
 def add_seqr_sample_to_locals3(sample: SeqrSample):
     parts = parse_vcf_s3_path(sample.path_to_vcf)
-    local_bucket = "seqr-data"
     local_filename = "vcfs/" + str(sample.project) + "/" + parts['filename']
-    s3 = boto3.client('s3')
-    maybe_list = s3.list_objects(
-        Bucket=local_bucket,
-        EncodingType='url',
-        Prefix=local_filename,
-        RequestPayer='requester'
-    )
-    if 'Contents' in maybe_list and maybe_list['Contents']:
-        if not hl.hadoop_is_file("hdfs:///user/hdfs/" + local_filename):
-            os.system('aws s3 cp s3://seqr-data' + local_filename + ' .')
-            os.system('hdfs dfs -put ' + parts['filename'] + local_filename)
-            os.system('rm ' + + parts['filename'])
-        return local_filename
-    else:
-        copy_source = {
-            'Bucket': parts['bucket'],
-            'Key': parts['path']
-        }
-        s3.copy(copy_source, local_bucket, local_filename)
-        if not hl.hadoop_is_file("hdfs:///user/hdfs/" + local_filename):
-            os.system('aws s3 cp s3://seqr-data' + local_filename + ' .')
-            os.system('hdfs dfs -put ' + parts['filename'] + ' ' + local_filename)
-            os.system('rm ' + + parts['filename'])
-        return local_filename
+    if not hl.hadoop_is_file("hdfs:///user/hdfs/" + local_filename):
+        os.system('aws s3 cp ' + sample.path_to_vcf + ' .')
+        os.system('hdfs dfs -put ' + parts['filename'] + ' ' + local_filename)
+        os.system('rm ' + parts['filename'])
+    return local_filename
 
 def add_family_to_hail(family:SeqrFamily,partition_count:int) -> hl.MatrixTable:
     fanmar : hl.MatrixTable = None
@@ -614,10 +594,6 @@ if __name__ == "__main__":
 
             print("Preparing for export")
             final.write(finalname)
-            vcf_filename = dataset + "_" + family.family_id + "__wes__"+".vcf"
-            hl.export_vcf(final,'/tmp/'+vcf_filename)
-            os.system('aws s3 cp ' + '/tmp/'+vcf_filename + ' s3://seqr-data/vcfs/annotated/' + vcf_filename)
-            os.system('rm ' + '/tmp/'+vcf_filename)
             print("Done with family " + family.family_id)
             #final = final.repartition(40000) # let's try this out....
             #famids = list(map(lambda x: x.family_id, families))
