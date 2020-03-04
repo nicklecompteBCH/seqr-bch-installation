@@ -489,7 +489,7 @@ if __name__ == "__main__":
             mt = hl.read_matrix_table(filename + "_hgmd.mt")
         else:
             print("Subsetting and persisting HGMD...")
-            hgmd = hl.read_table('hdfs:///user/hdfs/data/hgmd.ht').semi_join(mt.rows())
+            hgmd = hl.read_matrix_table('hdfs:///user/hdfs/data/hgmd.ht').semi_join_rows(mt.rows())
             print("Adding HGMD...")
             mt = annotate_with_hgmd(mt, hgmd)
             mt = mt.write(filename + "_hgmd.mt",overwrite=True)
@@ -510,7 +510,7 @@ if __name__ == "__main__":
             mt = hl.read_matrix_table(filename + "_dbsnp.mt")
         else:
             print("Subsetting and persisting DBSNP...")
-            dbsnp =  hl.read_table('hdfs:///user/hdfs/data/dbsnp.ht').semi_join(mt.rows())
+            dbsnp =  hl.read_table('hdfs:///user/hdfs/data/dbsnp.mt').semi_join(mt.rows())
             mt = annotate_with_dbsnp(mt, dbsnp)
             mt = mt.repartition(partition_count)
             mt = mt.write(filename + "_dbsnp.mt",overwrite=True)
@@ -520,7 +520,7 @@ if __name__ == "__main__":
             mt = hl.read_matrix_table(filename + "_caddind.mt")
         else:
             print("Subdsetting and persisting CADD indels")
-            cadd = hl.read_table('hdfs:///user/hdfs/data/cadd_indels.mt').semi_join(mt.rows())
+            cadd = hl.read_table('hdfs:///user/hdfs/data/caddind.mt').semi_join(mt.rows())
             print("Adding CADD...")
             mt = annotate_with_cadd(mt, cadd)
             mt = mt.repartition(partition_count)
@@ -531,7 +531,7 @@ if __name__ == "__main__":
             mt = hl.read_matrix_table(filename + "_caddsnv.mt")
         else:
             print("Subdsetting and persisting CADD SNV")
-            cadd = hl.read_table('hdfs:///user/hdfs/data/cadd_snv.mt').semi_join(mt.rows())
+            cadd = hl.read_table('hdfs:///user/hdfs/data/caddsnv.mt').semi_join(mt.rows())
             print("Adding CADD...")
             mt = annotate_with_cadd(mt, cadd)
             mt = mt.repartition(partition_count)
