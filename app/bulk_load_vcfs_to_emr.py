@@ -452,6 +452,8 @@ if __name__ == "__main__":
             mt = hl.read_matrix_table(filename + "_vep.mt")
         else:
             mt = hl.read_matrix_table(args.vcf, min_partitions=partition_count) #add_families_to_hail(families,partition_count)
+            mt = annotate_with_family_id(mt)
+            mt = mt.checkpoint(filename + "_init.mt")
             print("Added families")
 
             print("Adding vep")
@@ -463,6 +465,9 @@ if __name__ == "__main__":
             mt = mt.repartition(partition_count)
             mt = mt.write(filename + "_vep.mt",overwrite=True)
             mt = hl.read_matrix_table(filename + "_vep.mt")
+
+        famids = alan.aggregate_cols(hl.agg.collect(mt.family_id))
+        families = list(filter(lambda x: x.family_id in famids, families))
 
         if hl.utils.hadoop_is_file(filename + "_gc.mt/metadata.json.gz"):
             mt = hl.read_matrix_table(filename + "_gc.mt")
