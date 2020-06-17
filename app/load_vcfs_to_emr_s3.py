@@ -377,48 +377,12 @@ def export(t,index_name, tsv:bool,tsves:bool,op=ELASTICSEARCH_INDEX):
 def table_exists(path):
     (hl.utils.hadoop_is_dir(filename) or hl.utils.hadoop_is_file(filename))# exists clinvar:
 
-if __name__ == "__main__":
-    import argparse
-    p = argparse.ArgumentParser()
-    p.add_argument("-clinvar", "--clinvar", help="Run clinvar instead of loading samples",  action="store_true")
-    p.add_argument("-p","--path",help="Filepath of csv from BCH_Connect seqr report.")
-    p.add_argument("-proj","--project")
-    p.add_argument("-tsv","--tsv", action="store_true")
-    p.add_argument("-te","--tsves",action="store_true")
-    p.add_argument("-parts","--partitions")
-    p.add_argument("-nn","--namenode")
-    p.add_argument("-ip","--index_prefix")
-    args = p.parse_args()
-    print(str(hl.utils.hadoop_ls('/')))
-    if not args.clinvar:
-        #gnomad.describe()
-        partition_base = int(args.partitions)
-        nn = args.namenode
-
-        # CADD seems hairy for whatever reason
-        # do partition_base * 10
-        #cadd : hl.Table =
-        # Eigen is also hairy
-        # It may bee that these are
-        #eigen : hl.MatrixTable =
-        #hgmd : hl.MatrixTable = load_hgmd_vcf(partitions=partition_base,namenode=nn)
-        #primate : hl.MatrixTable =
-        #clinvar : hl.MatrixTable =
-        #topmed : hl.MatrixTable =
-        #mpc : hl.MatrixTable = get_mpc()
-        #exac : hl.MatrixTable =
-        #gc : hl.MatrixTable =  get_gc()
-        #omim = get_omim()
-
-
-        path = args.path
-        families = bch_connect_report_to_seqr_families(path)
-        for family in families:
+def run_pipeline(dataset,partition_base):
             partition_count = partition_base
             dataset = args.project
-            index_name = dataset + "_" + family.family_id + "__wes__" + "GRCh37__" + "VARIANTS__" + time.strftime("%Y%m%d")
+            index_name = dataset + "_" + "__wes__" + "GRCh37__" + "VARIANTS__" + time.strftime("%Y%m%d")
             index_name = index_name.lower()
-            filename = 's3://seqr-data/' + dataset + family.family_id
+            filename = 's3://seqr-data/' + dataset + "output"
             finalname = filename + ".mt"
             if hl.utils.hadoop_is_file(finalname + "/metadata.json.gz"):
                 final = hl.read_matrix_table(finalname)
@@ -608,6 +572,7 @@ if __name__ == "__main__":
             #final = final.repartition(40000) # let's try this out....
             #famids = list(map(lambda x: x.family_id, families))
             #export(final,index_name, args.tsv,args.tsves)
+
 
     else:
         load_clinvar(es_host=ELASTICSEARCH_HOST)
