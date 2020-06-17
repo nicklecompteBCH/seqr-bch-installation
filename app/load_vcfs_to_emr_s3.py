@@ -424,9 +424,7 @@ if __name__ == "__main__":
                 final = hl.read_matrix_table(finalname)
                 export(final,index_name, args.tsv,args.tsves)
                 continue
-            mt = None
-            if args.index_prefix:
-                index_name = args.index_prefix + index_name
+            mt = hl.import_vcf('s3:///seqr-data/vcfs/' + dataset + '/all.vcf.bgz')
             if hl.utils.hadoop_is_file(filename + "_vep.mt/metadata.json.gz"):
                 mt = hl.read_matrix_table(filename + "_vep.mt")
             else:
