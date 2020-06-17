@@ -424,7 +424,6 @@ if __name__ == "__main__":
         with open(args.map_tsv, "r") as mtsv:
             reader = csv.reader(mtsv, delimiter='\t')
             for row in reader:
-                raise ValueError("Need to put the order in")
                 mapping_dict.update({row[1] : row[0]})
         hl_mapping_dict = hl.literal(mapping_dict)
         hl_fam_dict = hl.literal(fam_dict)

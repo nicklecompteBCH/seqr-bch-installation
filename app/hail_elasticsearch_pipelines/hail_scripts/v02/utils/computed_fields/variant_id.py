@@ -36,13 +36,11 @@ def get_expr_for_variant_ids(
     locus: hl.expr.LocusExpression, alleles: hl.expr.ArrayExpression, max_length: int = None
 ) -> hl.expr.ArrayExpression:
     """Return a list of variant ids - one for each alt allele in the variant"""
-
     def compute_variant_id(alt):
         variant_id = locus.contig + "-" + hl.str(locus.position) + "-" + alleles[0] + "-" + alt
         if max_length is not None:
             variant_id = variant_id[:max_length]
         return variant_id
-
     return alleles[1:].map(compute_variant_id)
 
 

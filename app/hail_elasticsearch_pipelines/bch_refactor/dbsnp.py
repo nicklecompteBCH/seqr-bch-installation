@@ -1,12 +1,15 @@
 import hail as hl
 from hail_elasticsearch_pipelines.hail_scripts.v02.utils.hail_utils import import_vcf
 
-
+def get_dbsnp():
+    dbsnp = dbsnp.annotate(locus = hl.locus(dbsnp['#chr'],hl.int(dbsnp['pos(1-coor)'])))
+    dbsnp = dbsnp.annotate(alleles=[dbsnp.ref,dbsnp.alt])
+    dbsnp = dbsnp.key_by("locus","alleles")
 
 def annotate_with_dbsnp(ht : hl.MatrixTable, dbsnpt : hl.Table):
     newht = ht.annotate_rows(
         #dbnsfp_DANN_score=".",
-        dbnsfp_GERP_RS=dbsnpt.index(ht.locus,ht.alleles).GERP_RS,
+        dbnsfp_GERP_RS=dbsnpt.index(ht.locus,ht.alleles)['GERP++_RS'],
         dbnsfp_MutationTaster_pred=dbsnpt.index(ht.locus,ht.alleles).MutationTaster_pred,
         dbnsfp_phastCons100way_vertebrate=dbsnpt.index(ht.locus,ht.alleles).phastCons100way_vertebrate,
         dbnsfp_Polyphen2_HVAR_pred=dbsnpt.index(ht.locus,ht.alleles).Polyphen2_HVAR_pred,

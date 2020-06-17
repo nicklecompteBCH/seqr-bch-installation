@@ -11,7 +11,7 @@ def annotate_mt_with_derived_fields(mt: hl.MatrixTable) -> hl.MatrixTable:
 
     mt = mt.annotate_rows(
         docId = get_expr_for_variant_id(mt,512),
-        variant_id = get_expr_for_variant_id(mt),
+        variantId = get_expr_for_variant_id(mt),
         variant_type = get_expr_for_variant_type(mt),
         contig = get_expr_for_contig(mt.locus),
         pos = get_expr_for_start_pos(mt),
@@ -31,9 +31,7 @@ def annotate_mt_with_derived_fields(mt: hl.MatrixTable) -> hl.MatrixTable:
             mainTranscript=get_expr_for_worst_transcript_consequence_annotations_struct(
                     vep_sorted_transcript_consequences_root=mt.sortedTranscriptConsequences
                 ),
-            gene_ids=get_expr_for_vep_gene_ids_set(
-                vep_transcript_consequences_root=mt.sortedTranscriptConsequences
-            )
+            gene_ids=hl.set(mt.vep.transcript_consequences.map(lambda c: c.gene_id))
     )
     return mt
 

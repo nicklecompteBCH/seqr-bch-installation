@@ -25,13 +25,14 @@
                 {
                     "Classification" : "emrfs-site",
                     "ConfigurationProperties" : {
-                        "fs.s3.maxConnections": "1000"
+                        "fs.s3.maxConnections": "5000"
                     }
                 },
                 {
                     "Classification":"spark",
                     "ConfigurationProperties":{
-                        "speculation" : "true"
+                        "speculation" : "true",
+                        "dynamicAllocation.enabled" : "false"
                     }
                 },
                 {
@@ -46,13 +47,13 @@
                     "EbsConfiguration" : {
                         "EbsBlockDeviceConfigs" : [{
                             "VolumeSpecification" : {
-                            "SizeInGB" : 50,
+                            "SizeInGB" : 300,
                             "VolumeType" : "gp2"}
                         }],
                         "EbsOptimized" : false
                     },
-                    "InstanceCount" :8,
-                    "InstanceType" : "r5.4xlarge",
+                    "InstanceCount" :6,
+                    "InstanceType" : "r5.2xlarge",
                     "Market" : "SPOT",
                     "Name" : "hail-workers"
                 },
@@ -65,7 +66,7 @@
                     "Configurations" : [],
                     "EbsConfiguration" : {
                         "EbsBlockDeviceConfigs" : [{"VolumeSpecification" : {
-                            "SizeInGB" : 100,
+                            "SizeInGB" : 400,
                             "VolumeType" : "gp2"
                         }}],
                         "EbsOptimized" : false

@@ -16,7 +16,7 @@ import hail as hl
 def load_clinvar(es_host = None, partitions : int = None, namenode : str=""):
     index_name = "clinvar_grch37" #"clinvar_grch{}".format(args.genome_version)
     mt = download_and_import_latest_clinvar_vcf("37", partitions=partitions,namenode = namenode)
-    mt = hl.vep(mt, "hdfs:///user/vep85-loftee-gcloud.json", name="vep", block_size=1000)
+    mt = hl.vep(mt, "hdfs:///user/hdfs/vep85-loftee-gcloud.json", name="vep", block_size=1000)
     mt = mt.annotate_rows(
         sortedTranscriptConsequences=get_expr_for_vep_sorted_transcript_consequences_array(vep_root=mt.vep)
     )
@@ -62,7 +62,7 @@ def load_clinvar(es_host = None, partitions : int = None, namenode : str=""):
         transcript_id_to_consequence_json=get_expr_for_vep_transcript_id_to_consequence_map(
             vep_transcript_consequences_root=mt.sortedTranscriptConsequences
         ),
-        variant_id=get_expr_for_variant_id(mt),
+        #variant_id=get_expr_for_variant_id(mt),
         xpos=get_expr_for_xpos(mt.locus)
     )
 

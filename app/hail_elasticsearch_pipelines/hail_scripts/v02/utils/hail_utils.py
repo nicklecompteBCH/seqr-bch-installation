@@ -54,18 +54,14 @@ def import_vcf(
     :param bool drop_samples: if True, discard genotype info
     :param bool skip_invalid_loci: if True, skip loci that are not consistent with the reference_genome.
     """
-
     if genome_version not in ("37", "38"):
         raise ValueError(f"Invalid genome_version: {genome_version}")
-
-    logger.info(f"\n==> import vcf: {vcf_path}")
-
+#    logger.info(f"\n==> import vcf: {vcf_path}")
     # add (or remove) "chr" prefix from vcf chroms so they match the reference
     ref = hl.get_reference(f"GRCh{genome_version}")
     contig_recoding = {
         **{ref_contig.replace("chr", ""): ref_contig for ref_contig in ref.contigs if "chr" in ref_contig},
         **{f"chr{ref_contig}": ref_contig for ref_contig in ref.contigs if "chr" not in ref_contig}}
-
     mt = hl.import_vcf(
         vcf_path,
         reference_genome=f"GRCh{genome_version}",
@@ -73,31 +69,21 @@ def import_vcf(
         min_partitions=min_partitions,
         force_bgz=force_bgz,
         drop_samples=drop_samples,
-        skip_invalid_loci=skip_invalid_loci)
-
+        skip_invalid_loci=skip_invalid_loci,
+        array_elements_required=False)
     mt = mt.annotate_globals(sourceFilePath=vcf_path, genomeVersion=genome_version)
-
     mt = mt.annotate_rows(
         originalAltAlleles=hl.or_missing(hl.len(mt.alleles) > 2, get_expr_for_variant_ids(mt.locus, mt.alleles))
     )
-
- #hl.or_missing(hl.len(mt.alleles) > 2, get_expr_for_variant_ids(mt.locus, mt.alleles))
-
-    #xpos
     mt = mt.annotate_rows(
         xpos=get_expr_for_xpos(mt.locus)
     )
-
-    #ref
-
     mt = mt.annotate_rows(
         ref=mt.alleles[0]
     )
-
     if split_multi_alleles:
         mt = hl.split_multi_hts(mt)
         mt = mt.key_rows_by(**hl.min_rep(mt.locus, mt.alleles))
-
     return mt
 
 

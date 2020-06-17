@@ -40,7 +40,7 @@ info (tstruct) – All INFO fields defined in the VCF header can be found in the
 
 
 
-def export_table_to_elasticsearch(ds: hl.MatrixTable, host, index_name, index_type,op,mapid="variant_id", is_vds  = False, port=9200, num_shards=1, block_size=200,write_op=ELASTICSEARCH_INDEX):
+def export_table_to_elasticsearch(ds: hl.MatrixTable, host, index_name, index_type,op,mapid="variantId", is_vds  = False, port=9200, num_shards=1, block_size=200,write_op=ELASTICSEARCH_INDEX):
     es = ElasticsearchClient(host, port)
     ta = ds.rows().flatten()#.drop('locus','allele')
     #ta = ta.naive_coalesce(450)

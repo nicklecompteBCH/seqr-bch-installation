@@ -58,10 +58,6 @@ fi
 
 echo "Building Hail from $HASH"
 
-sudo yum install g++ cmake git -y
-sudo yum -y install gcc72-c++ # Fixes issue with c++14 incompatibility in Amazon Linux
-sudo yum install -y lz4 # Fixes issue of missing lz4
-sudo yum install -y lz4-devel
 git clone https://github.com/hail-is/hail.git
 cd hail/hail/
 git checkout $HAIL_VERSION
