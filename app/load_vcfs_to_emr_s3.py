@@ -392,9 +392,6 @@ def run_pipeline(dataset,partition_base):
             if hl.utils.hadoop_is_file(filename + "_vep.mt/metadata.json.gz"):
                 mt = hl.read_matrix_table(filename + "_vep.mt")
             else:
-                mt = add_family_to_hail(family,partition_count) #add_families_to_hail(families,partition_count)
-                print("Added families")
-
                 print("Adding vep")
                 mt = add_vep_to_vcf(mt)
                 #partition_count = parition_count + num_vcfs # assume each annotation adds a VCF's worth of data per VCF

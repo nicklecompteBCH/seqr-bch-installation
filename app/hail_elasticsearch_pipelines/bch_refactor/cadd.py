@@ -1,7 +1,7 @@
 import hail as hl
 from hail_elasticsearch_pipelines.hail_scripts.v02.utils.hail_utils import write_ht, import_table
 
-def import_cadd_table(path: str, genome_version: str="37", partitions : int = None) -> hl.Table:
+def import_cadd_table(path: str, genome_version: str="GRCh37", partitions : int = None) -> hl.Table:
     column_names = {'f0': 'chrom', 'f1': 'pos', 'f2': 'ref', 'f3': 'alt', 'f4': 'RawScore', 'f5': 'PHRED'}
     types = {'f0': hl.tstr, 'f1': hl.tint, 'f4': hl.tfloat32, 'f5': hl.tfloat32}
     cadd_ht = hl.import_table(path, force_bgz=True, comment="#", no_header=True, types=types, min_partitions=partitions)

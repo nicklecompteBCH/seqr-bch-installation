@@ -71,6 +71,10 @@ def import_vcf(
         drop_samples=drop_samples,
         skip_invalid_loci=skip_invalid_loci,
         array_elements_required=False)
+    valid_chros = {'18', '14', '17', 'Y', '2', '8', 'X', '22', '16', '21', '3', '6', '10', '5', '13', '7', '1', '11', '19', 'MT', '4', '12', '9', '20', '15'}
+    mt = mt.filter_rows(hl.literal(valid_chros).contains(mt.locus.contig))
+    mt.write("/vep/tmpck1.mt",overwrite=True)
+    mt = hl.read_matrix_table("/vep/tmpck1.mt")
     mt = mt.annotate_globals(sourceFilePath=vcf_path, genomeVersion=genome_version)
     mt = mt.annotate_rows(
         originalAltAlleles=hl.or_missing(hl.len(mt.alleles) > 2, get_expr_for_variant_ids(mt.locus, mt.alleles))
