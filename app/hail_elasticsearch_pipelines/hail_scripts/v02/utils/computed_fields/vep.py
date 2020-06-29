@@ -127,6 +127,11 @@ def get_expr_for_formatted_hgvs(csq):
         ),
     )
 
+"""
+'array<struct{allele_num: int32, amino_acids: str, biotype: str, canonical: int32, ccds: str, cdna_start: int32, cdna_end: int32, cds_end: int32, cds_start: int32, codons: str, consequence_terms: array<str>, distance: int32, domains: array<struct{db: str, name: str}>, exon: str, gene_id: str, gene_pheno: int32, gene_symbol: str, gene_symbol_source: str, hgnc_id: str, hgvsc: str, hgvsp: str, hgvs_offset: int32, impact: str, intron: str, lof: str, lof_flags: str, lof_filter: str, lof_info: str, minimised: int32, polyphen_prediction: str, polyphen_score: float64, protein_end: int32, protein_start: int32, protein_id: str, sift_prediction: str, sift_score: float64, strand: int32, swissprot: str, transcript_id: str, trembl: str, uniparc: str, variant_allele: str}>'
+'array<struct{allele_num: int32, amino_acids: str, biotype: str, canonical: int32, ccds: int32, cdna_start: int32, cdna_end: int32, cds_end: int32, cds_start: int32, codons: str, consequence_terms: array<str>, distance: int32, domains: array<struct{db: str, name: str}>, exon: str, gene_id: str, gene_pheno: int32, gene_symbol: str, gene_symbol_source: str, hgnc_id: str, hgvsc: str, hgvsp: str, hgvs_offset: int32, impact: str, intron: str, lof: str, lof_flags: str, lof_filter: str, lof_info: str, minimised: int32, polyphen_prediction: str, polyphen_score: float64, protein_end: int32, protein_start: int32, protein_id: str, sift_prediction: str, sift_score: float64, strand: int32, swissprot: str, transcript_id: str, trembl: str, uniparc: str, variant_allele: str}>'
+"""
+
 def get_expr_for_vep_all_consequences_array(vep_root):
     retval = vep_root.annotate(
         formattedIntergenic = hl.map(lambda x: hl.struct(
@@ -134,7 +139,7 @@ def get_expr_for_vep_all_consequences_array(vep_root):
             amino_acids = hl.null(hl.tstr),
             biotype = hl.literal("intron"),
             canonical = hl.null(hl.tint32),
-            ccds = hl.null(hl.tint32),
+            ccds = hl.null(hl.tstr),
             cdna_start  = hl.null(hl.tint32),
             cdna_end = hl.null(hl.tint32),
             cds_end  = hl.null(hl.tint32),
@@ -158,7 +163,7 @@ def get_expr_for_vep_all_consequences_array(vep_root):
             lof_flags = hl.null(hl.tstr),
             lof_filter = hl.null(hl.tstr),
             lof_info = hl.null(hl.tstr),
-            minimised = vep_root.transcript_consequences.minimised,
+            minimised = x.minimised,
             polyphen_prediction = hl.null(hl.tstr),
             polyphen_score = hl.null(hl.tfloat64),
             protein_end = hl.null(hl.tint32),
@@ -171,8 +176,8 @@ def get_expr_for_vep_all_consequences_array(vep_root):
             transcript_id = hl.null(hl.tstr),
             trembl = hl.null(hl.tstr),
             uniparc = hl.null(hl.tstr),
-            variant_allele = x.variant_allele), vep_root.intergenic_consequences)
-    vep_root = retval.annotate(all_consequences = vep_root.transcript_consequences + vep_root.formattedIntergenic)
+            variant_allele = x.variant_allele), vep_root.intergenic_consequences))
+    vep_root = retval.annotate(all_consequences = hl.cond(hl.missing(retval.transcript_consequences),retval.formattedIntergenic,retval.transcript_consequences)
     return vep_root
 
 def get_expr_for_vep_sorted_transcript_consequences_array(vep_root,
