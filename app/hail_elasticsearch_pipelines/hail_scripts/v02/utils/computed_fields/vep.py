@@ -127,6 +127,53 @@ def get_expr_for_formatted_hgvs(csq):
         ),
     )
 
+def get_expr_for_vep_all_consequences_array(vep_root):
+    retval = vep.annotate_rows(formattedIntergenic = hl.struct(
+        allele_num = vep_root.intergenic_consequences.allele_num,
+        amino_acids = hl.null(hl.tstr),
+        biotype = hl.literal("intron")
+        canonical = hl.null(hl.tint32),
+        ccds = hl.null(hl.tint32),
+        cdna_start  = hl.null(hl.tint32),
+        cdna_end = hl.null(hl.tint32),
+        cds_end  = hl.null(hl.tint32),
+        cds_start = hl.null(hl.tint32),
+        codons  = hl.null(hl.tstr,
+        consequence_terms = vep_root.intergenic_consequences.consequence_terms,
+        distance = hl.null(hl.tint32), # not na...,
+        domains = hl.null(hl.tarray(hl.tstruct(db: hl.tstr, name: hl.tstr)),
+        exon = hl.null(hl.tstr),
+        gene_id = hl.null(hl.tstr),
+        gene_pheno = hl.null(hl.tint32), # not na...,
+        gene_symbol= hl.null(hl.tstr),
+        gene_symbol_source = hl.null(hl.tstr),
+        hgnc_id = hl.null(hl.tstr),
+        hgvsc= hl.null(hl.tstr),
+        hgvsp = hl.null(hl.tstr),
+        hgvs_offset = hl.null(hl.tint32,
+        impact = vep_root.intergenic_consequences.impact,
+        intron = hl.null(hl.tstr),
+        lof = hl.null(hl.tstr),
+        lof_flags = hl.null(hl.tstr),
+        lof_filter = hl.null(hl.tstr),
+        lof_info = hl.null(hl.tstr),
+        minimised = vep_root.transcript_consequences.minimized,
+        polyphen_prediction = hl.null(hl.tstr),
+        polyphen_score = hl.null(hl.tfloat64),
+        protein_end = hl.null(hl.tint32),
+        protein_start = hl.null(hl.tint32),
+        protein_id = hl.null(hl.tstr),
+        sift_prediction = hl.null(hl.tstr),
+        sift_score = hl.null(hl.tfloat64),
+        strand = hl.null(hl.tint32),
+        swissprot = hl.null(hl.tstr),
+        transcript_id = hl.null(hl.tstr),
+        trembl = hl.null(hl.tstr),
+        uniparc = hl.null(hl.tstr),
+        variant_allele: vep_root.intergenic_consequences.variant_allele
+    ))
+    vep_root = vep_root.annotate_rows(all_consequences = vep_root.transcript_consequences + vep_root.formattedIntergenic)
+    return vep_root
 
 def get_expr_for_vep_sorted_transcript_consequences_array(vep_root,
                                                           include_coding_annotations=True,
@@ -183,7 +230,7 @@ def get_expr_for_vep_sorted_transcript_consequences_array(vep_root,
         )
 
     omit_consequence_terms = hl.set(omit_consequences) if omit_consequences else hl.empty_set(hl.tstr)
-    vep_root = vep_root.annotate_rows(vep_root.all_consequences = vep_root.transcript_consequences + vep_root.intergenic_consequences)
+    vep_root = get_expr_for_vep_all_consequences_array(vep_root)
     result = hl.sorted(
         vep_root.all_consequences.map(
             lambda c: c.select(
