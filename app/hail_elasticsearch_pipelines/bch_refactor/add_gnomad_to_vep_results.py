@@ -62,6 +62,15 @@ def annotate_with_gnomad(
         )
     )
 
+def annotate_with_gnomad_genomes(mt: hl.MatrixTable,gnomad_ht : hl.MatrixTable) -> hl.MatrixTable:
+    return mt.annotate_rows(
+        gnomad_genomes = hl.struct(
+            AC = gnomad_ht.index_rows(mt.locus,mt.alleles).info.AC[0],
+            AF = gnomad_ht.index_rows(mt.locus,mt.alleles).info.AF[0],
+            AN = gnomad_ht.index_rows(mt.locus,mt.alleles).info.AN,
+            AF_POPMAX_OR_GLOBAL = gnomad_ht.index_rows(mt.locus,mt.alleles).info.popmax[0]
+        )
+    )
 
 
 GNOMAD_SEQR_VDS_PATHS_oh_one = {

@@ -183,9 +183,9 @@ def get_expr_for_vep_sorted_transcript_consequences_array(vep_root,
         )
 
     omit_consequence_terms = hl.set(omit_consequences) if omit_consequences else hl.empty_set(hl.tstr)
-
+    vep_root = vep_root.annotate_rows(vep_root.all_consequences = vep_root.transcript_consequences + vep_root.intergenic_consequences)
     result = hl.sorted(
-        vep_root.transcript_consequences.map(
+        vep_root.all_consequences.map(
             lambda c: c.select(
                 *selected_annotations,
                 consequence_terms=c.consequence_terms.filter(lambda t: ~omit_consequence_terms.contains(t)),

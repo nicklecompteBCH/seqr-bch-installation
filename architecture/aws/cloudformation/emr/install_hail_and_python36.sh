@@ -27,27 +27,22 @@ error_msg ()
 # 	Displays this menu"
 #     exit 1
 # }
-
+sudo yum install git -y
 # Add hail to the master node
-sudo mkdir -p /opt/hail/src
-sudo chmod -r 777 /opt/
+sudo chmod 777 /opt/ -r
 sudo chown -R hadoop:hadoop /opt
 cd /opt
-cd $HAIL_HOME/src
 
 # Compile Hail
 
 echo "Running Hail installation with option: $HASH"
 sudo rm -r hail
-sudo rm /etc/alternatives/jre/include/include
 
 OUTPUT_PATH=""
 HAIL_VERSION="master"
-SPARK_VERSION="2.4.3"
+SPARK_VERSION="2.4.4"
 COMPILE=true
 IS_MASTER=false
-GRADLE_DEPRECATION=1566593776
-SELECTED_VERSION=$GRADLE_DEPRECATION
 export TEST=""
 export CXXFLAGS=-march=native
 
@@ -57,6 +52,7 @@ then
 fi
 
 echo "Building Hail from $HASH"
+
 
 git clone https://github.com/hail-is/hail.git
 cd hail/hail/
@@ -71,8 +67,8 @@ echo "Compiling with Wheel..."
 sudo python3 -m pip install wheel
 sudo make clean
 sudo make wheel
-HAIL_WHEEL=`ls /opt/hail/src/hail/hail/build/deploy/dist | grep "whl"`
-sudo python3 -m pip install /opt/hail/src/hail/hail/build/deploy/dist/$HAIL_WHEEL
+HAIL_WHEEL=`ls /opt/hail/hail/build/deploy/dist | grep "whl"`
+python3 -m pip install /opt/hail/hail/build/deploy/dist/$HAIL_WHEEL --user
 
 # else  ./gradlew -Dspark.version=$SPARK_VERSION -Dbreeze.version=0.13.2 -Dpy4j.version=0.10.6 shadowJar archiveZip
 #     cp $PWD/build/distributions/hail-python.zip $HOME
@@ -81,6 +77,6 @@ sudo python3 -m pip install /opt/hail/src/hail/hail/build/deploy/dist/$HAIL_WHEE
 
 sudo cp /usr/share/zoneinfo/America/New_York /etc/localtime
 
-sudo python3 -m pip install boto3
-sudo python3 -m pip install elasticsearch
-sudo python3 -m pip install requests
+python3 -m pip install boto3 --user
+python3 -m pip install elasticsearch --user
+python3 -m pip install requests --user

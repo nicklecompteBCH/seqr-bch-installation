@@ -418,7 +418,7 @@ def run_pipeline(dataset,partition_base):
                 mt = hl.read_matrix_table(filename + "_clinvar.mt")
             else:
                 print("Subsetting and persisting Clinvar...")
-                clinvar = hl.import_vcf('s3://seqr-resources/GRCh37/clinvar/clinvar.GRCh37.vcf.gz',force_bgz=True)
+                clinvar = hl.import_vcf('s3a://seqr-resources/GRCh37/clinvar/clinvar.GRCh37.vcf.gz',force_bgz=True)
                 clinvar = clinvar.rows()
                 print("Adding Clinvar...")
                 mt = annotate_with_clinvar(mt, clinvar)
@@ -483,7 +483,7 @@ def run_pipeline(dataset,partition_base):
                 mt = hl.read_matrix_table(filename + "_gnomad.mt")
             else:
                 print("Subsetting and persisting Gnomad...")
-                gnomad =  hl.import_vcf('s3://seqr-resources/gnomad/37/exomes/gnomad.exomes.r.2.1.1.sites.vcf.bgz').semi_join_rows(mt.rows())
+                gnomad =  hl.import_vcf('s3a://seqr-resources/gnomad/37/exomes/gnomad.exomes.r.2.1.1.sites.vcf.bgz').semi_join_rows(mt.rows())
                 mt = annotate_with_gnomad(mt, gnomad)
                 mt = mt.repartition(partition_count)
                 mt = mt.write(filename + "_gnomad.mt",overwrite=True)
