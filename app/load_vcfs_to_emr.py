@@ -310,39 +310,39 @@ def finalize_annotated_table_for_seqr_variants(mt: hl.MatrixTable) -> hl.MatrixT
     proper formatting to be consumed by Seqr.
     :rtype: hl.MatrixTable
     """
-mt = mt.annotate_rows(
-    sortedTranscriptConsequences=get_expr_for_vep_sorted_transcript_consequences_array(vep_root=mt.vep)
-)
+    mt = mt.annotate_rows(
+        sortedTranscriptConsequences=get_expr_for_vep_sorted_transcript_consequences_array(vep_root=mt.vep)
+    )
 
-mt = mt.annotate_rows(
-    mainTranscript=hl.cond(hl.len(mt.sortedTranscriptConsequences) > 0, mt.sortedTranscriptConsequences[0],hl.null("struct {biotype: str,canonical: int32,cdna_start: int32,cdna_end: int32,codons: str,gene_id: str,gene_symbol: str,hgvsc: str,hgvsp: str,transcript_id: str,amino_acids: str,lof: str,lof_filter: str,lof_flags: str,lof_info: str,polyphen_prediction: str,protein_id: str,protein_start: int32,sift_prediction: str,consequence_terms: array<str>,domains: array<str>,major_consequence: str,category: str,hgvs: str,major_consequence_rank: int32,transcript_rank: int32}")),
-    #allele_id=clinvar_mt.index_rows(mt.row_key).vep.id,
-    alt=get_expr_for_alt_allele(mt),
-    chrom=get_expr_for_contig(mt.locus),
-    #clinvar_clinical_significance=clinvar_mt.index_rows(mt.row_key).clinical_significance,
-    domains=get_expr_for_vep_protein_domains_set(vep_transcript_consequences_root=mt.vep.transcript_consequences),
-    geneIds=hl.set(mt.vep.transcript_consequences.map(lambda c: c.gene_id)),
-    # gene_id_to_consequence_json=get_expr_for_vep_gene_id_to_consequence_map(
-    #     vep_sorted_transcript_consequences_root=mt.sortedTranscriptConsequences,
-    #     gene_ids=clinvar_mt.gene_ids
-    # ),
-    #gold_stars= clinvar_mt.index_entries(mt.row_key,mt.col_key).gold_stars,
-    pos=get_expr_for_start_pos(mt),
-    ref=get_expr_for_ref_allele(mt),
-    #review_status=clinvar_mt.index_rows(mt.locus,mt.alleles).review_status,
-    transcript_consequence_terms=get_expr_for_vep_consequence_terms_set(
-        vep_transcript_consequences_root=mt.sortedTranscriptConsequences
-    ),
-    transcript_ids=get_expr_for_vep_transcript_ids_set(
-        vep_transcript_consequences_root=mt.sortedTranscriptConsequences
-    ),
-    transcript_id_to_consequence_json=get_expr_for_vep_transcript_id_to_consequence_map(
-        vep_transcript_consequences_root=mt.sortedTranscriptConsequences
-    ),
-    variant_id=get_expr_for_variant_id(mt),
-    xpos=get_expr_for_xpos(mt.locus)
-)
-return mt
+    mt = mt.annotate_rows(
+        mainTranscript=hl.cond(hl.len(mt.sortedTranscriptConsequences) > 0, mt.sortedTranscriptConsequences[0],hl.null("struct {biotype: str,canonical: int32,cdna_start: int32,cdna_end: int32,codons: str,gene_id: str,gene_symbol: str,hgvsc: str,hgvsp: str,transcript_id: str,amino_acids: str,lof: str,lof_filter: str,lof_flags: str,lof_info: str,polyphen_prediction: str,protein_id: str,protein_start: int32,sift_prediction: str,consequence_terms: array<str>,domains: array<str>,major_consequence: str,category: str,hgvs: str,major_consequence_rank: int32,transcript_rank: int32}")),
+        #allele_id=clinvar_mt.index_rows(mt.row_key).vep.id,
+        alt=get_expr_for_alt_allele(mt),
+        chrom=get_expr_for_contig(mt.locus),
+        #clinvar_clinical_significance=clinvar_mt.index_rows(mt.row_key).clinical_significance,
+        domains=get_expr_for_vep_protein_domains_set(vep_transcript_consequences_root=mt.vep.transcript_consequences),
+        geneIds=hl.set(mt.vep.transcript_consequences.map(lambda c: c.gene_id)),
+        # gene_id_to_consequence_json=get_expr_for_vep_gene_id_to_consequence_map(
+        #     vep_sorted_transcript_consequences_root=mt.sortedTranscriptConsequences,
+        #     gene_ids=clinvar_mt.gene_ids
+        # ),
+        #gold_stars= clinvar_mt.index_entries(mt.row_key,mt.col_key).gold_stars,
+        pos=get_expr_for_start_pos(mt),
+        ref=get_expr_for_ref_allele(mt),
+        #review_status=clinvar_mt.index_rows(mt.locus,mt.alleles).review_status,
+        transcript_consequence_terms=get_expr_for_vep_consequence_terms_set(
+            vep_transcript_consequences_root=mt.sortedTranscriptConsequences
+        ),
+        transcript_ids=get_expr_for_vep_transcript_ids_set(
+            vep_transcript_consequences_root=mt.sortedTranscriptConsequences
+        ),
+        transcript_id_to_consequence_json=get_expr_for_vep_transcript_id_to_consequence_map(
+            vep_transcript_consequences_root=mt.sortedTranscriptConsequences
+        ),
+        variant_id=get_expr_for_variant_id(mt),
+        xpos=get_expr_for_xpos(mt.locus)
+    )
+    return mt
 
 def export_table_to_tsv(final : hl.MatrixTable, index_prefix: str):
     print("Flattening MatrixTable...")

@@ -177,7 +177,7 @@ def get_expr_for_vep_all_consequences_array(vep_root):
             trembl = hl.null(hl.tstr),
             uniparc = hl.null(hl.tstr),
             variant_allele = x.variant_allele), vep_root.intergenic_consequences))
-    vep_root = retval.annotate(all_consequences = hl.cond(hl.missing(retval.transcript_consequences),retval.formattedIntergenic,retval.transcript_consequences)
+    vep_root = retval.annotate(all_consequences = hl.cond(hl.is_missing(retval.transcript_consequences),retval.formattedIntergenic,retval.transcript_consequences))
     return vep_root
 
 def get_expr_for_vep_sorted_transcript_consequences_array(vep_root,
