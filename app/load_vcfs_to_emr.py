@@ -361,7 +361,7 @@ def export(mt,index_name, tsv:bool,tsves:bool,op=ELASTICSEARCH_INDEX):
     if tsv or tsves:
         export_table_to_tsv(mt, index_name)
     if (not tsv) or tsves:
-    export_table_to_elasticsearch(mt,ELASTICSEARCH_HOST,index_name,"variant",op,is_vds=True,port=9200,num_shards=6,block_size=1000)
+        export_table_to_elasticsearch(mt,ELASTICSEARCH_HOST,index_name,"variant",op,is_vds=True,port=9200,num_shards=6,block_size=1000)
 
 def table_exists(path):
     (hl.utils.hadoop_is_dir(filename) or hl.utils.hadoop_is_file(filename))# exists clinvar:
