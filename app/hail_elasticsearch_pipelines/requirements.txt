@@ -1,4 +1,4 @@
 six==1.10.0
-requests==2.20.0
+requests==2.31.0
 elasticsearch==6.2.0
 hail==0.2.24
